@@ -24,3 +24,12 @@ Importação iniciada em 2026-11-01T14:27:46.675136+00:00 (UTC).
 - Última data observada nos arquivos principais do ZIP, sem fuso: `2026-10-31T23:38:18`.
 - Arquivos importados do ZIP: 21.
 - Exclusões: nenhuma.
+
+### arquivo-20261101-vscode
+
+- Origem: `SENTIA-COMPLETO-VSCODE.zip`.
+- Tamanho do ZIP: 474388496 bytes.
+- SHA-256 do ZIP: `e358fde5d6c73faef3b9e3fdb3ca2398223c97428b63704377d0722aa8a56d24`.
+- Última data observada nos arquivos principais do ZIP, sem fuso: `2026-11-01T00:12:30`.
+- Arquivos importados do ZIP: 890.
+- Exclusões: nenhuma.

@@ -955,3 +955,19 @@ body.reduced *,body.reduced *::before {
 .dialogue:has(.choices:not(:empty)) { height:min(360px,80%); }
 .dialogue:has(.choices > button:nth-child(4)) { height:min(540px,82%); }
 @media(orientation:landscape) and (max-height:550px) { .dialogue:has(.choices:not(:empty)) { height:82%; } }
+/* O alvo não anuncia o conteúdo que libera. O foco continua acessível pelo teclado. */
+.quiet-interaction { position:absolute; right:0; bottom:10%; width:44px; height:44px; min-height:44px; padding:0; opacity:0; border:0; background:transparent; }
+.quiet-interaction:focus-visible { opacity:.45; outline:1px solid #fff8d5; }
+@media(max-width:600px) { .game-header { gap:6px; }.game-header>div { gap:4px; }.game-header button { padding:7px 5px; font-size:10px; }.game-header kbd { display:none; } }
+.held-object { position:absolute; z-index:5; left:45%; bottom:41%; width:12%; height:19%; object-fit:contain; image-rendering:pixelated; pointer-events:none; filter:drop-shadow(0 3px 4px #0008); }
+.hands.exploration-hands.inspecting-hands { bottom:9%; left:5%; width:90%; height:64%; }
+.actor.chase-presence { left:75%; width:40%; height:42%; bottom:24%; opacity:.85; }
+.idle-layer.sway { animation:cloth-idle 5s ease-in-out infinite; }.idle-layer.glow { animation:core-idle 3s ease-in-out infinite; }
+@keyframes cloth-idle { 0%,100% { transform:translate(-50%,0); } 50% { transform:translate(calc(-50% + 1px),-1px); } }
+@keyframes core-idle { 0%,100% { opacity:.82; } 50% { opacity:1; } }
+@media(max-width:600px) { .held-object { left:40%;width:20%;height:17%;bottom:43%; }.hands.exploration-hands.inspecting-hands { width:100%;left:0;bottom:14%;height:55%; } }
+.hands.exploration-hands.gesture-hands { width:100%;height:85%;left:0;bottom:0; }
+@media(max-width:600px) { .hands.exploration-hands.gesture-hands { bottom:13%;height:70%; } }
+.sprite-control::before { content:''; display:inline-block; width:20px; height:20px; margin-right:7px; vertical-align:middle; background:var(--control-normal) center/contain no-repeat; image-rendering:pixelated; pointer-events:none; }
+.sprite-control:active::before { background-image:var(--control-pressed); }.sprite-control:disabled::before { background-image:var(--control-disabled); }.bag-icon { width:52px;height:52px;object-fit:contain;image-rendering:pixelated; }
+@media(max-width:600px) { .sprite-control::before { width:16px;height:16px;margin-right:4px; }.game-header .sprite-control::before { display:none; } }

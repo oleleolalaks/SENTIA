@@ -65,6 +65,7 @@ window.Arena = (() => {
     image('candy', 'amor-chorando-rosto-coberto.png');
     image('sword', '/04-Espada-Solta/espada-solta.png');
     image('fist', '/01-Gestos-Aprovados/02-punhos-fechados.png');
+    image('punch', '/01-Gestos-Aprovados/03-soco.png');
     image('wall', 'parede-basaltica-64.png');
     image('sky', '/01-Arena-Odio/01-frente.png');
     image('floor', 'piso-basaltico-64.png');
@@ -75,6 +76,13 @@ window.Arena = (() => {
     image('shield', '/escudo/02-defesa-verso.png');
     image('knife', '/faca/01-pronta.png');
     image('light', '/luz/01-segurar.png');
+    ASSETS.filter(p=>p.includes('/01-Sprites-128/01-Odio/')&&p.endsWith('.png')).forEach((p,i)=>image('odio'+(i+1),p));
+    for(let i=1;i<=4;i++) image('knife'+i,'/02-Equipamentos/faca/0'+i+'-'+['pronta','preparar','atacar','guarda'][i-1]+'.png');
+    image('paired','/escudo/04-espada-verso.png');
+    image('shieldHit','/escudo/03-impacto-verso.png');
+    image('lightCast','/luz/03-liberar.png');
+    for(const weapon of ['espada','faca']) ASSETS.filter(p=>p.includes('/04-Cortes-256/cortes/'+weapon+'/')).forEach((p,i)=>image(weapon+'Cut'+i,p));
+    for(const [i,file] of ['01-raio-frontal','02-raio-varredura','03-rastro-garra','04-impacto-chao'].entries()) image('attackEffect'+i,'/03-Efeitos/'+file+'.png');
   }
   function start(options) {
     stop();
@@ -150,6 +158,7 @@ window.Arena = (() => {
     if (type === 'light' && config.items.includes('luz') && lightCooldown <= 0) {
       if (Math.abs(diff) < .3 && lineClear(enemy.x, enemy.y)) {
         enemy.hp -= 22;
+        enemy.hitUntil=elapsed+.35;
         hit = .08;
       }
       lightCooldown = 1.5;
@@ -159,7 +168,8 @@ window.Arena = (() => {
       attackAge = 0;
       attackCooldown = .65;
       if (distance < 2.7 && Math.abs(diff) < .8 && lineClear(enemy.x, enemy.y)) {
-        enemy.hp -= config.items.includes('espada') ? 32 : 23;
+        enemy.hp -= config.equipped==='faca'&&config.items.includes('faca') ? 26 : config.items.includes('espada') ? 32 : 23;
+        enemy.hitUntil=elapsed+.35;
         walk(enemy, Math.cos(player.a) * .3, Math.sin(player.a) * .3);
       }
     }
@@ -276,6 +286,18 @@ window.Arena = (() => {
       free: false
     });
   }
+  function enemyImage() {
+    const alternate=Math.floor(elapsed*5)%2;
+    let index=1;
+    if(enemy.hitUntil>elapsed) index=17;
+    else if(enemy.phase==='prepare') index=enemy.pattern===6&&enemy.timer>.7?16:[6,13,11,9,15,12,10][enemy.pattern];
+    else if(enemy.phase==='attack') index=enemy.pattern===0?(enemy.timer>.32?7:8):[7,14,11,9,15,12,10][enemy.pattern];
+    else if(enemy.phase==='recover') index=enemy.timer>1.2?17:18;
+    else if(keys.left||keys.right) index=19;
+    else if(Math.hypot(player.x-enemy.x,player.y-enemy.y)>6) index=alternate?4:5;
+    else if(Math.hypot(player.x-enemy.x,player.y-enemy.y)>1.7) index=alternate?2:3;
+    return images['odio'+index]||images.enemy;
+  }
   function draw() {
     ctx.fillStyle = '#24151c';
     ctx.fillRect(0, 0, W, H / 2);
@@ -366,7 +388,7 @@ window.Arena = (() => {
       low: true
     }] : [])] : [{
       ...enemy,
-      img: enemy.phase === 'prepare' ? images.charge : enemy.phase === 'attack' ? images.strike : enemy.phase === 'approach' ? Math.floor(elapsed * 4) % 2 ? images.walk : images.walk2 : images.enemy,
+      img: enemyImage(),
       size: 2.7
     }, ...bullets.map(b => ({
       ...b,
@@ -409,15 +431,21 @@ window.Arena = (() => {
     ctx.moveTo(W / 2, H / 2 - 4);
     ctx.lineTo(W / 2, H / 2 + 4);
     ctx.stroke();
-    const hand = keys.guard && config.items.includes('escudo') ? images.shield : config.items.includes('espada') || collected ? images['swing' + Math.min(4, Math.floor(attackAge / .12) + 1)] : images.fist;
+    const knife=config.equipped==='faca' && config.items.includes('faca');
+    const hand = keys.guard && config.items.includes('escudo') ? (hit>0?images.shieldHit:images.shield) : knife ? images['knife'+(keys.guard?4:attackAge<.12?2:attackAge<.3?3:1)] : lightCooldown>1.15 ? images.lightCast : config.equipped==='luz' ? images.light : (config.items.includes('espada') || collected) ? (attackAge<.48?images['swing'+Math.min(4,Math.floor(attackAge/.12)+1)]:config.items.includes('escudo')?images.paired:images.swing1) : attackAge<.3?images.punch:images.fist;
     if (hand?.complete && hand.naturalWidth) {
       const h = H * .57;
       ctx.drawImage(hand, W * .24, H - h + Math.sin(elapsed * 3) * (keys.up ? 3 : 0), W * .65, h);
     }
-    if (attackAge < .3 && images.slash?.complete && images.slash.naturalWidth && config.items.includes('espada')) {
+    const cut=images[(knife?'faca':'espada')+'Cut'+Math.min(2,Math.floor(attackAge/.1))];
+    if (attackAge < .3 && cut?.complete && cut.naturalWidth && (knife||config.items.includes('espada'))) {
       ctx.globalAlpha = 1 - attackAge / .3;
-      ctx.drawImage(images.slash, W * .2, H * .2, W * .6, H * .5);
+      ctx.drawImage(cut, W * .2, H * .2, W * .6, H * .5);
       ctx.globalAlpha = 1;
+    }
+    if(!freeMode&&enemy.phase==='attack') {
+      const index=({0:2,1:0,2:3,4:1})[enemy.pattern], fx=images['attackEffect'+index];
+      if(fx?.complete&&fx.naturalWidth){ctx.globalAlpha=.45;ctx.drawImage(fx,W*.15,H*.1,W*.7,H*.7);ctx.globalAlpha=1;}
     }
     if (hit > 0) {
       ctx.fillStyle = 'rgba(170,20,25,' + hit * .8 + ')';
@@ -426,7 +454,7 @@ window.Arena = (() => {
   }
   function loop(now) {
     if (!active) return;
-    const dt = Math.min(.04, (now - last) / 1000);
+    const dt = Math.max(0, Math.min(.04, (now - last) / 1000));
     last = now;
     if (!paused) {
       tick(dt);
@@ -449,6 +477,7 @@ window.Arena = (() => {
     pause: setPause,
     press,
     action,
+    equip(id) { if(config) config.equipped=id; },
     look(dx) {
       if (active && !paused) player.a += dx * .006;
     },
@@ -458,7 +487,9 @@ window.Arena = (() => {
       enemy,
       freeMode,
       collected,
-      paused
+      paused,
+      enemySprite:enemy&&player?enemyImage()?.src:null,
+      equipped:config?.equipped
     }),
     getMap: () => map
   };

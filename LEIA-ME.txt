@@ -1,41 +1,28 @@
-SENTIA — INSTRUÇÕES DA VERSÃO LOCAL
+SENTIA — PACOTE COMPLETO
 
-COMO ABRIR
-Abra index.html no navegador. Não precisa instalar dependências nem compilar.
-O portal do Jardim permite escolher PC ou mobile. O jogo também oferece essa escolha no menu.
-Use os controles indicados na tela. O progresso fica salvo neste navegador; o menu do jogo permite exportar e importar o progresso.
+Esta pasta contém o site educativo, o Jardim dos Ecos, os arquivos de imagem e o portfólio.
 
-ONDE ESTÁ CADA PARTE
-index.html + css/site.css + js/site.js: site educativo e exercícios escolares.
-jardim.html + css/jardim.css + demais arquivos js: Jardim dos Ecos.
-assets: imagens aprovadas já existentes do SENTIA. Não são referências para gerar outras imagens.
-portfolio: capturas de PC/mobile e arquivo Excalidraw com capturas incorporadas e títulos editáveis. As capturas são imagens; seus componentes internos não são objetos editáveis.
-documentacao/ROTEIRO-V4.txt: contexto narrativo.
+PARA USAR
+1. Extraia o ZIP inteiro. Não abra o HTML de dentro do arquivo compactado.
+2. No Visual Studio Code, use Arquivo > Abrir Pasta e selecione Sentia.
+3. Abra index.html com Live Server, ou dê dois cliques em ABRIR-SENTIA.cmd para abrir no navegador.
+4. O Jardim é acessado pela página O Jardim do próprio SENTIA, após as descobertas do site.
+5. Mantenha css, js e assets junto de index.html e jardim.html.
 
-ENTREGA DO PROFESSOR
-1. Portfólio: imagens em portfolio e SENTIA-portfolio.excalidraw.
-2. HTML isolado: entrega-escolar/HTML-puro, sem importação de CSS e JS.
-3. CSS isolado: entrega-escolar/CSS-puro.
-4. JavaScript isolado: entrega-escolar/JavaScript-puro. O material informado é de JS, não Java.
-5. Código completo funcional: arquivos da raiz, pastas css, js e assets juntos.
-6. Comentários explicativos estão nos arquivos de código, por responsabilidade e bloco.
-As cópias isoladas servem para leitura e avaliação; o HTML isolado não inclui o visual nem as interações do projeto integrado.
-Após alterações, executar preparar-entrega.cjs atualiza essas cópias. Esse script é uma ferramenta de organização, não faz parte do site.
+CONTEÚDO
+assets: 834 arquivos de imagem existentes, incluindo sprites, cenários, efeitos e pranchas.
+css e js: arquivos separados do projeto funcional.
+entrega-escolar: cópias isoladas de HTML, CSS e JavaScript para avaliação. O HTML-puro não importa o visual nem as interações; execute o index.html da raiz para usar o projeto completo.
+portfolio: capturas das páginas e portfólio Excalidraw.
+documentacao: roteiro e contexto do projeto.
 
-CONCEITOS NO SITE EDUCATIVO
-HTML semântico, formulários, navegação; CSS responsivo, cores, layout, estados e tema; JS com eventos, funções, condicionais, arrays, DOM, validação, armazenamento local, tarefas editáveis e operação assíncrona demonstrativa.
-As atividades escolares ficam no site, não no jogo. A reflexão é uma simulação local e não chama uma IA; o formulário não envia mensagens.
-Não foi comprovada cobertura de todos os itens das apostilas compactadas: comparar os conceitos exigidos pelo professor antes de entregar.
+ESTADO DO JOGO
+Inclui conversas recorrentes por descobertas, abertura com quatro moradores, desbloqueio dos quartos, medidor de sanidade, poses de diálogo e cenário, variações de combate e ações das mãos ao examinar e usar objetos.
+É possível continuar um save anterior. Para conhecer a nova abertura, exporte o progresso pela Pausa e depois escolha Começar outra partida.
+Os testes incluem uma sequência contínua da abertura até a arena de Beerus, e verificações separadas dos desfechos posteriores, dos controles e das molduras.
+A duração narrativa de 2–3 horas ainda precisa ser conferida numa partida humana completa.
 
-ANTES DA ENTREGA FINAL
-Publicar no GitHub e substituir o comentário de URL pública nos HTML pela URL real. Nenhuma publicação foi feita por estes arquivos.
-Revisar os comentários e compreender o código. Este material recebeu assistência de IA; não representa autoria exclusivamente humana, como exige o enunciado do professor.
-Atualizar as capturas do portfólio se mudar textos, cores ou disposição das telas.
-
-VALIDAÇÃO E LIMITES
-Há verificações automatizadas em verificar*.cjs e relatórios em documentacao.
-Parte dos testes usa saves de capítulos avançados: não substitui uma partida completa desde o começo.
-A duração de 2–3 horas é uma meta narrativa, não uma duração comprovada em teste humano.
-Balanceamento, ritmo e conteúdo ainda precisam dessa partida completa. Não há áudio final integrado.
-O Excalidraw foi gerado com imagens incorporadas; a importação no aplicativo ainda precisa ser conferida. As capturas PNG podem ser vistas diretamente.
-Não apagar os assets descartados por conta própria: o inventário representa o pacote aprovado disponível, e nem todo arquivo é utilizado em todas as cenas.
+ENTREGA ESCOLAR
+Comentários explicam os blocos principais. O aluno deve estudar e revisar o material; o projeto recebeu assistência de IA.
+O endereço público do GitHub nos comentários HTML ainda deve ser substituído pela URL real após a publicação. Não foi feita publicação automática.
+Os conceitos exigidos nas apostilas ainda precisam ser comparados com a lista de avaliação do professor.

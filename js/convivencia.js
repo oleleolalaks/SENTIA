@@ -21,3 +21,13 @@ window.CONVIVENCIA = [
   {id:'hunger-lumen', eco:'medo', clues:['culpa.p5'], label:'Perguntar pela mensagem para Lúmen', lines:[['Você','Lúmen guardou o seu bilhete.'],['Hunger','Não use o nome dele para conseguir que eu abaixe a guarda.'],['Hunger','Você ainda tem tempo de deixá-lo longe disso.']]},
   {id:'beerus-candy', eco:'odio', clues:['amor.p4','odio.p5'], label:'Perguntar por que ele guarda a lembrança de Sugar', lines:[['Você','Você não jogou a lembrança fora.'],['Beerus','Por que jogaria?'],['Você','Você parece odiar tudo.'],['Beerus','Você chegou com essa resposta e está procurando onde encaixar. Sugar não precisa disso para falar comigo.']]}
 ];
+// Esse assunto só aparece quando a faca já passou para a bolsa.
+window.CONVIVENCIA.push({
+  id:'beerus-faca',eco:'odio',items:['faca'],label:'Perguntar por que ele reconheceu a faca',
+  lines:[
+    {who:'Beerus',text:'Você trouxe a faca dela até aqui.',pose:'quebrando'},
+    ['Você','Você reconheceu antes de eu falar.'],
+    {who:'Beerus',text:'Ela não ofereceria. Eu conhecia o jeito como ela guardava as coisas.',pose:'quebrou'},
+    {who:'Beerus',text:'Guarda isso antes de chamar a minha raiva de defeito.',pose:'nao-gostou'}
+  ]
+});
