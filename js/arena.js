@@ -41,7 +41,16 @@ window.Arena = (() => {
     dragPointer = null,
     dragX = 0,
     resizeObserver = null,
-    renderedHand = null;
+    renderedHand = null,
+    lightAge = 9,
+    audioTimes = {};
+  const angleDiff = (a,b) => Math.atan2(Math.sin(a-b),Math.cos(a-b));
+  // Os sons acontecem nas ações, nn a cada quadro do desenho.
+  function sound(name, spacing=.14) {
+    if(elapsed-(audioTimes[name]??-99)<spacing)return;
+    audioTimes[name]=elapsed;
+    window.AudioSentia?.sfx?.(name);
+  }
   const find = part => ASSETS.find(p => p.includes(part));
   function image(id, part) {
     const i = new Image();
@@ -55,10 +64,43 @@ window.Arena = (() => {
     if (!solid(obj.x + dx + .22, obj.y) && !solid(obj.x + dx - .22, obj.y)) obj.x += dx;
     if (!solid(obj.x, obj.y + dy + .22) && !solid(obj.x, obj.y + dy - .22)) obj.y += dy;
   }
-  function lineClear(x, y) {
-    const d = Math.hypot(x - player.x, y - player.y);
-    for (let t = .2; t < d; t += .15) if (solid(player.x + (x - player.x) * t / d, player.y + (y - player.y) * t / d)) return false;
+  function clearBetween(x1,y1,x2,y2) {
+    const d = Math.hypot(x2-x1,y2-y1);
+    for(let t=.08;t<d;t+=.1)if(solid(x1+(x2-x1)*t/d,y1+(y2-y1)*t/d))return false;
     return true;
+  }
+  const lineClear = (x,y) => clearBetween(player.x,player.y,x,y);
+  // Um pilar serve de cobertura, mas nn prende Beerus eternamente no mesmo lugar.
+  function pursue(dt,speed) {
+    let target=player;
+    if(!lineClear(enemy.x,enemy.y)) {
+      enemy.routeTimer-=dt;
+      if(enemy.routeTimer<=0||!enemy.route?.length) {
+        enemy.routeTimer=.4;
+        const sx=Math.floor(enemy.x),sy=Math.floor(enemy.y),tx=Math.floor(player.x),ty=Math.floor(player.y);
+        const queue=[[sx,sy]],parents=new Map([[sx+','+sy,null]]);
+        for(let i=0;i<queue.length;i++) {
+          const [x,y]=queue[i];
+          if(x===tx&&y===ty)break;
+          for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+            const nx=x+dx,ny=y+dy,key=nx+','+ny;
+            if(solid(nx+.5,ny+.5)||parents.has(key))continue;
+            parents.set(key,[x,y]);queue.push([nx,ny]);
+          }
+        }
+        const route=[];let cell=[tx,ty];
+        if(parents.has(cell.join(',')))while(cell&&(cell[0]!==sx||cell[1]!==sy)) {
+          route.unshift({x:cell[0]+.5,y:cell[1]+.5});cell=parents.get(cell.join(','));
+        }
+        enemy.route=route;
+      }
+      if(enemy.route?.length) {
+        target=enemy.route[0];
+        if(Math.hypot(target.x-enemy.x,target.y-enemy.y)<.25){enemy.route.shift();target=enemy.route[0]||player;}
+      }
+    } else enemy.route=[];
+    const a=Math.atan2(target.y-enemy.y,target.x-enemy.x);
+    walk(enemy,Math.cos(a)*dt*speed,Math.sin(a)*dt*speed);
   }
   function loadImages() {
     image('enemy', '/01-Odio/01-prontidao.png');
@@ -112,11 +154,17 @@ window.Arena = (() => {
     enemy = {
       x: 10.5,
       y: 4.5,
-      hp: options.assist ? 340 : 480,
-      maxHp: options.assist ? 340 : 480,
+      hp: options.assist ? 360 : 620,
+      maxHp: options.assist ? 360 : 620,
       phase: 'approach',
       timer: 2.2,
-      pattern: 0
+      pattern: 0,
+      cycle:0,
+      routeTimer:0,
+      route:[],
+      volleys:0,
+      aimLocked:false,
+      phaseNumber:1
     };
     freeMode = !!options.free;
     collected = !!options.collected;
@@ -132,6 +180,8 @@ window.Arena = (() => {
     hurtInv = 0;
     guardBroken = 0;
     staminaDelay = 0;
+    lightAge = 9;
+    audioTimes = {};
     dragPointer = null;
     active = true;
     paused = false;
@@ -220,51 +270,64 @@ window.Arena = (() => {
       angle = Math.atan2(enemy.y - player.y, enemy.x - player.x);
     const diff = Math.atan2(Math.sin(angle - player.a), Math.cos(angle - player.a));
     if (type === 'light' && config.items.includes('luz') && lightCooldown <= 0) {
-      if (Math.abs(diff) < .3 && lineClear(enemy.x, enemy.y)) {
-        enemy.hp -= enemy.phase === 'prepare' ? 9 : 16;
+      const cost=config.assist?17:30;
+      if(player.stamina<cost){warning='Sem fôlego para a luz. Solte a defesa e recupere-se.';return;}
+      player.stamina-=cost;staminaDelay=1.15;lightAge=0;
+      sound('attack');
+      if (distance<11 && Math.abs(diff) < (config.assist?.38:.22) && lineClear(enemy.x, enemy.y)) {
+        enemy.hp -= enemy.phase === 'recover' ? 30 : 10;
         enemy.hitUntil=elapsed+.35;
-        hit = .08;
+        sound('hit');
       }
-      lightCooldown = 1.8;
-      attackCooldown = .3;
+      lightCooldown = config.assist?1.8:2.7;
+      attackCooldown = .65;
       attackAge = 0;
     } else if (type === 'attack') {
-      if (player.stamina < 9) {
+      const cost=config.assist?8:12;
+      if (player.stamina < cost) {
         warning = 'Sem fôlego para atacar. Solte a defesa e recue.';
         return;
       }
-      player.stamina -= 9;
-      staminaDelay = .65;
+      player.stamina -= cost;
+      staminaDelay = .8;
       attackAge = 0;
+      sound('attack');
       attackCooldown = config.equipped === 'faca' ? .52 : .72;
-      if (distance < 2.7 && Math.abs(diff) < .8 && lineClear(enemy.x, enemy.y)) {
+      if (distance < (config.assist?2.8:2.5) && Math.abs(diff) < (config.assist?.7:.45) && lineClear(enemy.x, enemy.y)) {
         const damage = config.equipped==='faca'&&config.items.includes('faca') ? 20 : config.items.includes('espada') ? 27 : 13;
         // Golpear durante o preparo encontra resistência. O recuo dele é a abertura mais segura.
-        enemy.hp -= damage * (enemy.phase === 'prepare' ? .45 : 1);
+        enemy.hp -= damage * (enemy.phase==='recover'?1.4:config.assist?.7:enemy.phase==='approach'?.5:.22);
         enemy.hitUntil=elapsed+.35;
-        walk(enemy, Math.cos(player.a) * .3, Math.sin(player.a) * .3);
+        sound('hit');
+        if(enemy.phase==='recover')walk(enemy, Math.cos(player.a) * .15, Math.sin(player.a) * .15);
       }
     }
     if (enemy.hp <= 20) {
       active = false;
+      keys={};cancelDrag();
       config.onFinish?.();
     }
   }
-  function damage(n) {
+  function damage(n,source=enemy,blockable=true) {
     if (hurtInv > 0) return;
-    hurtInv = .42;
-    const angle = Math.atan2(enemy.y-player.y, enemy.x-player.x)-player.a;
+    hurtInv = config.assist?.6:.36;
+    const angle = Math.atan2(source.y-player.y, source.x-player.x)-player.a;
     const facing = Math.abs(Math.atan2(Math.sin(angle),Math.cos(angle))) < 1.05;
-    const guarding = keys.guard && guardBroken <= 0 && player.stamina > 8 && (facing || config.assist);
+    const guarding = blockable && keys.guard && attackAge>.36 && lightAge>.65 && guardBroken <= 0 && player.stamina > 8 && (facing || config.assist);
+    n*=config.assist?.62:1;
     if(guarding) {
-      player.stamina = Math.max(0,player.stamina-n*.9);
+      player.stamina = Math.max(0,player.stamina-n*1.15);
       staminaDelay = .9;
-      if(player.stamina < 8) guardBroken = 1.2;
+      if(player.stamina < 8) {guardBroken = 1.5;sound('alert',.4);}
+      sound('guard');
+    } else {
+      sound('hit');
     }
-    player.hp -= guarding ? n * (config.items.includes('escudo') ? .32 : .72) : n;
+    player.hp -= guarding ? n * (config.items.includes('escudo') ? .22 : .75) : n;
     hit = .3;
     if (player.hp <= 0) {
       active = false;
+      keys={};cancelDrag();
       config.onDeath?.();
     }
   }
@@ -273,17 +336,19 @@ window.Arena = (() => {
     hurtInv = Math.max(0, hurtInv - dt);
     hit = Math.max(0, hit - dt);
     attackAge += dt;
+    lightAge += dt;
     attackCooldown = Math.max(0, attackCooldown - dt);
     lightCooldown = Math.max(0, lightCooldown - dt);
     guardBroken = Math.max(0,guardBroken-dt);
     staminaDelay = Math.max(0,staminaDelay-dt);
-    const guarding = !freeMode && keys.guard && guardBroken<=0;
-    const sprinting = keys.run && player.stamina>8;
+    const guarding = !freeMode && keys.guard && attackAge>.36 && lightAge>.65 && guardBroken<=0 && player.stamina>0;
+    const moving=keys.up||keys.down||keys.left||keys.right;
+    const sprinting = !guarding && moving && keys.run && player.stamina>8;
     if(!freeMode && (guarding || sprinting)) {
-      player.stamina=Math.max(0,player.stamina-dt*(guarding?25:14));
+      player.stamina=Math.max(0,player.stamina-dt*(guarding?18:config.assist?10:17));
       staminaDelay=.35;
       if(guarding && player.stamina<=0)guardBroken=1.2;
-    } else if(staminaDelay<=0) player.stamina=Math.min(100,player.stamina+dt*22);
+    } else if(staminaDelay<=0) player.stamina=Math.min(100,player.stamina+dt*(config.assist?27:23));
     let turn = (keys.turnRight ? 1 : 0) - (keys.turnLeft ? 1 : 0);
     player.a = Math.atan2(Math.sin(player.a+turn*dt*2.15),Math.cos(player.a+turn*dt*2.15));
     const forward = (keys.up ? 1 : 0) - (keys.down ? 1 : 0),
@@ -307,69 +372,80 @@ window.Arena = (() => {
     }
     enemy.timer -= dt;
     const enraged=enemy.hp<enemy.maxHp*.5;
+    if(enraged&&enemy.phaseNumber===1) {enemy.phaseNumber=2;sound('alert',.5);}
     const d = Math.hypot(player.x - enemy.x, player.y - enemy.y),
-      a = Math.atan2(player.y - enemy.y, player.x - enemy.x);
+      a = Math.atan2(player.y - enemy.y, player.x - enemy.x),
+      visible=lineClear(enemy.x,enemy.y);
     if (enemy.phase === 'approach') {
-      warning = 'Mantenha distância. Aproxime-se para atacar e recue.';
-      if (d > 1.65) walk(enemy, Math.cos(a) * dt * (enraged?2.0:1.5), Math.sin(a) * dt * (enraged?2.0:1.5));
-      if (d < .85) damage(14);
-      if (enemy.timer <= 0) {
+      warning = 'Olhe para Beerus. Esquive, espere o recuo e contra-ataque.';
+      if (d > 1.8||!visible) pursue(dt,config.assist?1.85:enraged?2.95:2.6);
+      if (d < .8&&visible) damage(18);
+      // Longe ele pressiona com disparos; perto alterna golpes, grito e agarrão.
+      if (enemy.timer <= 0 && visible) {
+        const close=[0,3,4,6,2,5],far=[1,2,4,1,2,4];
+        enemy.pattern=(d>4.3?far:close)[enemy.cycle++%6];
         enemy.phase = 'prepare';
-        enemy.timer = config.assist ? 1.4 : enraged ? .8 : 1.05;
-        enemy.pattern = (enemy.pattern + 1) % 7;
-        enemy.aim = a;
+        enemy.timer = config.assist ? 1.55 : enraged ? .92 : 1.2;
+        enemy.windup=enemy.timer;enemy.aim=a;enemy.aimLocked=false;
+        sound('alert',.35);
       }
     } else if (enemy.phase === 'prepare') {
-      warning = ['GARRA · recue ou proteja-se', 'DISPARO · saia da linha de fogo', 'INVESTIDA · esquive para o lado', 'MORDIDA · mantenha distância', 'VARREDURA · proteja-se ou saia da linha', 'GRITO · afaste-se', 'AGARRE · recue antes que alcance'][enemy.pattern];
+      const tells=['GARRA · recue ou bloqueie','TRÊS DISPAROS · mova-se para o lado','INVESTIDA · saia da linha','MORDIDA · recue','LEQUE DE FOGO · busque uma brecha ou cobertura','GRITO · saia do alcance; escudo nn protege','AGARRE · recue; nn tente bloquear'];
+      warning=tells[enemy.pattern]+(enemy.aimLocked?' · MIRA TRAVADA':'');
+      // A mira para de seguir antes do ataque. Dá para ler o aviso e escapar de verdade.
+      if(enemy.timer>(config.assist?.5:.32))enemy.aim=a;
+      else enemy.aimLocked=true;
       if (enemy.timer <= 0) {
-        enemy.phase = 'attack';
-        enemy.timer = enemy.pattern===2?1:.72;
-        if (enemy.pattern === 0 && d < 2.8) damage(28);
-        if (enemy.pattern === 3 && d < 2.15) damage(34);
-        if (enemy.pattern === 5 && d < 4) damage(22);
-        if (enemy.pattern === 6 && d < 2.55) damage(32);
-        if (enemy.pattern === 1 || enemy.pattern === 4) {
-          for (let offset = enemy.pattern === 4 ? -3 : -1; offset <= (enemy.pattern === 4 ? 3 : 1); offset++) {
-            let angle = a + offset * .18;
-            bullets.push({
-              x: enemy.x,
-              y: enemy.y,
-              vx: Math.cos(angle) * (enraged?5.8:4.8),
-              vy: Math.sin(angle) * (enraged?5.8:4.8),
-              life: 5
-            });
-          }
+        enemy.phase = 'attack';enemy.timer=enemy.pattern===2?.85:enemy.pattern===1?.95:.4;
+        enemy.volleys=0;enemy.volleyTimer=0;
+        const inCone=Math.abs(angleDiff(a,enemy.aim))<1.1;
+        if(visible&&inCone) {
+          if(enemy.pattern===0&&d<3)damage(32);
+          if(enemy.pattern===3&&d<2.4)damage(40);
+          if(enemy.pattern===5&&d<4.3)damage(28,enemy,false);
+          if(enemy.pattern===6&&d<2.8)damage(38,enemy,false);
         }
+        if(enemy.pattern===4)fireVolley(enraged,7,.22);
+        sound('attack',.2);
       }
     } else if (enemy.phase === 'attack') {
-      if (enemy.pattern === 2) {
-        walk(enemy, Math.cos(enemy.aim) * dt * 6, Math.sin(enemy.aim) * dt * 6);
-        if (d < 1.2) {
-          damage(36);
-          enemy.phase = 'recover';
-          enemy.timer = config.assist ? 1.6 : 1.25;
+      warning=enemy.pattern===2?'INVESTIDA · continue a esquiva':enemy.pattern===1?'RAJADA · continue em movimento':'Espere o golpe terminar.';
+      if(enemy.pattern===1) {
+        enemy.volleyTimer-=dt;
+        if(enemy.volleyTimer<=0&&enemy.volleys<3) {
+          fireVolley(enraged,config.assist?1:3,.14);
+          enemy.volleys++;enemy.volleyTimer=.26;
         }
+      }
+      if (enemy.pattern === 2) {
+        const beforeX=enemy.x,beforeY=enemy.y;
+        walk(enemy, Math.cos(enemy.aim) * dt * (config.assist?5.5:8), Math.sin(enemy.aim) * dt * (config.assist?5.5:8));
+        const chargeDistance=Math.hypot(player.x-enemy.x,player.y-enemy.y);
+        if(chargeDistance<1.2&&lineClear(enemy.x,enemy.y)) {damage(42);enemy.timer=0;}
+        if(Math.hypot(enemy.x-beforeX,enemy.y-beforeY)<dt)enemy.timer=0;
       }
       if (enemy.timer <= 0) {
         enemy.phase = 'recover';
-        enemy.timer = config.assist ? 1.8 : enraged ? .95 : 1.3;
+        enemy.timer=config.assist?2.15:enemy.pattern===2?1.65:enraged?1.15:1.45;
       }
     } else {
-      warning = 'Ele está se recuperando. Essa é uma abertura.';
+      warning = 'ABERTURA · aproxime-se e ataque; depois recue.';
       if (enemy.timer <= 0) {
-        enemy.phase = 'approach';
-        enemy.timer = config.assist ? 3 : enraged ? 1.6 : 2.2;
+        enemy.phase = 'approach';enemy.timer=config.assist?1.8:enraged?.55:.9;
       }
     }
     bullets = bullets.filter(b => {
-      b.x += b.vx * dt;
-      b.y += b.vy * dt;
-      b.life -= dt;
-      if (Math.hypot(b.x - player.x, b.y - player.y) < .45) {
-        damage(22);
-        return false;
+      b.life-=dt;
+      if(solid(b.x,b.y))return false;
+      // Passos curtos testam a parede antes de acertar alguém do outro lado dela.
+      const steps=Math.max(1,Math.ceil(Math.hypot(b.vx,b.vy)*dt/.1));
+      for(let i=0;i<steps;i++) {
+        const source={x:b.x,y:b.y};
+        b.x+=b.vx*dt/steps;b.y+=b.vy*dt/steps;
+        if(solid(b.x,b.y))return false;
+        if(Math.hypot(b.x-player.x,b.y-player.y)<.42) {damage(24,source);return false;}
       }
-      return b.life > 0 && !solid(b.x, b.y);
+      return b.life>0;
     });
     config.onHud?.({
       hp: Math.max(0, Math.ceil(player.hp)),
@@ -377,8 +453,18 @@ window.Arena = (() => {
       warning:guardBroken>0?'DEFESA ROMPIDA · solte o escudo e recue':(enraged?'FÚRIA · ':'')+warning,
       stamina:Math.round(player.stamina),
       guardBroken:guardBroken>0,
+      phase:enemy.phaseNumber,
+      lightReady:lightCooldown<=0&&player.stamina>=(config.assist?17:30),
       free: false
     });
+  }
+  function fireVolley(enraged,count,spread) {
+    const speed=config.assist?4.6:enraged?7.6:6.2;
+    for(let i=0;i<count;i++) {
+      const a=enemy.aim+(i-(count-1)/2)*spread;
+      bullets.push({x:enemy.x,y:enemy.y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,life:4.8});
+    }
+    sound('attack',.2);
   }
   function enemyImage() {
     const alternate=Math.floor(elapsed*5)%2;
@@ -396,9 +482,9 @@ window.Arena = (() => {
     // A espada pertence ao chão desta cena até E recolher. Ter o item no histórico não a põe na mão.
     if(freeMode&&!collected)return config.items.includes('escudo')?images.shieldRest:images.fist;
     const knife=config.equipped==='faca'&&config.items.includes('faca');
-    if(keys.guard&&guardBroken<=0&&config.items.includes('escudo'))return hit>0?images.shieldHit:images.shield;
+    if(keys.guard&&attackAge>.36&&lightAge>.65&&guardBroken<=0&&player.stamina>8&&config.items.includes('escudo'))return hit>0?images.shieldHit:images.shield;
     if(knife)return images['knife'+(keys.guard?4:attackAge<.12?2:attackAge<.3?3:1)];
-    if(lightCooldown>1.15)return images.lightCast;
+    if(lightAge<.65)return images.lightCast;
     if(config.equipped==='luz')return images.light;
     if(config.items.includes('espada')||collected)return attackAge<.48?images['swing'+Math.min(4,Math.floor(attackAge/.12)+1)]:config.items.includes('escudo')?images.paired:images.swing1;
     return attackAge<.3?images.punch:images.fist;
@@ -553,7 +639,12 @@ window.Arena = (() => {
       ctx.drawImage(cut, W * .2, H * .2, W * .6, H * .5);
       ctx.globalAlpha = 1;
     }
-    if(!freeMode&&enemy.phase==='attack') {
+    if(!freeMode&&enemy.phase==='prepare') {
+      // O aviso também aparece no visor: o ritmo fica legível mesmo sem som.
+      ctx.fillStyle=enemy.aimLocked?'#ff6a4d':'#ffcc66';
+      ctx.fillRect(W*.37,H*.58,W*.26*Math.max(0,enemy.timer/enemy.windup),Math.max(2,H*.008));
+    }
+    if(!freeMode&&enemy.phase==='attack'&&Math.hypot(enemy.x-player.x,enemy.y-player.y)<4&&Math.abs(angleDiff(Math.atan2(enemy.y-player.y,enemy.x-player.x),player.a))<.6&&lineClear(enemy.x,enemy.y)) {
       const index=({0:2,1:0,2:3,4:1})[enemy.pattern], fx=images['attackEffect'+index];
       if(fx?.complete&&fx.naturalWidth){ctx.globalAlpha=.45;ctx.drawImage(fx,W*.15,H*.1,W*.7,H*.7);ctx.globalAlpha=1;}
     }
@@ -612,6 +703,11 @@ window.Arena = (() => {
       equipped:config?.equipped,
       handSprite:renderedHand,
       guardBroken:guardBroken>0,
+      staminaDelay,
+      lightCooldown,
+      attackCooldown,
+      elapsed,
+      bullets:bullets.map(b=>({...b})),
       dragging:dragPointer!==null,
       resolution:{width:W,height:H}
     }),

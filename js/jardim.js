@@ -224,6 +224,8 @@ const G = (() => {
   }
   function resetScene() {
     writing = null;
+    window.AudioSentia?.stopVoice?.();
+    $('#dialogue').classList.remove('is-writing');
     clearIdle();
     Arena.stop();
     window.Perseguicao?.stop();
@@ -294,6 +296,8 @@ const G = (() => {
   }
   // A fila cuida das falas e escolhas, travando as setinhas durante a conversa.
   function say(eco, lines, done) {
+    writing = null;
+    window.AudioSentia?.stopVoice?.();
     mode = 'dialogue';
     updateGestureControl();
     currentEco = eco;
@@ -314,39 +318,32 @@ const G = (() => {
     if (eco) actor(eco,dead(eco)?'morreu':'base');
     nextLine();
   }
-  let writing = null, voiceContext = null;
+  let writing = null;
   // Cada letra aparece junto do bipe. O primeiro clique só completa a frase.
   function revealSpeech(text) {
     const letters = Array.from(text || '');
-    writing = {letters, index:0, elapsed:0};
+    writing = letters.length ? {letters, index:0, elapsed:0} : null;
     $('#speech').textContent = '';
     $('#speech').setAttribute('aria-label', text || '');
+    $('#speech').setAttribute('aria-live','off');
+    $('#dialogue').classList.toggle('is-writing',!!writing);
     $('#advance').setAttribute('aria-label', 'Mostrar frase inteira');
   }
   function voiceLetter(letter) {
-    const audio = window.AudioSentia?.state();
-    if (!/[^\s.,!?;:…—]/u.test(letter) || !audio?.unlocked || audio.muted || !audio.volume) return;
-    try {
-      voiceContext ||= new (window.AudioContext || window.webkitAudioContext)();
-      if (voiceContext.state !== 'running') { void voiceContext.resume(); return; }
-      const t=voiceContext.currentTime, oscillator=voiceContext.createOscillator(), gain=voiceContext.createGain();
-      const name=$('#speaker').textContent;
-      const hash=Array.from(name).reduce((sum,c)=>sum+c.charCodeAt(0),0);
-      oscillator.type='triangle'; oscillator.frequency.value=140+(hash%13)*27;
-      gain.gain.setValueAtTime(audio.volume*.10,t);
-      gain.gain.exponentialRampToValueAtTime(.001,t+.022);
-      oscillator.connect(gain); gain.connect(voiceContext.destination);
-      oscillator.start(t); oscillator.stop(t+.024);
-      oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};
-    } catch { /* A fala continua mesmo se o aparelho bloquear o áudio. */ }
+    window.AudioSentia?.voice?.(letter,$('#speaker').textContent);
+  }
+  function finishWriting() {
+    if (!writing) return false;
+    $('#speech').textContent=writing.letters.join('');
+    writing=null;
+    $('#dialogue').classList.remove('is-writing');
+    $('#advance').setAttribute('aria-label','Continuar');
+    window.AudioSentia?.stopVoice?.();
+    return true;
   }
   function nextLine() {
     if (paused) return;
-    if (writing) {
-      $('#speech').textContent = writing.letters.join(''); writing=null;
-      $('#advance').setAttribute('aria-label','Continuar');
-      return;
-    }
+    if (finishWriting()) return;
     $('.dialogue-body').scrollTop=0;
     timed = null;
     const line = queue.shift();
@@ -359,10 +356,13 @@ const G = (() => {
       return;
     }
     $('#choices').replaceChildren();
+    $('#dialogue').classList.remove('is-writing');
     $('#advance').hidden = false;
     if (line.choices) {
       $('#advance').hidden = true;
       $('#speech').textContent = line.text || 'O que você quer dizer?';
+      $('#speech').setAttribute('aria-label',line.text || 'O que você quer dizer?');
+      $('#speech').setAttribute('aria-live','polite');
       $('#speaker').textContent = 'Você';
       $('#speaker').title = 'Sua resposta';
       for (const c of line.choices) $('#choices').append(btn(c.label, () => {
@@ -420,6 +420,10 @@ const G = (() => {
     if($('#stage').classList.contains('shared-scene')&&!$('#actor-two').hidden)$('#actor').classList.add('paired');
   }
   $('#advance').onclick = nextLine;
+  $('#dialogue').addEventListener('click',e=>{
+    if(e.target.closest('button,a,input,select,textarea')||paused||mode!=='dialogue')return;
+    if(writing)finishWriting();else if(!$('#advance').hidden)nextLine();
+  });
   function roomBg(id, view = 0) {
     return list('/02-Ecos/' + id + '/')[view];
   }
@@ -679,13 +683,23 @@ const G = (() => {
   $('#background').addEventListener('load', alignRoomScene);
   new ResizeObserver(alignRoomScene).observe($('#stage'));
   // As pistas podem ser relidas. Depois da morte, aparece a observação de ausência.
-  function inspectPoint(p) {
+  function inspectPoint(p, replay = false) {
     if(!S.talks[first[p.eco]] && !dead(p.eco)) return talk(p.eco);
+    if(S.seen[p.id]&&!replay&&(!dead(p.eco)||S.flags['absence-'+p.id])) return say(null,[{who:p.name,text:'Esta descoberta já está no registro.',choices:[
+      {label:'Reler a descoberta',go:()=>inspectPoint(p,true)},
+      ...(!dead(p.eco)?[{label:'Conversar com '+D.names[p.eco],go:()=>talk(p.eco)}]:[]),
+      {label:'Voltar ao quarto',go:renderRoom}
+    ]}],renderRoom);
     const visit=guestFor(p.eco);if(visit&&S.view===1&&!S.flags['visit-'+visit.key])return sharedVisit(visit,()=>{renderRoom();inspectPoint(p);});
     explorationHands(/bilhete|carta|diário|anotações|desenhos/i.test(p.name)?'04-segurar-papel':'01-alcancar');
     const wasSeen = S.seen[p.id];
     S.seen[p.id] = true;
+    if(dead(p.eco)&&!S.flags['absence-'+p.id]){
+      S.flags['absence-'+p.id]=true;
+      note(p.name+' · depois da ausência',p.after);save();
+    }
     if (!wasSeen) {
+      window.AudioSentia?.sfx?.('discovery');
       note(p.name, p.description);
       significant();
     } else if (S.flags.lastInvestigation !== p.id) {
@@ -702,7 +716,7 @@ const G = (() => {
       text: p.voice,
       effect:()=>{$('#held-object')?.remove();$('#hands').classList.remove('inspecting-hands');explorationHands();}
     });
-    if (p.id.endsWith('.p6') && window.MEMORIAS?.[p.eco]) {
+    if (p.id.endsWith('.p6') && (!wasSeen||replay) && window.MEMORIAS?.[p.eco]) {
       const memory = MEMORIAS[p.eco];
       entries.push(...memory.paragraphs.map(text => ({
         who: memory.title,
@@ -843,7 +857,15 @@ const G = (() => {
     if(main) options.push({label:main.label,go:main.go});
     const topics=availableTopics(id);
     const visitor=guestFor(id);if(visitor)options.push({label:'Conversar com '+D.names[visitor.people.find(x=>x!==id)]+' em visita',go:()=>sharedVisit(visitor)});
-    if(topics.length) options.push({label:'Falar das descobertas ('+topics.length+')',go:()=>say(id,[{text:'O que você queria perguntar?',choices:[...topics.map(t=>({label:(S.flags['topic-'+t.id]?'Relembrar: ':'')+t.label,go:()=>say(id,t.lines,()=>{S.flags['topic-'+t.id]=true;note('Conversa com '+D.names[id],t.label);significant();talkMenu(id);})})),{label:'Voltar aos assuntos',go:()=>talkMenu(id)}]}],renderRoom)});
+    const topicMenu=(selected,revisit)=>say(id,[{text:revisit?'Qual conversa você quer relembrar?':'Qual descoberta você quer comentar?',choices:[
+      ...selected.map(t=>({label:t.label,go:()=>say(id,t.lines,()=>{
+        if(!S.flags['topic-'+t.id]){S.flags['topic-'+t.id]=true;note('Conversa com '+D.names[id],t.label);significant();}
+        talkMenu(id);
+      })})),{label:'Voltar aos assuntos',go:()=>talkMenu(id)}
+    ]}],renderRoom);
+    const unread=topics.filter(t=>!S.flags['topic-'+t.id]),revisited=topics.filter(t=>S.flags['topic-'+t.id]);
+    if(unread.length)options.push({label:'Falar de novas descobertas ('+unread.length+')',go:()=>topicMenu(unread,false)});
+    if(revisited.length)options.push({label:'Relembrar conversas anteriores ('+revisited.length+')',go:()=>topicMenu(revisited,true)});
     if(id==='orgulho' && (!S.items.includes('espada')||!S.items.includes('escudo'))) options.push({label:'Pedir a espada e o escudo oferecidos',go:aureaGifts});
     if(id==='amor' && !S.items.includes('luz')) options.push({label:'Aceitar a luz que você ofereceu',go:()=>say('amor',[{text:'Pode aceitar agora. Não é uma dívida.',pose:'segurar-luz'},{text:'Segure com cuidado.',pose:'entregar-luz',effect:()=>addItem('luz')}],()=>talkMenu(id))});
     options.push({label:'Ficar e conversar um pouco',go:()=>say(id,smallTalk[id].map((text,i)=>({text,pose:i===0?'gostou':i===1?'abalado':'acolhido'})),()=>{significant();talkMenu(id);})});
@@ -1150,6 +1172,7 @@ const G = (() => {
       const current = qte;
       if (!current) return;
       if (!ok) {
+        window.AudioSentia?.sfx?.('hit');
         const proceed = current.onFail?.();
         if (proceed === false) {
           qte = null;
@@ -1161,6 +1184,7 @@ const G = (() => {
   }
   function deathScreen(text, restart, kind = 'insanidade') {
     resetScene();
+    window.AudioSentia?.sfx?.(settings.reduced?'death':'jumpscare');
     mode = 'defeat';
     retry = restart;
     objective('Uma tentativa terminou. Seu checkpoint foi preservado.');
@@ -1204,7 +1228,7 @@ const G = (() => {
     resetScene();
     background(asset('/03-Observatorio/09-observatorio.png'));
     say('medo', ['Você continua entrando como se eles fossem ficar esperando.', ['Você', 'Está tentando me assustar?'], 'Você ainda acha que isso é sobre o que eu quero que você sinta.'], () => {
-      const p = panel('Oito pontos de luz', 'Cada esfera mostra um corredor. Encontre a presença e observe por 1 segundo para fazê-la recuar. Aproxime a visão quando houver alteração no brilho. Você precisa sustentar a vigilância por 3 minutos. A pausa suspende o tempo.');
+      const p = panel('Oito pontos de luz', 'Cada esfera mostra um corredor. Você tem 3 segundos para abrir a esfera em que Hunger apareceu. Sustente a visão por um instante para fazê-lo recuar. Cada ciclo passa pelas oito câmeras. Você precisa sustentar a vigilância por 3 minutos. A pausa suspende o tempo.');
       p.append(btn('Começar a vigilância', () => {
         setPhase('watch');
         watchStart();
@@ -1213,99 +1237,100 @@ const G = (() => {
   }
   // As oito esferas são os pontos de vigilância, antes da chase do Medo.
   function watchStart() {
-    resetScene();
-    mode = 'watch';
-    background(asset('/03-Observatorio/09-observatorio.png'));
-    explorationHands();
-    $('#location').textContent = 'Observatório';
-    watch = {
-      time: 180,
-      position: 0,
-      stage: 0,
-      next: 9,
-      looking: -1,
-      hold: 0,
-      repels: 0
-    };
-    drawWatch();
-    objective('Observe a presença nas esferas. Não é preciso atacar.');
+    resetScene(); mode='watch';
+    background(asset('/03-Observatorio/09-observatorio.png')); explorationHands();
+    $('#location').textContent='Observatório';
+    watch={time:180,position:-1,stage:0,next:1.5,looking:-1,hold:0,repels:0,round:0,visited:[],spotted:false,grace:0};
+    drawWatch(); objective('Encontre Hunger em até 3 segundos. Todas as oito esferas fazem parte do circuito.');
+  }
+  function cameraButtons() {
+    const grid=document.createElement('div');grid.className='orbs watch-switches';
+    for(let i=0;i<8;i++) {
+      const button=btn(String(i+1),()=>{
+        if(paused||mode!=='watch')return;
+        watch.looking=i;watch.hold=0;
+        if(watch.position===i)watch.spotted=true;
+        showCamera(i);
+      },'orb');
+      button.dataset.camera=String(i);grid.append(button);
+    }
+    return grid;
+  }
+  function watchHud() {
+    const hud=document.createElement('div');hud.className='watch-hud';
+    const countdown=document.createElement('strong');countdown.className='watch-deadline';
+    const progress=document.createElement('span');progress.className='watch-progress';
+    hud.append(countdown,progress);return hud;
+  }
+  function updateWatchHud() {
+    if(!watch)return;
+    document.querySelectorAll('[data-camera]').forEach(button=>{
+      const i=Number(button.dataset.camera),moving=watch.position===i;
+      button.classList.toggle('alerting',moving);button.classList.toggle('active',watch.looking===i);
+      button.setAttribute('aria-pressed',String(watch.looking===i));
+      button.setAttribute('aria-label','Esfera '+(i+1)+(moving?', movimento detectado':''));
+    });
+    const label=watch.position<0?'Procure a próxima alteração de brilho':watch.looking===watch.position?'Mantenha a visão · '+Math.ceil(Math.max(0,.65-watch.hold)*10)/10+' s':'MOVIMENTO · '+Math.max(0,watch.next).toFixed(1)+' s para encontrar';
+    document.querySelectorAll('.watch-deadline').forEach(el=>el.textContent=label);
+    document.querySelectorAll('.watch-progress').forEach(el=>el.textContent='Vigilância '+Math.ceil(Math.max(0,watch.time))+' s · Esferas usadas '+watch.visited.length+'/8 · Recuos '+watch.repels);
+    $('#status').textContent=watch.position<0?'Escute. Observe o brilho.':watch.looking===watch.position?'Presença na esfera '+(watch.position+1):'Hunger se moveu · '+Math.max(0,watch.next).toFixed(1)+' s';
   }
   function drawWatch() {
-    const p = panel('Pontos de observação', 'Uma alteração na luz indica movimento. Mantenha a esfera aberta para observar.');
-    p.classList.add('observation');
-    const grid = document.createElement('div');
-    grid.className = 'orbs';
-    for (let i = 0; i < 8; i++) {
-      const b = btn(String(i + 1), () => {
-        watch.looking = i;
-        watch.hold = 0;
-        showCamera(i);
-      }, 'orb' + (watch.position === i ? ' alerting' : ''));
-      b.setAttribute('aria-label', 'Esfera ' + (i + 1) + (watch.position === i ? ', movimento detectado' : ''));
-      grid.append(b);
-    }
-    p.append(grid);
+    const p=panel('Pontos de observação','Uma esfera mudou de brilho. Abra a visão certa em até 3 segundos e sustente o olhar por um instante.');
+    p.classList.add('observation');p.append(watchHud(),cameraButtons());updateWatchHud();
   }
   function showCamera(i) {
-    $('#action-panel').hidden = true;
-    background(list('/02-Medo-Chase/')[i]);
-    if (watch.position === i) {
-      const pose=watch.stage===0?'terror-observar':watch.stage===1?(i%2?'terror-espreitar':'terror-rastejar'):(i%2?'terror-presenca-proxima':'terror-avancar');
-      actor('medo',pose);
-      if(watch.stage===0 && watch.repels%2===1) $('#actor').src=asset('/02-Medo/04-terror-observar.png');
-      $('#actor').className = 'actor world';
-    } else actor(null);
-    const controls = $('#world-controls');
-    controls.replaceChildren();
-    const nav = document.createElement('div');
-    nav.className = 'room-nav';
-    nav.append(btn('← Todas as esferas', () => {
-      watch.looking = -1;
-      actor(null);
-      background(asset('/03-Observatorio/09-observatorio.png'));
-      controls.replaceChildren();
-      drawWatch();
-    }));
-    controls.append(nav);
+    $('#action-panel').hidden=true; $('#action-panel').replaceChildren(); background(list('/02-Medo-Chase/')[i]);
+    if(watch.position===i){actor('medo',watch.next<1?'terror-presenca-proxima':'terror-espreitar');$('#actor').className='actor world';}
+    else actor(null);
+    const controls=$('#world-controls');controls.replaceChildren();
+    const hud=watchHud();hud.classList.add('camera-hud');controls.append(hud,cameraButtons());
+    const nav=document.createElement('div');nav.className='room-nav';
+    nav.append(btn('← Todas as esferas',()=>{
+      if(paused)return;watch.looking=-1;watch.hold=0;actor(null);
+      background(asset('/03-Observatorio/09-observatorio.png'));controls.replaceChildren();drawWatch();
+    }));controls.append(nav);updateWatchHud();
   }
   function tickWatch(dt) {
-    watch.time -= dt;
-    watch.next -= dt;
-    $('#status').textContent = Math.ceil(watch.time) + ' s · ' + ['Movimento distante', 'Mais perto', 'No limiar — observe agora'][watch.stage];
-    if (watch.looking === watch.position) {
-      watch.hold += dt;
-      if (watch.hold >= 1) {
-        watch.repels++;
-        watch.stage = 0;
-        watch.next = 9;
-        watch.position = (watch.position + 3 + watch.repels % 3) % 8;
-        watch.hold = 0;
-        showCamera(watch.looking);
+    const w=watch;w.time-=dt;w.next-=dt;
+    if(w.position<0&&w.next<=0) {
+      // Um ciclo sem repetição garante que as oito câmeras sejam exigidas.
+      const circuit=[0,5,2,7,3,6,1,4];
+      w.position=(circuit[w.round%8]+Math.floor(w.round/8)*3)%8;w.round++;
+      if(!w.visited.includes(w.position))w.visited.push(w.position);
+      w.next=settings.assist?5:3;w.hold=0;w.spotted=w.looking===w.position;w.grace=0;
+      window.AudioSentia?.sfx?.('alert');
+      if(w.looking<0)drawWatch();else showCamera(w.looking);
+    } else if(w.position>=0) {
+      if(w.looking===w.position){
+        w.spotted=true;w.hold+=dt;
+        if(w.hold>=.65){
+          w.repels++;w.position=-1;w.next=Math.max(.8,1.65-w.repels*.025);w.hold=0;
+          window.AudioSentia?.sfx?.('turn');
+          if(w.looking<0)drawWatch();else showCamera(w.looking);
+        }
+      }else w.hold=0;
+      // Encontrar no último instante dá apenas o tempo de firmar o olhar; não renova o prazo.
+      if(w.position>=0&&w.next<=0){
+        if(!w.spotted||w.looking!==w.position)return deathScreen('Você não encontrou a esfera a tempo. Hunger atravessou o limiar.',watchStart,'medo');
+        w.grace+=dt;
+        if(w.grace>.75)return deathScreen('Você desviou antes de fazer a presença recuar.',watchStart,'medo');
       }
-    } else watch.hold = 0;
-    if (watch.next <= 0) {
-      watch.stage++;
-      watch.next = watch.stage === 2 ? 3 : 9;
-      if (watch.stage >= 3) return deathScreen('A presença atravessou o limiar.', watchStart, 'medo');
-      watch.position = (watch.position + 1) % 8;
-      if (watch.looking < 0) drawWatch();else showCamera(watch.looking);
     }
-    if (watch.time <= 0) {
-      setPhase('fearChase');
-      return fearChaseIntro();
-    }
+    if(w.time<=0){setPhase('fearChase');return fearChaseIntro();}
+    updateWatchHud();
   }
   const fearOrder = [0, 1, 4, 2, 5, 6, 3, 7],
     fearDirs = ['up', 'left', 'up', 'right', 'down', 'left', 'right', 'up'];
   function fearChaseIntro() {
     resetScene();
     say('medo', ['Você conseguiu olhar todos eles. Conseguiu entender algum?'], () => {
-      const p = panel('A visão falhou', 'Corra pelos corredores. Segure Shift no PC ou toque em Correr para ligar e desligar a corrida. Em cada saída, siga a indicação visível. Um erro faz você perder distância.');
+      const p = panel('A visão falhou', 'Corra pelos corredores. Segure Shift no PC ou toque em Correr para ligar e desligar a corrida. Reaja às vigas e ao piso cedendo. Nas saídas, siga a indicação visível. Dois erros próximos podem ser fatais; correr não apaga a distância perdida.');
       p.append(btn('Sair do observatório', () => chaseStart('medo')));
     });
   }
   // Cada chase usa seus próprios corredores, separados do labirinto comum.
-  function chaseStart(kind, index = 0, runLatched = false) {
+  function chaseStart(kind, index = 0, runLatched = false, carryDanger = null) {
     resetScene();
     explorationHands('02-punhos-fechados');
     mode = 'chase';
@@ -1314,7 +1339,8 @@ const G = (() => {
       kind,
       index,
       progress: 0,
-      danger: 2.5,
+      danger: Number.isFinite(carryDanger)?carryDanger:settings.assist?2:3.8,
+      stepClock:0, obstacleDone:false, feedbackLeft:0,
       runLatched,
       lookingBack: false,
       length: n,
@@ -1342,30 +1368,56 @@ const G = (() => {
     const back=btn('Olhar para trás · B',()=>{c.lookingBack=!c.lookingBack;back.setAttribute('aria-pressed',String(c.lookingBack));});
     back.id='chase-back';back.setAttribute('aria-pressed','false');nav.append(run,back);$('#world-controls').append(nav);
   }
+  function chaseFailure(c,text) {
+    deathScreen(text,()=>chaseStart(c.kind,Math.max(0,c.index-1)),c.kind);
+  }
+  function chaseDecision(c,label,dir,isTurn) {
+    c.waiting=true;
+    const labels={left:'← Esquerda',up:'↑ Frente',right:'Direita →',down:'↓ Abaixar'};
+    const seconds=settings.assist?3:isTurn?1.15:1.05;
+    window.AudioSentia?.sfx?.('alert');
+    prompt(label,Object.entries(labels).map(([id,label])=>({id,label})),seconds,r=>{
+      if(r!==dir){
+        c.danger+=settings.assist?1.8:2.75;c.progress*=.58;c.waiting=false;mode='chase';
+        c.turnFeedback='blocked';c.feedbackLeft=.65;
+        window.AudioSentia?.sfx?.('hit');
+        if(c.danger>=8)return chaseFailure(c,'Você perdeu distância no obstáculo. A presença alcançou você.');
+        return;
+      }
+      c.turnFeedback=dir;c.feedbackLeft=.4;window.AudioSentia?.sfx?.('turn');
+      c.waiting=false;mode='chase';
+      if(!isTurn)return;
+      c.index++;
+      if(c.kind==='medo'&&c.index===4&&!dead('culpa'))return culpaCut(c);
+      if(c.index>=c.length){if(c.kind==='medo'){setPhase('fearRoom');fearRoom();}else{setPhase('interrogation');interrogation();}return;}
+      c.progress=0;c.obstacleDone=false;c.lookingBack=false;
+      setPhase(c.kind==='medo'?'fearChase':'insaneChase',c.index);drawChase();
+    });
+    $('#prompt').classList.add('chase-prompt');
+  }
   function tickChase(dt) {
     const c=chase;if(!c)return;
     const running=!!(keysHeld.run||c.runLatched),distance=c.kind==='medo'?2.6:2.9;
-    if(!c.waiting){
-      c.progress+=dt*(running&&!c.lookingBack?1:.12);
-      c.danger=Math.max(0,c.danger+dt*(running&&!c.lookingBack?-.18:1.8));
-    }
-    Perseguicao.draw(dt,{...c,running,distance,reduced:settings.reduced});
-    $('#status').textContent='Passagem '+(c.index+1)+' / '+c.length+' · '+(running?'Correndo':'Ative Correr ou segure Shift')+' · Distância '+Math.max(0,Math.round((8-c.danger)*12))+'%';
+    c.feedbackLeft=Math.max(0,c.feedbackLeft-dt);if(!c.feedbackLeft)c.turnFeedback=null;
+    // Correr mantém a distância; não apaga os erros anteriores.
+    if(!c.waiting)c.progress+=dt*(running&&!c.lookingBack?1:.1);
+    c.danger=Math.max(settings.assist?1:2.2,c.danger+dt*(c.waiting?.22:running&&!c.lookingBack?(settings.assist?-.09:-.025):c.lookingBack?1.65:2.45));
+    c.stepClock+=dt;
+    if(running&&!c.waiting&&c.stepClock>.31){c.stepClock=0;window.AudioSentia?.sfx?.('step');}
+    Perseguicao.draw(dt,{...c,running,distance,reduced:settings.reduced,catchingUp:c.danger>5.5,threatCue:Math.max(0,(c.danger-4)/4)});
+    $('#status').textContent='Passagem '+(c.index+1)+' / '+c.length+' · '+(running?'Correndo':'CORRA · Shift ou botão')+' · Margem '+Math.max(0,Math.round((8-c.danger)*12.5))+'%';
     $('#chase-run')?.setAttribute('aria-pressed',String(running));
+    if(c.danger>=8)return chaseFailure(c,'A presença alcançou você. Corra, reaja aos obstáculos e evite olhar para trás por muito tempo.');
     if(c.waiting)return;
-    if(c.danger>=8)return deathScreen('A presença alcançou você. Continue correndo para manter distância.',()=>chaseStart(c.kind,Math.max(0,c.index-1)),c.kind);
+    if(!c.obstacleDone&&[1,2,5].includes(c.index)&&c.progress>=distance*.44){
+      c.obstacleDone=true;
+      const low=c.index!==2;
+      return chaseDecision(c,low?'Uma viga atravessou o corredor — passe ABAIXADO!':'O piso cede à direita — desvie à ESQUERDA!',low?'down':'left',false);
+    }
     if(c.progress>=distance){
-      c.waiting=true;
       const dir=c.kind==='medo'?fearDirs[c.index]:['up','left','right','up','right','up'][c.index];
       const labels={up:'Seguir em frente',left:'Virar à esquerda',right:'Virar à direita',down:'Passar abaixado'};
-      prompt('A passagem segura: '+labels[dir],[{id:'left',label:'← Esquerda'},{id:'up',label:'↑ Frente'},{id:'right',label:'Direita →'},{id:'down',label:'↓ Abaixar'}],settings.assist?3:1.25,r=>{
-        if(r!==dir){c.danger+=3.2;c.progress=distance*.45;c.waiting=false;mode='chase';$('#stage').classList.add('impact');setTimeout(()=>$('#stage').classList.remove('impact'),350);if(c.danger>=8)return deathScreen('A curva errada fechou sua distância.',()=>chaseStart(c.kind,Math.max(0,c.index-1)),c.kind);return;}
-        c.index++;
-        if(c.kind==='medo'&&c.index===4&&!dead('culpa'))return culpaCut(c);
-        if(c.index>=c.length){if(c.kind==='medo'){setPhase('fearRoom');fearRoom();}else{setPhase('interrogation');interrogation();}return;}
-        c.progress=0;c.waiting=false;c.lookingBack=false;mode='chase';setPhase(c.kind==='medo'?'fearChase':'insaneChase',c.index);drawChase();
-      });
-      $('#prompt').classList.add('chase-prompt');
+      chaseDecision(c,'A passagem segura: '+labels[dir],dir,true);
     }
   }
   function culpaCut(saved) {
@@ -1377,7 +1429,7 @@ const G = (() => {
       text: 'Ela não termina a frase.',
       pose: 'morreu',
       effect: () => kill('culpa', 'Medo a matou intencionalmente durante a perseguição. A razão específica não foi esclarecida.')
-    }], () => chaseStart('medo', saved.index, saved.runLatched));
+    }], () => chaseStart('medo', saved.index, saved.runLatched, saved.danger));
   }
   function fearRoom() {
     resetScene();
@@ -1528,7 +1580,12 @@ const G = (() => {
       items: S.items,
       equipped:S.flags.equipped,
       onHud: h => {
-        hud.textContent = h.free ? h.warning : 'Vida ' + h.hp + ' · Beerus ' + h.enemy + ' · Fôlego '+(h.stamina??100)+(h.guardBroken?' · DEFESA ROMPIDA':'')+' — ' + h.warning;
+        hud.textContent = h.free ? h.warning : 'Vida ' + h.hp + ' · Beerus ' + h.enemy + ' · Fôlego '+(h.stamina??100)+' · Luz '+(h.lightReady?'pronta':'recarregando')+(h.phase===2?' · FASE II':'')+(h.guardBroken?' · DEFESA ROMPIDA':'')+' — ' + h.warning;
+        document.querySelectorAll('[data-arena-action]').forEach(button=>{
+          const action=button.dataset.arenaAction;
+          if(action==='light')button.disabled=!!h.free||!S.items.includes('luz')||!h.lightReady;
+          if(action==='attack')button.disabled=!!h.free;
+        });
       },
       onDeath: () => deathScreen('Ódio interrompeu sua passagem.', () => startArena(false), 'odio'),
       onFinish: () => odioSurto(),
@@ -1582,6 +1639,7 @@ const G = (() => {
     actions.className = 'combat-buttons';
     [['Atacar', 'attack'], ['Luz', 'light'], ['Interagir', 'interact']].forEach(([label, type]) => {
       const b = btn(label, () => Arena.action(type));
+      b.dataset.arenaAction=type;
       if (type === 'light' && !S.items.includes('luz')) b.disabled = true;
       actions.append(b);
     });
@@ -1995,17 +2053,26 @@ const G = (() => {
       ? 'Segure Shift ou toque em Correr para ligar ou desligar a corrida. B ou Olhar para trás muda a visão. Nas passagens, use as setas, W/A/S/D ou os botões da tela.'
       : mode === 'prompt'
       ? 'Responda ao comando mostrado na tela usando a tecla indicada ou o botão correspondente. O prazo fica congelado durante a pausa.'
-      : 'Converse com o morador antes de explorar. Use as setinhas e clique ou toque nos objetos. Enter avança as falas; Tab percorre os botões. I abre a bolsa, J abre o registro e Esc pausa.';
+      : 'Converse com o morador antes de explorar. Use as setinhas e clique ou toque nos objetos. Um clique ou Enter revela a frase inteira; o seguinte avança. Tab percorre os botões. I abre a bolsa, J abre o registro e Esc pausa.';
     controls.append(summary, help);
     wrap.append(controls);
     const audio=window.AudioSentia;
     if(audio){
       const sound=document.createElement('fieldset');const legend=document.createElement('legend');legend.textContent='Áudio';sound.append(legend);
       const volumeLabel=document.createElement('label');volumeLabel.textContent='Volume da trilha ';const level=document.createElement('output');level.textContent=Math.round(audio.state().volume*100)+'%';const volume=document.createElement('input');volume.type='range';volume.min='0';volume.max='100';volume.value=String(Math.round(audio.state().volume*100));volume.setAttribute('aria-label','Volume da trilha');volume.oninput=()=>{audio.setVolume(Number(volume.value)/100);level.textContent=volume.value+'%';};volumeLabel.append(level,volume);
-      const muteLabel=document.createElement('label');const mute=document.createElement('input');mute.type='checkbox';mute.checked=audio.state().muted;mute.onchange=()=>audio.setMuted(mute.checked);muteLabel.append(mute,' Silenciar músicas');
+      const muteLabel=document.createElement('label');const mute=document.createElement('input');mute.type='checkbox';mute.checked=audio.state().muted;mute.onchange=()=>audio.setMuted(mute.checked);muteLabel.append(mute,' Silenciar todo o áudio');
       const credits=document.createElement('details');const title=document.createElement('summary');title.textContent='Trilha e créditos';credits.append(title);
       for(const track of audio.state().tracks){const p=document.createElement('p');p.textContent=track.title+' — '+track.author+' · '+track.license;credits.append(p);}
-      const link=document.createElement('a');link.href='documentacao/CREDITOS-AUDIO.txt';link.target='_blank';link.rel='noopener';link.textContent='Fontes e licença das quatro faixas';credits.append(link);sound.append(volumeLabel,muteLabel,credits);wrap.append(sound);
+      const link=document.createElement('a');link.href='documentacao/CREDITOS-AUDIO.txt';link.target='_blank';link.rel='noopener';link.textContent='Fontes e licença das quatro faixas';credits.append(link);
+      const extras=[];
+      for(const [key,title,setter] of [['voiceVolume','Volume das vozes','setVoiceVolume'],['effectsVolume','Volume dos efeitos','setEffectsVolume']]) {
+        const label=document.createElement('label');label.append(title+' ');
+        const output=document.createElement('output');output.textContent=Math.round((audio.state()[key]??.5)*100)+'%';
+        const input=document.createElement('input');input.type='range';input.min='0';input.max='100';input.value=String(Math.round((audio.state()[key]??.5)*100));input.setAttribute('aria-label',title);
+        input.oninput=()=>{audio[setter]?.(Number(input.value)/100);output.textContent=input.value+'%';};
+        label.append(output,input);extras.push(label);
+      }
+      sound.append(volumeLabel,...extras,muteLabel,credits);wrap.append(sound);
     }
     wrap.append(btn('Continuar', closeModal), btn('Exportar partida', () => {
       save();
@@ -2214,6 +2281,9 @@ const G = (() => {
     }
     if (paused || e.repeat || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
     const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if(mode==='watch'&&/^[1-8]$/.test(key)){
+      e.preventDefault();document.querySelector('[data-camera="'+(Number(key)-1)+'"]')?.click();return;
+    }
     if (key === 'l') {e.preventDefault();makeL();return;}
     if (key === 'i') return inventory();
     if (key === 'j') return journal();
@@ -2312,12 +2382,12 @@ const G = (() => {
     if (!paused && S) {
       if (writing && mode === 'dialogue') {
         writing.elapsed += dt;
-        if (writing.elapsed >= .018) {
-          writing.elapsed = 0;
+        if (writing.elapsed >= .03) {
+          writing.elapsed = Math.max(0,writing.elapsed-.03);
           $('#speech').textContent += writing.letters[writing.index++];
           voiceLetter(writing.letters[writing.index-1]);
           if (writing.index >= writing.letters.length) {
-            writing=null; $('#advance').setAttribute('aria-label','Continuar');
+            writing=null; $('#dialogue').classList.remove('is-writing'); $('#advance').setAttribute('aria-label','Continuar');
           }
         }
       }
@@ -2361,6 +2431,7 @@ const G = (() => {
     }),
     asset,
     baseSprite,
-    valid
+    valid,
+    runtime:()=>({writing:!!writing,watch:watch?structuredClone(watch):null,chase:chase?structuredClone(chase):null,paused})
   };
 })();

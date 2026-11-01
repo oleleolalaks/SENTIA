@@ -19,19 +19,21 @@ Resumo da licença: https://creativecommons.org/licenses/by/4.0/
 
 3. "Feral Chase" — Kevin MacLeod (incompetech.com)
    Arquivo: assets/audio/feral-chase.mp3
-   Uso: perseguição de Mizzery e confronto de Ninfa.
+   Uso: perseguição de Mizzery, confronto de Ninfa e labirinto.
    Fonte e licença: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100229
    Download original: https://incompetech.com/music/royalty-free/mp3-royaltyfree/Feral%20Chase.mp3
 
 4. "Chase Pulse" — Kevin MacLeod (incompetech.com)
    Arquivo: assets/audio/chase-pulse.mp3
-   Uso: observatório, tensão do labirinto e confronto com Beerus.
+   Uso: observatório e confronto com Beerus.
    Fonte e licença: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100383
    Download original: https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chase%20Pulse.mp3
 
 Os arquivos MP3 foram baixados do domínio oficial em 1 de novembro de 2026.
 Os nomes dos arquivos foram adaptados para o projeto. As gravações não foram cortadas nem editadas.
 O programa ajusta o volume, repete as faixas e faz transições durante a execução.
+Alterações de reprodução: Feral Chase toca a 1,16× no labirinto e 1,07× na perseguição de Mizzery, sem editar os MP3.
+Os bipes de voz, passos, impactos, alertas, pulso grave e jumpscares são síntese original do SENTIA por Web Audio; não usam gravações externas.
 
 A atribuição deve acompanhar a distribuição do jogo e permanecer acessível nos créditos.
 Não são músicas retiradas de jogos comerciais. Não se trata de composições originais do SENTIA.

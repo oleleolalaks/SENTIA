@@ -14,20 +14,25 @@ window.AudioSentia = (() => {
     ending:'garden', complete:'garden', keys:'garden', gate:'garden', stairs:'garden',
     watch:'pulse', fearChase:'fear', medo:'fear', fear:'fear', chaseFear:'fear',
     insaneChase:'insanity', insanidade:'insanity', insanity:'insanity', chaseInsanity:'insanity',
-    maze:'pulse', revelation:'insanity', interrogation:'garden',
+    maze:'insanity', revelation:'insanity', interrogation:'garden',
     odio:'pulse', boss:'pulse', arena:'pulse', battle:'pulse', ninfa:'insanity', tristeza:'insanity',
     comics:'pulse', candy:'garden', silence:null
   };
   let scene = 'explore', selected = 'garden', unlocked = false, paused = false;
-  let volume = .45, muted = false, fade = null, generation = 0, error = '';
+  let volume = .45, voiceVolume = .28, effectsVolume = .45, muted = false, fade = null, generation = 0, error = '';
+  let context = null, voiceBus = null, effectsBus = null, pulseTimer = null, duckTimer = null;
+  let lastVoice = -Infinity, voicePlayed = 0, effectsPlayed = 0, lastVoiceProfile = null, stepSide = false;
+  const voices = new Set(), effects = new Set(), lastEffect = new Map();
   try {
     const settings = JSON.parse(localStorage.getItem('sentia-audio') || '{}');
     if (Number.isFinite(settings.volume)) volume = Math.max(0, Math.min(1, settings.volume));
     muted = settings.muted === true;
+    if (Number.isFinite(settings.voiceVolume)) voiceVolume = Math.max(0, Math.min(1, settings.voiceVolume));
+    if (Number.isFinite(settings.effectsVolume)) effectsVolume = Math.max(0, Math.min(1, settings.effectsVolume));
   } catch { /* Se o navegador impedir o armazenamento, o controle de volume continua funcionando. */ }
   const channels = new Map();
   function persist() {
-    try { localStorage.setItem('sentia-audio', JSON.stringify({volume, muted})); } catch {}
+    try { localStorage.setItem('sentia-audio', JSON.stringify({volume, voiceVolume, effectsVolume, muted})); } catch {}
   }
   function clearFade() {
     generation++;
@@ -68,6 +73,8 @@ window.AudioSentia = (() => {
         return false;
       }
       error = '';
+      audio.playbackRate = sceneRate();
+      if ('preservesPitch' in audio) audio.preservesPitch = true;
       const target = volume * tracks.find(track => track.id === id).gain;
       const beginnings = new Map([...channels].map(([key, item]) => [key, item.volume]));
       const start = performance.now();
@@ -93,12 +100,17 @@ window.AudioSentia = (() => {
   }
   async function unlock() {
     unlocked = true;
+    ensureSynth();
+    if (context?.state === 'suspended') { try { await context.resume(); } catch {} }
+    startPulse();
     return playSelected(.25);
   }
   function setScene(value) {
     const key = Object.prototype.hasOwnProperty.call(aliases, value) ? aliases[value] : 'garden';
+    const previous = scene;
     scene = value;
-    if (selected === key) return;
+    if (previous !== scene) { stopVoice(); startPulse(); }
+    if (selected === key) { const current = channels.get(key); if (current) current.playbackRate = sceneRate(); return; }
     selected = key;
     void playSelected();
   }
@@ -112,22 +124,182 @@ window.AudioSentia = (() => {
   function setMuted(value) {
     muted = Boolean(value);
     persist();
-    if (muted) stopChannels(); else void playSelected(.25);
+    if (muted) { stopChannels(); stopSynth(); } else { startPulse(); void playSelected(.25); }
   }
   function pause() {
     paused = true;
     stopChannels();
+    stopSynth();
+    if (context?.state === 'running') void context.suspend().catch(() => {});
   }
   function resume() {
     paused = false;
+    if (unlocked && context?.state === 'suspended') void context.resume().then(startPulse).catch(() => {});
+    else startPulse();
     void playSelected(.25);
+  }
+
+  // Vozes e efeitos são síntese original do jogo. Não usam gravações de fala nem arquivos externos.
+  function sceneRate() { return scene === 'maze' ? 1.16 : scene === 'insaneChase' ? 1.07 : 1; }
+  function ensureSynth() {
+    if (context || !unlocked) return;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    try {
+      context = new AudioContextClass();
+      const master = context.createGain(); master.gain.value = .45;
+      const limiter = context.createDynamicsCompressor();
+      limiter.threshold.value = -15; limiter.knee.value = 12; limiter.ratio.value = 8;
+      limiter.attack.value = .003; limiter.release.value = .12;
+      voiceBus = context.createGain(); effectsBus = context.createGain();
+      voiceBus.gain.value = voiceVolume; effectsBus.gain.value = effectsVolume;
+      voiceBus.connect(master); effectsBus.connect(master); master.connect(limiter); limiter.connect(context.destination);
+    } catch { context = null; }
+  }
+  function allowed(group) {
+    return unlocked && !paused && !muted && context?.state === 'running' && (group === 'voice' ? voiceVolume > 0 : effectsVolume > 0);
+  }
+  function removeNode(entry, group) {
+    group.delete(entry);
+    try { entry.source.disconnect(); entry.gain.disconnect(); entry.filter.disconnect(); entry.panner?.disconnect(); } catch {}
+  }
+  function stopGroup(group) {
+    for (const entry of [...group]) {
+      try { entry.source.stop(); } catch {}
+      removeNode(entry, group);
+    }
+  }
+  function stopVoice() { stopGroup(voices); lastVoice = -Infinity; }
+  function stopSynth() {
+    stopVoice(); stopGroup(effects);
+    if (pulseTimer !== null) clearInterval(pulseTimer);
+    if (duckTimer !== null) clearTimeout(duckTimer);
+    pulseTimer = null; duckTimer = null;
+  }
+  function emit({frequency=180, end=frequency, duration=.1, delay=0, amplitude=.08, wave='sine', group='effects', cutoff=1100, noise=false, pan=0}) {
+    if (!allowed(group)) return false;
+    const pool = group === 'voice' ? voices : effects;
+    if (pool.size >= (group === 'voice' ? 3 : 8) || voices.size + effects.size >= 8) return false;
+    const now = context.currentTime + Math.max(0, Math.min(.4, delay));
+    const length = Math.max(group==='voice'?.018:.025, Math.min(.65, duration));
+    const gain = context.createGain(), filter = context.createBiquadFilter();
+    filter.type = 'lowpass'; filter.frequency.value = Math.max(100, Math.min(1800, cutoff)); filter.Q.value = .6;
+    let source;
+    if (noise) {
+      source = context.createBufferSource();
+      const buffer = context.createBuffer(1, Math.ceil(context.sampleRate * length), context.sampleRate);
+      const values = buffer.getChannelData(0);
+      for (let i = 0; i < values.length; i++) values[i] = (Math.random() * 2 - 1) * (1 - i / values.length);
+      source.buffer = buffer;
+    } else {
+      source = context.createOscillator(); source.type = wave;
+      source.frequency.setValueAtTime(Math.max(35, Math.min(800, frequency)), now);
+      source.frequency.exponentialRampToValueAtTime(Math.max(35, Math.min(800, end)), now + length);
+    }
+    const peak = Math.max(0, Math.min(group === 'voice' ? .075 : .18, amplitude));
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(peak, now + Math.min(.012, length / 4));
+    gain.gain.exponentialRampToValueAtTime(.0001, now + length);
+    source.connect(filter); filter.connect(gain);
+    const bus = group === 'voice' ? voiceBus : effectsBus;
+    let panner = null;
+    if (pan && context.createStereoPanner) {
+      panner = context.createStereoPanner(); panner.pan.value = Math.max(-.4, Math.min(.4, pan));
+      gain.connect(panner); panner.connect(bus);
+    } else gain.connect(bus);
+    const entry = {source, gain, filter, panner}; pool.add(entry);
+    source.addEventListener('ended', () => removeNode(entry, pool), {once:true});
+    source.start(now); source.stop(now + length + (group==='voice'?.01:.015));
+    return true;
+  }
+  const profiles = {
+    sunny:[380,'triangle'], felicidade:[380,'triangle'], sugar:[550,'sine'], candy:[550,'sine'], amor:[550,'sine'],
+    ninfa:[290,'sine'], tristeza:[290,'sine'], aurea:[430,'triangle'], orgulho:[430,'triangle'],
+    friska:[230,'triangle'], determinacao:[230,'triangle'], pax:[205,'sine'], calma:[205,'sine'],
+    hermes:[490,'triangle'], ansiedade:[490,'triangle'], lumen:[325,'sine'], culpa:[325,'sine'],
+    hunger:[125,'sawtooth'], medo:[125,'sawtooth'], beerus:[105,'triangle'], odio:[105,'triangle'],
+    cassidy:[410,'sine'], sanidade:[410,'sine'], mizzery:[160,'sawtooth'], insanidade:[160,'sawtooth'],
+    anata:[250,'sine'], neutralidade:[250,'sine'], jardim:[255,'sine'], voce:[300,'triangle']
+  };
+  function voice(letter, speaker='Jardim') {
+    const character = String(letter || '').charAt(0);
+    if (!/[A-Za-zÀ-ÖØ-öø-ÿ0-9]/u.test(character) || !allowed('voice')) return false;
+    const now = context.currentTime;
+    // Agenda até dois caracteres de um mesmo frame sem perder os bipes, mas não acumula fala ao pular texto.
+    const scheduled = Math.max(now, lastVoice + .03);
+    if (scheduled - now > .075) return false;
+    const name = String(speaker).normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase('pt-BR');
+    const profile = profiles[name] || [280,'sine'];
+    const semitones = ((character.toLocaleLowerCase('pt-BR').charCodeAt(0) % 7) - 3) * .45;
+    const frequency = profile[0] * Math.pow(2, semitones / 12);
+    const done = emit({group:'voice',frequency,end:frequency*.98,duration:.022,delay:scheduled-now,amplitude:.055,wave:profile[1],cutoff:profile[1]==='sawtooth'?650:1300});
+    if (done) { lastVoice = scheduled; voicePlayed++; lastVoiceProfile = {speaker:String(speaker),frequency:Math.round(frequency),wave:profile[1]}; }
+    return done;
+  }
+  function setVoiceVolume(value) {
+    const number = Number(value); if (!Number.isFinite(number)) return;
+    voiceVolume = Math.max(0, Math.min(1, number)); persist();
+    if (voiceBus) voiceBus.gain.setTargetAtTime(voiceVolume, context.currentTime, .015);
+    if (voiceVolume === 0) stopVoice();
+  }
+  function setEffectsVolume(value) {
+    const number = Number(value); if (!Number.isFinite(number)) return;
+    effectsVolume = Math.max(0, Math.min(1, number)); persist();
+    if (effectsBus) effectsBus.gain.setTargetAtTime(effectsVolume, context.currentTime, .015);
+    if (effectsVolume === 0) { stopGroup(effects); if (pulseTimer !== null) clearInterval(pulseTimer); pulseTimer = null; }
+    else startPulse();
+  }
+  function startPulse() {
+    if (pulseTimer !== null) clearInterval(pulseTimer);
+    pulseTimer = null;
+    if (scene !== 'maze' || !allowed('effects')) return;
+    pulseTimer = setInterval(() => {
+      if (!allowed('effects') || scene !== 'maze') return;
+      emit({frequency:65,end:43,duration:.12,amplitude:.095,cutoff:240});
+      emit({frequency:75,end:50,duration:.1,delay:.14,amplitude:.055,cutoff:260});
+    }, 545);
+  }
+  function sfx(kind) {
+    if (!allowed('effects')) return false;
+    const key = String(kind), now = context.currentTime;
+    const intervals = {step:.14,turn:.12,hit:.08,attack:.1,guard:.1,alert:.25,discovery:.5,death:.8,jumpscare:.9};
+    if (!(key in intervals) || now - (lastEffect.get(key) ?? -Infinity) < intervals[key]) return false;
+    lastEffect.set(key, now);
+    let result = false;
+    const tone = options => { result = emit(options) || result; };
+    if (key === 'step') {
+      stepSide = !stepSide;
+      tone({noise:true,duration:.075,amplitude:.13,cutoff:stepSide?360:450,pan:stepSide?-.15:.15});
+      tone({frequency:stepSide?85:100,end:55,duration:.08,amplitude:.06,cutoff:220});
+    } else if (key === 'turn') tone({frequency:200,end:290,duration:.065,amplitude:.07,cutoff:600});
+    else if (key === 'attack') { tone({noise:true,duration:.12,amplitude:.15,cutoff:1250}); tone({frequency:130,end:60,duration:.16,amplitude:.1,cutoff:400}); }
+    else if (key === 'hit') { tone({noise:true,duration:.13,amplitude:.18,cutoff:650}); tone({frequency:85,end:40,duration:.2,amplitude:.14,cutoff:240}); }
+    else if (key === 'guard') { tone({frequency:220,end:180,duration:.16,amplitude:.1,wave:'triangle',cutoff:900}); tone({frequency:330,end:280,duration:.1,amplitude:.05,wave:'sine',cutoff:950}); }
+    else if (key === 'alert') { tone({frequency:420,end:350,duration:.12,amplitude:.1,cutoff:900}); tone({frequency:300,end:260,duration:.14,delay:.14,amplitude:.09,cutoff:700}); }
+    else if (key === 'discovery') [261.63,329.63,392].forEach((frequency,index)=>tone({frequency,duration:.2,delay:index*.08,amplitude:.075,cutoff:1200}));
+    else if (key === 'death') { tone({frequency:145,end:38,duration:.6,amplitude:.16,wave:'triangle',cutoff:500}); tone({noise:true,duration:.4,amplitude:.11,cutoff:400}); }
+    else if (key === 'jumpscare') {
+      stopVoice();
+      tone({noise:true,duration:.38,amplitude:.18,cutoff:1100});
+      tone({frequency:65,end:42,duration:.55,amplitude:.16,wave:'triangle',cutoff:350});
+      tone({frequency:230,end:155,duration:.4,amplitude:.1,wave:'sawtooth',cutoff:800});
+      tone({frequency:247,end:170,duration:.35,amplitude:.07,wave:'triangle',cutoff:850});
+      clearFade();
+      channels.forEach(audio => { audio.volume *= .35; });
+      if (duckTimer !== null) clearTimeout(duckTimer);
+      duckTimer = setTimeout(() => { duckTimer = null; if (!paused && !muted) void playSelected(.3); }, 750);
+    }
+    if (result) effectsPlayed++;
+    return result;
   }
   function state() {
     const current = tracks.find(track => track.id === selected) || null;
     return {
       scene, track:selected, title:current?.title || '', author:current?.author || '',
       source:current?.source || '', license:current?.license || '', licenseURL:current?.licenseURL || '',
-      volume, muted, paused, unlocked, error,
+      volume, musicVolume:volume, voiceVolume, effectsVolume, muted, paused, unlocked, error,
+      contextState:context?.state || 'uncreated', voicesActive:voices.size, effectsActive:effects.size,
+      voicePlayed, effectsPlayed, lastVoiceProfile, pulseActive:pulseTimer !== null, playbackRate:sceneRate(),
       playing: [...channels.values()].some(audio => !audio.paused && audio.volume > 0),
       tracks:tracks.map(track => ({...track}))
     };
@@ -139,5 +311,5 @@ window.AudioSentia = (() => {
   };
   document.addEventListener('pointerdown', firstGesture, {passive:true});
   document.addEventListener('keydown', firstGesture);
-  return Object.freeze({unlock, setScene, setVolume, setMuted, pause, resume, state});
+  return Object.freeze({unlock, setScene, setVolume, setVoiceVolume, setEffectsVolume, setMuted, pause, resume, state, voice, stopVoice, sfx});
 })();

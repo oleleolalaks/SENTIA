@@ -1,0 +1,59 @@
+/* Camada de leitura: a arte aprovada continua sendo a própria moldura. */
+.dialogue .speaker { font-weight:700; font-variant-numeric:tabular-nums; text-shadow:0 1px 2px #0009; }
+.dialogue-body { scrollbar-gutter:stable; scroll-padding:8px; padding-right:7px; -webkit-overflow-scrolling:touch; }
+.dialogue-body #speech { min-height:1.65em; font-size:clamp(14px,1.35vw,17px); line-height:1.62; letter-spacing:.005em; white-space:pre-wrap; text-wrap:pretty; }
+.dialogue-body .choices { gap:8px; padding:4px 4px 8px; }
+.dialogue-body .choices button { min-height:46px; padding:10px 12px; line-height:1.45; border-color:#bac6ae70; transition:background-color .12s,border-color .12s; }
+.dialogue-body .choices button:hover { background:#253b40; border-color:var(--accent); }
+.dialogue-body .choices button:focus-visible,.dialogue-body .advance:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.dialogue-body .choices button:disabled { opacity:.5; }
+.dialogue-body .choices button.chosen,.dialogue-body .choices button[aria-pressed="true"] { border-color:var(--accent); background:#344536; }
+.dialogue-body .advance { max-width:100%; min-height:44px; margin-top:8px; padding:7px 12px; white-space:normal; line-height:1.4; }
+.dialogue.is-writing #speech::after,.dialogue[data-writing="true"] #speech::after { content:''; display:inline-block; width:6px; height:1em; margin-left:4px; vertical-align:-.12em; background:var(--accent); animation:speech-caret 1s steps(1,end) infinite; }
+.dialogue.is-writing .advance::after { content:' · · ·'; letter-spacing:2px; color:var(--accent); }
+.writing-indicator,#writing-indicator { color:var(--accent); font:11px/1.5 monospace; letter-spacing:1px; }
+@keyframes speech-caret { 0%,54%{opacity:.9;}55%,100%{opacity:.2;} }
+/* O relógio da vigilância fica separado dos oito pontos de visão. */
+.watch-hud { display:grid; gap:5px; min-width:0; padding:12px 14px; border:1px solid #a6ba9b80; background:#0a1213ed; color:#eef3df; text-align:left; }
+.watch-deadline { display:block; color:#f2d59a; font:700 clamp(13px,1.5vw,17px)/1.4 monospace; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.watch-progress { display:block; font:11px/1.5 monospace; color:#baccb8; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.stage:has(.orb.alerting) .watch-deadline { color:#ffd0bd; }
+.watch-hud.camera-hud { position:absolute; z-index:8; top:76px; left:50%; transform:translateX(-50%); width:min(90%,680px); pointer-events:none; }
+.orbs.watch-switches { gap:12px; grid-template-columns:repeat(4,minmax(0,1fr)); margin:20px auto; max-width:560px; }
+.watch-switches .orb { justify-self:center; width:64px; max-width:100%; min-width:44px; min-height:44px; padding:6px; border:2px solid #c6debd99; background:#a5c8b320; color:#f4efda; font:700 18px/1 monospace; touch-action:manipulation; transition:border-color .12s,background-color .12s,box-shadow .12s; }
+.watch-switches .orb:hover { border-color:#eaf4d9; background:#aecbb32e; }
+.watch-switches .orb.active { border-color:#fff0b6; box-shadow:0 0 0 2px #fff0b666,inset 0 0 20px #e4f2ce44; background:#d9e3bf2e; }
+.watch-switches .orb.alerting { border-color:#f8bc80; box-shadow:0 0 0 2px #ef93634d,inset 0 0 24px #e7cf8c66,0 0 18px #e8ac5655; background:#e2c37430; animation:orb-presence 1.3s ease-in-out infinite; }
+.watch-switches .orb.active.alerting { border-color:#fff2d1; box-shadow:0 0 0 3px #eacb8b99,inset 0 0 24px #f3db9d88; }
+.watch-switches .orb:focus-visible { outline:3px solid #fff4c1; outline-offset:4px; }
+#world-controls>.watch-switches { position:absolute; z-index:8; left:18px; right:18px; bottom:85px; max-width:680px; margin:0 auto; grid-template-columns:repeat(8,minmax(0,1fr)); pointer-events:auto; }
+#world-controls>.watch-switches .orb { width:56px; }
+@keyframes orb-presence { 0%,100%{background-color:#e2c37430;}50%{background-color:#e2c37460;} }
+@media(max-width:600px) {
+  .dialogue-body #speech { font-size:14px; line-height:1.6; }
+  .dialogue-body .choices button { padding:9px 10px; font-size:13px; }
+  .watch-hud { padding:10px; }
+  .watch-hud.camera-hud { top:78px; width:calc(100% - 24px); }
+  .watch-deadline { font-size:12px; }.watch-progress { font-size:10px; }
+  #world-controls>.watch-switches { left:12px;right:12px;bottom:82px;grid-template-columns:repeat(4,minmax(44px,1fr));gap:8px; }
+  #world-controls>.watch-switches .orb { width:48px;min-height:44px; }
+  .orbs.watch-switches { gap:10px; }.watch-switches .orb { width:56px; }
+}
+@media(orientation:landscape) and (max-height:550px) {
+  .dialogue-body #speech { font-size:13px;line-height:1.5; }
+  .dialogue-body .choices button { font-size:12px; padding:8px; }
+  .watch-hud.camera-hud { top:12px;left:15%;width:70%;transform:none;padding:7px 10px; }
+  .watch-hud.camera-hud .watch-progress { font-size:9px; }
+  #world-controls>.watch-switches { left:10px;right:10px;bottom:52px;grid-template-columns:repeat(8,minmax(44px,1fr));gap:6px; }
+  #world-controls>.watch-switches .orb { width:44px;min-height:40px;font-size:15px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .dialogue.is-writing #speech::after,.dialogue[data-writing="true"] #speech::after { animation:none;opacity:.7; }
+  .watch-switches .orb { animation:none;transition:none; }
+}
+body.reduced .dialogue.is-writing #speech::after,body.reduced .dialogue[data-writing="true"] #speech::after { animation:none;opacity:.7; }
+body.reduced .watch-switches .orb { animation:none;transition:none; }
+@media(orientation:landscape) and (max-height:550px) {
+  .watch-hud.camera-hud { left:23%;width:62%; }
+  .stage:has(.camera-hud)>#status { display:none; }
+}

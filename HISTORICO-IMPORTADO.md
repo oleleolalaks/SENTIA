@@ -51,3 +51,12 @@ Importação iniciada em 2026-11-01T14:27:46.675136+00:00 (UTC).
 - Última data observada nos arquivos principais do ZIP, sem fuso: `2026-11-01T09:39:30`.
 - Arquivos importados do ZIP: 899.
 - Exclusões: nenhuma.
+
+### arquivo-20261101-revisao-pesada
+
+- Origem: `SENTIA-COMPLETO-REVISAO-PESADA.zip`.
+- Tamanho do ZIP: 495252116 bytes.
+- SHA-256 do ZIP: `3fa5a772d3aa76d20f1e8ebc2a7d5b1d11426835068a7e0663a2d55ddfb59c07`.
+- Última data observada nos arquivos principais do ZIP, sem fuso: `2026-11-01T10:07:14`.
+- Arquivos importados do ZIP: 901.
+- Exclusões: nenhuma.
