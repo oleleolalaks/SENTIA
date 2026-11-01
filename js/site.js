@@ -37,10 +37,12 @@ const lanternClues = {
 };
 const sealPairs = ['calma+medo', 'amor+tristeza', 'determinacao+orgulho'];
 const sealVerses = ['O aviso encontra espaço para respirar.', 'A falta ainda guarda um vínculo.', 'Reconhecer o caminho e dar o próximo passo.'];
+const trailWeights = [1,4,2,3, 2,3,1,4, 4,4,4,2, 3,1,3,1];
 const storedPuzzle = storage.get('sentia-portal-puzzle-v2', {}) || {};
 const puzzle = {
   version: 2,
-  stage: [1, 2, 3, 4].includes(storedPuzzle.stage) ? storedPuzzle.stage : 1,
+  stage: [1, 2, 3, 4, 5].includes(storedPuzzle.stage) ? storedPuzzle.stage : 1,
+  trail: Array.isArray(storedPuzzle.trail) && validTrail(storedPuzzle.trail) ? [...storedPuzzle.trail] : [],
   clues: Array.isArray(storedPuzzle.clues) ? [...new Set(storedPuzzle.clues.filter(x => lanternIds.includes(x)))] : [],
   combinations: Array.isArray(storedPuzzle.combinations) ? [...new Set(storedPuzzle.combinations.map(x => typeof x==='string'?x.split('+').sort().join('+'):'').filter(x => sealPairs.includes(x)))] : [],
   order: Array.isArray(storedPuzzle.order) && storedPuzzle.order.length === 6 ? storedPuzzle.order.map(x => lanternIds.includes(x) ? x : '') : Array(6).fill(''),
@@ -49,8 +51,8 @@ const puzzle = {
   hints: Number.isInteger(storedPuzzle.hints) ? Math.max(0, Math.min(3, storedPuzzle.hints)) : 0,
   solved: storedPuzzle.solved === true
 };
-if (puzzle.solved) puzzle.stage = 4;
-else if (puzzle.stage === 4) puzzle.stage = 1;
+if (puzzle.solved) puzzle.stage = 5;
+else if (puzzle.stage === 5) puzzle.stage = 1;
 const storedCollection = storage.get('sentia-collection', []);
 let collection = new Set((Array.isArray(storedCollection) ? storedCollection : []).filter(x => emotions.some(e => e[0] === x)));
 // Uma descoberta já guardada no Atlas também conta no caderno após atualizar o site.
@@ -92,7 +94,7 @@ function renderDiscoveries() {
     dots.push(dot);
   }
   $('#discoveries').replaceChildren(...dots);
-  $('#discovery-text').textContent = puzzle.solved ? 'O enigma foi resolvido. O caminho continua aberto neste navegador.' : puzzle.clues.length + ' de 6 pistas no caderno · ' + (puzzle.stage - 1) + ' de 3 etapas resolvidas. Visitar páginas não abre esta porta: as pistas precisam se conectar.';
+  $('#discovery-text').textContent = puzzle.solved ? 'O enigma foi resolvido. O caminho continua aberto neste navegador.' : puzzle.clues.length + ' de 6 pistas no caderno · ' + (puzzle.stage - 1) + ' de 4 etapas resolvidas. Visitar páginas não abre esta porta: as pistas precisam se conectar.';
   $('#garden-entry').textContent = puzzle.solved ? 'Entrar no Jardim ↗' : 'Resolver o enigma das lanternas ↓';
 }
 // Parte 3: cria um aviso com nós do DOM e permite dispensar pelo botão ou pelo relógio.
@@ -321,11 +323,37 @@ function portalWord() {
   // Os selos determinam os pares; a posição na fila determina qual marca vem primeiro.
   return puzzle.seals.map(pair => [...pair].sort((a, b) => (puzzle.order.indexOf(b) + 1) % 2 - (puzzle.order.indexOf(a) + 1) % 2).map(id => lanternClues[id][0]).join('')).join('');
 }
+// O mosaico cruza direção, duas paradas e a soma das pedras. Não depende de tempo ou memória.
+function validTrail(path, complete = false) {
+  const connected = path.length <= 7 && path.every((cell, i) => Number.isInteger(cell) && cell >= 0 && cell < 16 && (i === 0 ? cell === 0 : cell === path[i-1] + 4 || (path[i-1] % 4 < 3 && cell === path[i-1] + 1)));
+  return connected && (!complete || (path.length === 7 && path[6] === 15 && path.includes(5) && path.includes(10) && path.reduce((sum, cell) => sum + trailWeights[cell], 0) === 16));
+}
+function renderTrail() {
+  $('#trail-step').hidden = puzzle.stage !== 4;
+  const selected = puzzle.trail;
+  $('#trail-grid').replaceChildren(...trailWeights.map((cost, cell) => {
+    const button = document.createElement('button');
+    const place = String.fromCharCode(65 + Math.floor(cell / 4)) + (cell % 4 + 1);
+    const name = ({0:'Semente',5:'Folha',10:'Lua',15:'Portal'})[cell] || 'Pedra';
+    const symbol = ({0:'✦',5:'♧',10:'☾',15:'◇'})[cell] || '·';
+    button.type = 'button';button.dataset.cell = cell;
+    if (selected.includes(cell)) button.dataset.step = selected.indexOf(cell) + 1;
+    button.innerHTML = '<small>' + place + '</small><span aria-hidden="true">' + symbol + '</span><b>' + cost + '</b>';
+    button.setAttribute('aria-label',place + ', ' + name + ', valor ' + cost);
+    button.setAttribute('aria-pressed', String(selected.includes(cell)));
+    button.disabled = puzzle.stage !== 4 || !validTrail([...selected, cell]);
+    button.onclick = () => {puzzle.trail.push(cell);savePuzzle();renderTrail();($('#trail-grid button:not(:disabled)') || $('#trail-check')).focus({preventScroll:true});};
+    return button;
+  }));
+  const sum = selected.reduce((total, cell) => total + trailWeights[cell], 0);
+  $('#trail-status').textContent = selected.length + '/7 pedras · soma ' + sum + '/16 · Folha ' + (selected.includes(5)?'✓':'por visitar') + ' · Lua ' + (selected.includes(10)?'✓':'por visitar');
+  $('#trail-undo').disabled = !selected.length;
+}
 function renderPuzzle() {
   $('#lantern-form > p:not(.eyebrow)').textContent='As posições formam uma única fila, de 1 a 6. No celular, siga a numeração e continue na próxima linha. “Antes” e “depois” se referem aos números, não à linha da tela. Use cada sentimento uma vez e respeite todas as pistas do caderno.';
   $('#puzzle-notebook-title').textContent = 'Meu caderno de pistas · ' + puzzle.clues.length + '/6 fragmentos';
   $('#puzzle-attempts').textContent = puzzle.attempts ? puzzle.attempts + (puzzle.attempts === 1 ? ' verificação feita' : ' verificações feitas') : 'Sem limite de tentativas';
-  $('#puzzle-steps').replaceChildren(...['As lanternas', 'Os vínculos', 'A palavra'].map((text, i) => {
+  $('#puzzle-steps').replaceChildren(...['As lanternas', 'Os vínculos', 'A palavra', 'O mosaico'].map((text, i) => {
     const item = document.createElement('li');
     item.textContent = (puzzle.stage > i + 1 ? '✓ ' : (i + 1) + ' · ') + text;
     item.classList.toggle('complete', puzzle.stage > i + 1);
@@ -387,7 +415,7 @@ function renderPuzzle() {
   $('#seal-form').hidden = puzzle.stage < 2;
   $('#seal-form button').hidden = puzzle.stage > 2;
   $('#seal-solved').hidden = puzzle.stage < 3;
-  $('#word-step').hidden = puzzle.stage < 3 || puzzle.solved;
+  $('#word-step').hidden = puzzle.stage !== 3;
   $('#portal-solved').hidden = !puzzle.solved;
   $('#portal-solved-entry').hidden = !puzzle.solved;
   $('#seal-slots').replaceChildren(...puzzle.seals.map((pair,i) => {
@@ -420,11 +448,17 @@ function renderPuzzle() {
       'A fila não é a ordem de leitura da palavra. Os três selos juntam as marcas em pares: consulte o fragmento de Determinação.',
       'Siga os selos de 1 a 3. Em cada par, leia primeiro a marca em posição ímpar (1, 3 ou 5), depois a de posição par (2, 4 ou 6).',
       'No selo 2, a lanterna da posição 5 deve ser lida antes da posição 4. Use o mesmo critério nos outros dois selos e junte os três pares de letras.'
+    ],
+    4: [
+      'Conte também os valores da Semente e do Portal. São sete pedras no total, avançando só para a direita ou para baixo.',
+      'Planeje o caminho em dois trechos: chegar à Folha B2 e depois à Lua C3. Compare a soma das alternativas antes de continuar.',
+      'Os dois caminhos até B2 somam 8 ou 6. Entre B2 e C3, as alternativas acrescentam 5 ou 8. Depois de C3, faltam 3 ou 4. Qual combinação chega a 16?'
     ]
   };
   $('#puzzle-hint-text').textContent = puzzle.hints && hints[puzzle.stage] ? hints[puzzle.stage][puzzle.hints - 1] : '';
   $('#puzzle-hint').hidden = puzzle.solved;
   $('#puzzle-hint').textContent = puzzle.hints < 3 ? 'Pedir uma pista de raciocínio (' + (puzzle.hints + 1) + '/3)' : 'Rever a última pista';
+  renderTrail();
 }
 $('#lantern-form').onsubmit = e => {
   e.preventDefault();
@@ -478,7 +512,20 @@ $('#word-form').onsubmit = e => {
   puzzle.attempts++;
   const word = $('#portal-word').value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleUpperCase('pt-BR');
   if (word !== portalWord()) {savePuzzle();renderPuzzle();return puzzleStatus('Releia os selos de 1 a 3: em cada par, a marca da posição ímpar vem antes da posição par. Junte esses três pares, em vez de copiar a fila inteira.');}
-  puzzle.solved = true;puzzle.stage = 4;savePuzzle();discover(6);renderPuzzle();
+  puzzle.stage = 4;puzzle.hints = 0;savePuzzle();renderPuzzle();
+  puzzleStatus('A palavra acendeu o mosaico. Falta traçar uma passagem que respeite as quatro regras.', true);
+  $('#trail-title').focus();
+};
+$('#trail-undo').onclick = () => {puzzle.trail.pop();savePuzzle();renderTrail();};
+$('#trail-clear').onclick = () => {puzzle.trail = [];savePuzzle();renderTrail();};
+$('#trail-check').onclick = () => {
+  if (puzzle.stage !== 4) return;
+  puzzle.attempts++;
+  if (!validTrail(puzzle.trail, true)) {
+    savePuzzle();renderPuzzle();
+    return puzzleStatus('O mosaico ainda não fecha. Confira a passagem por Folha e Lua, as sete pedras e a soma 16. Você pode desfazer passos sem perder as etapas anteriores.');
+  }
+  puzzle.solved = true;puzzle.stage = 5;savePuzzle();discover(6);renderPuzzle();
   puzzleStatus('O caminho está aberto. Você pode escolher os controles antes de entrar.', true);
   $('#portal-solved-entry').focus();
 };
@@ -487,10 +534,36 @@ $('#puzzle-hint').onclick = () => {
 };
 $('#puzzle-reset').onclick = () => {
   if (!confirm('Recomeçar apenas o enigma? Suas pistas, tarefas e a partida do Jardim serão preservadas.')) return;
-  Object.assign(puzzle,{stage:1,order:Array(6).fill(''),seals:Array.from({length:3},()=>['','']),solved:false,hints:0});
+  Object.assign(puzzle,{stage:1,order:Array(6).fill(''),seals:Array.from({length:3},()=>['','']),trail:[],solved:false,hints:0});
   savePuzzle();renderPuzzle();puzzleStatus('As lanternas voltaram às posições vazias. As pistas continuam no caderno.');
 };
 $('#portal-solved-entry').onclick = () => $('#garden-entry').click();
+// Este reinício limpa apenas o progresso do site. O save do Jardim e o MySQL ficam separados.
+$('#reset-site').onclick = () => {
+  const wrap = document.createElement('section');
+  wrap.innerHTML = '<h2>Reiniciar o SENTIA?</h2><p>Sua coleção do Atlas, as descobertas, as pistas, o enigma e as ações do plano pessoal serão apagados deste navegador. O site voltará ao início, com o plano pessoal vazio.</p><p>A partida do Jardim, os registros compartilhados do MySQL e suas preferências de tema e movimento serão mantidos.</p><p class="small">Essa ação não pode ser desfeita. Se quiser guardar seu plano pessoal, baixe o registro antes.</p><div class="actions"><button type="button" class="button secondary" id="cancel-reset-site">Cancelar</button><button type="button" class="button primary" id="confirm-reset-site">Sim, reiniciar o SENTIA</button></div><p id="reset-site-status" role="status"></p>';
+  wrap.querySelector('#cancel-reset-site').onclick = () => $('#modal').close();
+  wrap.querySelector('#confirm-reset-site').onclick = () => {
+    const keys = ['sentia-discoveries', 'sentia-collection', 'sentia-portal-puzzle-v2', 'sentia-personal-tasks', 'sentia-tasks', 'sentia-record-mode'];
+    const backup = new Map();
+    try {
+      // A lista explícita impede apagar dados do jogo ou de outras páginas nesta origem.
+      for (const key of keys) backup.set(key, localStorage.getItem(key));
+      for (const key of keys) localStorage.removeItem(key);
+    } catch {
+      for (const [key, value] of backup) {
+        try { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch {}
+      }
+      $('#reset-site-status').textContent = 'O navegador não permitiu reiniciar os dados. Confira a permissão de armazenamento e tente novamente.';
+      return;
+    }
+    // Recarregar também limpa os estados que estavam na memória, sem chamar a API de registros.
+    document.querySelectorAll('form').forEach(form => form.reset());
+    location.hash = 'home';
+    location.reload();
+  };
+  openModal(wrap);
+};
 function theme() {
   const dark = storage.get('sentia-dark', false);
   // Parte 1: a classe ativa as variáveis CSS do tema; a preferência fica no localStorage.

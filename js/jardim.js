@@ -517,6 +517,32 @@ const G = (() => {
     if (S.pending[id] != null && S.activity > S.pending[id]) return laterDeath(id);
     renderRoom();
   }
+  // Pólen, gotas e brasas são detalhes do quarto; não recebem cliques nem mudam a história.
+  function roomAtmosphere(scene, id) {
+    const layer = document.createElement('div');
+    const kind = ({tristeza:'rain',orgulho:'embers',odio:'embers',calma:'leaves',amor:'petals',ansiedade:'electric',medo:'mist'})[id] || 'dust';
+    layer.className = 'room-atmosphere ' + kind + (dead(id) ? ' spent' : '');
+    layer.setAttribute('aria-hidden','true');
+    layer.style.setProperty('--room-color',palette[id] || '#c2d3b5');
+    const light = document.createElement('i');light.className = 'ambient-light';layer.append(light);
+    for (let i = 0; i < 10; i++) {
+      const particle = document.createElement('i');particle.className = 'ambient-pixel';
+      particle.style.left = (7 + (i * 31 + S.view * 13) % 86) + '%';
+      particle.style.top = (12 + i * 19 % 67) + '%';
+      particle.style.setProperty('--drift', (i % 2 ? 13 : -11) + 'px');
+      particle.style.animationDelay = (-i * 2.7) + 's';
+      particle.style.animationDuration = (14 + i % 4 * 5) + 's';
+      layer.append(particle);
+    }
+    if (['tristeza','calma'].includes(id)) {
+      for (let i = 0; i < 3; i++) {
+        const ripple = document.createElement('i');ripple.className = 'ambient-ripple';
+        ripple.style.left = (18 + i * 30) + '%';ripple.style.top = (77 + i % 2 * 9) + '%';
+        ripple.style.animationDelay = (-i * 3) + 's';layer.append(ripple);
+      }
+    }
+    scene.append(layer);
+  }
   function renderRoom() {
     resetScene();
     mode = 'explore';
@@ -533,6 +559,7 @@ const G = (() => {
     const scene = document.createElement('div');
     scene.className = 'room-scene';
     $('#world-controls').append(scene);
+    roomAtmosphere(scene, id);
     // O morador fica num único lugar. Virar a câmera não teletransporta o Eco.
     if (!dead(id) && S.view === 0) {
       const resident = btn('', () => talk(id), 'talk-button world-eco');
@@ -2026,7 +2053,7 @@ const G = (() => {
       const muteLabel=document.createElement('label');const mute=document.createElement('input');mute.type='checkbox';mute.checked=audio.state().muted;mute.onchange=()=>audio.setMuted(mute.checked);muteLabel.append(mute,' Silenciar todo o áudio');
       const credits=document.createElement('details');const title=document.createElement('summary');title.textContent='Trilha e créditos';credits.append(title);
       for(const track of audio.state().tracks){const p=document.createElement('p');p.textContent=track.title+' — '+track.author+' · '+track.license;credits.append(p);}
-      const link=document.createElement('a');link.href='documentacao/CREDITOS-AUDIO.txt';link.target='_blank';link.rel='noopener';link.textContent='Fontes e licença das quatro faixas';credits.append(link);
+      const link=document.createElement('a');link.href='entrega-escolar/CREDITOS-AUDIO.txt';link.target='_blank';link.rel='noopener';link.textContent='Fontes e licença das quatro faixas';credits.append(link);
       const extras=[];
       for(const [key,title,setter] of [['voiceVolume','Volume das vozes','setVoiceVolume'],['effectsVolume','Volume dos efeitos','setEffectsVolume']]) {
         const label=document.createElement('label');label.append(title+' ');

@@ -53,6 +53,24 @@
 }
 body.reduced .dialogue.is-writing #speech::after,body.reduced .dialogue[data-writing="true"] #speech::after { animation:none;opacity:.7; }
 body.reduced .watch-switches .orb { animation:none;transition:none; }
+/* A atmosfera acompanha a área da arte, sem cobrir alvos ou alterar os sprites aprovados. */
+.room-atmosphere { position:absolute;inset:0;overflow:hidden;pointer-events:none;isolation:isolate; }
+.room-atmosphere.spent { opacity:.25; }
+.ambient-light { position:absolute;inset:0;background:radial-gradient(ellipse at 75% 20%,var(--room-color),transparent 58%);opacity:.09; }
+.ambient-pixel { position:absolute;width:3px;height:3px;background:var(--room-color);opacity:.28;box-shadow:3px 0 0 #ffffff22;animation:room-drift 20s ease-in-out infinite; }
+.petals .ambient-pixel,.leaves .ambient-pixel { width:5px;height:3px;clip-path:polygon(25% 0,100% 0,100% 60%,50% 100%,0 100%,0 40%); }
+.embers .ambient-pixel { box-shadow:0 0 6px var(--room-color);animation-name:room-ember;opacity:.45; }
+.rain .ambient-pixel { width:2px;height:9px;opacity:.23;animation-name:room-droplet; }
+.electric .ambient-pixel { box-shadow:3px 2px 0 var(--room-color),5px 4px 0 #b7e8ed55;animation-name:room-electric; }
+.mist .ambient-pixel { width:32px;height:2px;opacity:.08;box-shadow:8px 3px 0 var(--room-color),17px 6px 0 var(--room-color); }
+.ambient-ripple { position:absolute;width:52px;height:12px;border:1px solid var(--room-color);opacity:.18;clip-path:polygon(15% 0,85% 0,100% 30%,100% 70%,85% 100%,15% 100%,0 70%,0 30%);animation:room-ripple 11s ease-out infinite; }
+@keyframes room-drift { 0%,100% {transform:translate(0,0);opacity:.14;}50% {transform:translate(var(--drift),-16px);opacity:.36;} }
+@keyframes room-ember { 0% {transform:translate(0,12px);opacity:0;}25%,70% {opacity:.4;}100% {transform:translate(var(--drift),-38px);opacity:0;} }
+@keyframes room-droplet { 0% {transform:translateY(-22px);opacity:0;}20%,70% {opacity:.22;}100% {transform:translateY(30px);opacity:0;} }
+@keyframes room-electric { 0%,100% {opacity:.08;transform:translateX(0);}45%,55% {opacity:.32;transform:translateX(2px);} }
+@keyframes room-ripple { 0% {transform:scale(.5);opacity:0;}25% {opacity:.2;}100% {transform:scale(1.7);opacity:0;} }
+body.reduced .room-atmosphere *,body:has(#motion:checked) .room-atmosphere * { animation:none; }
+@media(prefers-reduced-motion:reduce) { .room-atmosphere * {animation:none;} }
 @media(orientation:landscape) and (max-height:550px) {
   .watch-hud.camera-hud { left:23%;width:62%; }
   .stage:has(.camera-hud)>#status { display:none; }

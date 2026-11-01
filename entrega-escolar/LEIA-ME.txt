@@ -1,0 +1,9 @@
+SENTIA — COMO ABRIR
+
+Extraia o ZIP inteiro e abra a pasta Sentia no VS Code. Abra o index.html da raiz no navegador, diretamente ou pelo Live Server. Mantenha as pastas juntas. O site, o plano pessoal e o Jardim dos Ecos funcionam sem PHP ou MySQL; a partida do Jardim é salva separadamente neste navegador.
+
+Para o modo compartilhado: copie Sentia para a pasta htdocs do XAMPP, inicie Apache e MySQL e abra http://localhost/Sentia/. Em Meu registro, escolha Registro compartilhado · MySQL. Se necessário, use Preparar banco local ou importe banco/schema.sql pelo phpMyAdmin. Se sua senha ou porta for diferente, copie api/config.local.example.php para api/config.local.php e ajuste os valores. O plano pessoal só é copiado para o banco quando você escolhe importar.
+
+O botão Reiniciar SENTIA fica no rodapé e pede confirmação. Ele limpa as descobertas, a coleção, o enigma e o plano pessoal, voltando ao início no modo pessoal. A partida e as preferências do Jardim, o tema, a redução de movimento e os registros compartilhados do MySQL são preservados. O portal inclui quatro desafios, com dicas graduais e progresso salvo: lanternas, vínculos, palavra e mosaico.
+
+As pastas HTML-puro, CSS-puro, JavaScript-puro, PHP-servidor e SQL servem para estudar cada linguagem separadamente. Para usar o projeto completo, abra sempre o index.html da raiz. O portfólio com as telas incorporadas está em portfolio/SENTIA-portfolio.excalidraw; abra-o no Excalidraw. Os créditos das quatro músicas estão em CREDITOS-AUDIO.txt.

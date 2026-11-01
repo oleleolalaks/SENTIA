@@ -1,7 +1,7 @@
 'use strict';
 
 // As faixas ficam locais: depois de extrair o projeto, o jogo não depende da internet para tocar.
-// Os créditos e a licença de cada música estão em documentacao/CREDITOS-AUDIO.txt.
+// Os créditos e a licença de cada música estão em entrega-escolar/CREDITOS-AUDIO.txt.
 window.AudioSentia = (() => {
   const tracks = Object.freeze([
     {id:'garden', title:'Dreams Become Real', file:'dreams-become-real.mp3', source:'https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500027', gain:.56},

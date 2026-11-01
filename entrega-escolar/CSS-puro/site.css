@@ -585,6 +585,13 @@ footer>div {
   font-size:13px;
   margin-left:auto
 }
+footer #reset-site {
+  justify-self:start;
+  min-height:44px;
+  padding:4px 0;
+  font-size:inherit;
+  text-align:left
+}
 .footer-mark {
   font:11px/1.5 monospace;
   letter-spacing:1px
@@ -886,5 +893,27 @@ body.reduced *,body.reduced *::before,body.reduced *::after { animation:none!imp
 #record-storage { display:block;width:100%;margin-bottom:12px;font-size:13px; }
 .database-panel p,.local-records p { margin:0 0 8px;overflow-wrap:anywhere; }
 .database-panel .record-actions { margin:0;gap:14px; }
+
+/* O acabamento usa a paleta do site e mantém o enigma legível em telas pequenas. */
+.hero-art { box-shadow:8px 8px 0 var(--mint); }
+.path-card,.emotion-card,.paper { transition:box-shadow .18s ease,border-color .18s ease; }
+.path-card:hover,.emotion-card:hover,.emotion-card:focus-visible { box-shadow:5px 5px 0 var(--line); }
+.paper { border-top:3px solid var(--line); }
+.portal-puzzle { position:relative; border-top:5px solid var(--ink); }
+.puzzle-steps { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.puzzle-steps li { min-width:0; overflow-wrap:anywhere; }
+.trail-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;max-width:520px;margin:24px 0; }
+.trail-grid button { position:relative;display:grid;grid-template-columns:1fr auto;gap:5px;min-height:84px;padding:10px;border:1px solid var(--line);background:var(--bg);text-align:left;opacity:1; }
+.trail-grid small { grid-column:1/-1;font:11px/1.2 monospace;color:var(--muted); }
+.trail-grid span { font-size:28px;line-height:1; }
+.trail-grid b { align-self:end;font:700 17px/1 monospace; }
+.trail-grid button:not(:disabled) { border:2px solid var(--ink);box-shadow:2px 2px 0 var(--mint); }
+.trail-grid button:not(:disabled):hover { background:var(--mint); }
+.trail-grid button[aria-pressed="true"] { background:var(--mint);border-color:var(--ink); }
+.trail-grid button[data-step]::after { content:attr(data-step);position:absolute;right:6px;top:5px;font:700 10px/1 monospace;color:var(--ink); }
+#trail-status { font-variant-numeric:tabular-nums;padding:12px;border-left:3px solid var(--ink);background:var(--bg);max-width:520px; }
+@media(max-width:600px) { .puzzle-steps {grid-template-columns:repeat(2,minmax(0,1fr));}.trail-grid {gap:7px;}.trail-grid button {min-height:72px;padding:8px;} }
+@media(prefers-reduced-motion:reduce) { .path-card,.emotion-card,.paper {transition:none;} }
+body.reduced .path-card,body.reduced .emotion-card,body.reduced .paper {transition:none;}
 #database-status.error { color:var(--ink); }
 #task-form input:disabled,#task-form button:disabled { opacity:.55;cursor:not-allowed; }
