@@ -46,10 +46,14 @@ window.Arena = (() => {
     audioTimes = {};
   const angleDiff = (a,b) => Math.atan2(Math.sin(a-b),Math.cos(a-b));
   // Os sons acontecem nas ações, nn a cada quadro do desenho.
-  function sound(name, spacing=.14) {
+  function sound(name, spacing=.14, options={}) {
     if(elapsed-(audioTimes[name]??-99)<spacing)return;
     audioTimes[name]=elapsed;
-    window.AudioSentia?.sfx?.(name);
+    window.AudioSentia?.sfx?.(name,options);
+  }
+  function soundPosition(source=enemy,intensity=1) {
+    const angle=Math.atan2(source.y-player.y,source.x-player.x);
+    return {pan:Math.sin(angleDiff(angle,player.a)),distance:Math.max(.5,Math.hypot(source.x-player.x,source.y-player.y)*.35),intensity};
   }
   const find = part => ASSETS.find(p => p.includes(part));
   function image(id, part) {
@@ -273,11 +277,11 @@ window.Arena = (() => {
       const cost=config.assist?17:30;
       if(player.stamina<cost){warning='Sem fôlego para a luz. Solte a defesa e recupere-se.';return;}
       player.stamina-=cost;staminaDelay=1.15;lightAge=0;
-      sound('attack');
+      sound('projectile',.2,{intensity:.55});
       if (distance<11 && Math.abs(diff) < (config.assist?.38:.22) && lineClear(enemy.x, enemy.y)) {
         enemy.hp -= enemy.phase === 'recover' ? 30 : 10;
         enemy.hitUntil=elapsed+.35;
-        sound('hit');
+        sound('hit',.14,soundPosition(enemy,.35));
       }
       lightCooldown = config.assist?1.8:2.7;
       attackCooldown = .65;
@@ -291,14 +295,14 @@ window.Arena = (() => {
       player.stamina -= cost;
       staminaDelay = .8;
       attackAge = 0;
-      sound('attack');
+      sound(config.equipped==='faca'?'knife':'attack',.14,{intensity:.65});
       attackCooldown = config.equipped === 'faca' ? .52 : .72;
       if (distance < (config.assist?2.8:2.5) && Math.abs(diff) < (config.assist?.7:.45) && lineClear(enemy.x, enemy.y)) {
         const damage = config.equipped==='faca'&&config.items.includes('faca') ? 20 : config.items.includes('espada') ? 27 : 13;
         // Golpear durante o preparo encontra resistência. O recuo dele é a abertura mais segura.
         enemy.hp -= damage * (enemy.phase==='recover'?1.4:config.assist?.7:enemy.phase==='approach'?.5:.22);
         enemy.hitUntil=elapsed+.35;
-        sound('hit');
+        sound('cut',.14,soundPosition(enemy,config.equipped==='faca'?.45:.7));
         if(enemy.phase==='recover')walk(enemy, Math.cos(player.a) * .15, Math.sin(player.a) * .15);
       }
     }
@@ -319,9 +323,9 @@ window.Arena = (() => {
       player.stamina = Math.max(0,player.stamina-n*1.15);
       staminaDelay = .9;
       if(player.stamina < 8) {guardBroken = 1.5;sound('alert',.4);}
-      sound('guard');
+      sound('block',.14,soundPosition(source,.7));
     } else {
-      sound('hit');
+      sound('hit',.14,soundPosition(source,.65));
     }
     player.hp -= guarding ? n * (config.items.includes('escudo') ? .22 : .75) : n;
     hit = .3;
@@ -355,7 +359,9 @@ window.Arena = (() => {
       side = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     const norm = Math.hypot(forward, side) || 1;
     const speed = (sprinting ? 3.6 : guarding ? 1.85 : 2.55) * dt;
+    const previousX=player.x,previousY=player.y;
     walk(player, (Math.cos(player.a) * forward - Math.sin(player.a) * side) * speed / norm, (Math.sin(player.a) * forward + Math.cos(player.a) * side) * speed / norm);
+    if(Math.hypot(player.x-previousX,player.y-previousY)>.001)sound('step',sprinting?.29:.46,{pace:sprinting?'run':'walk',surface:'stone',intensity:.45});
     if (freeMode) {
       const nearSword = Math.hypot(player.x - 10.5, player.y - 4.5) < 1.3,
         nearSugar = Math.hypot(player.x - 3.5, player.y - 4.5) < 1.5;
@@ -377,6 +383,7 @@ window.Arena = (() => {
       a = Math.atan2(player.y - enemy.y, player.x - enemy.x),
       visible=lineClear(enemy.x,enemy.y);
     if (enemy.phase === 'approach') {
+      if(d<8)sound('approach',d<3?.8:1.25,soundPosition(enemy,.4));
       warning = 'Olhe para Beerus. Esquive, espere o recuo e contra-ataque.';
       if (d > 1.8||!visible) pursue(dt,config.assist?1.85:enraged?2.95:2.6);
       if (d < .8&&visible) damage(18);
@@ -387,7 +394,7 @@ window.Arena = (() => {
         enemy.phase = 'prepare';
         enemy.timer = config.assist ? 1.55 : enraged ? .92 : 1.2;
         enemy.windup=enemy.timer;enemy.aim=a;enemy.aimLocked=false;
-        sound('alert',.35);
+        sound('charge',.35,soundPosition(enemy,.65));
       }
     } else if (enemy.phase === 'prepare') {
       const tells=['GARRA · recue ou bloqueie','TRÊS DISPAROS · mova-se para o lado','INVESTIDA · saia da linha','MORDIDA · recue','LEQUE DE FOGO · busque uma brecha ou cobertura','GRITO · saia do alcance; escudo nn protege','AGARRE · recue; nn tente bloquear'];
@@ -406,7 +413,7 @@ window.Arena = (() => {
           if(enemy.pattern===6&&d<2.8)damage(38,enemy,false);
         }
         if(enemy.pattern===4)fireVolley(enraged,7,.22);
-        sound('attack',.2);
+        sound(enemy.pattern===2?'charge':'attack',.2,soundPosition(enemy,.65));
       }
     } else if (enemy.phase === 'attack') {
       warning=enemy.pattern===2?'INVESTIDA · continue a esquiva':enemy.pattern===1?'RAJADA · continue em movimento':'Espere o golpe terminar.';
@@ -444,6 +451,7 @@ window.Arena = (() => {
         b.x+=b.vx*dt/steps;b.y+=b.vy*dt/steps;
         if(solid(b.x,b.y))return false;
         if(Math.hypot(b.x-player.x,b.y-player.y)<.42) {damage(24,source);return false;}
+        if(!b.whizzed&&Math.hypot(b.x-player.x,b.y-player.y)<1.15){b.whizzed=true;sound('nearMiss',.22,soundPosition(b,.5));}
       }
       return b.life>0;
     });
@@ -464,7 +472,7 @@ window.Arena = (() => {
       const a=enemy.aim+(i-(count-1)/2)*spread;
       bullets.push({x:enemy.x,y:enemy.y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,life:4.8});
     }
-    sound('attack',.2);
+    sound('projectile',.2,soundPosition(enemy,.65));
   }
   function enemyImage() {
     const alternate=Math.floor(elapsed*5)%2;

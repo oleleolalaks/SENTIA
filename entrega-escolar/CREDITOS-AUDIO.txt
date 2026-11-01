@@ -33,7 +33,7 @@ Os arquivos MP3 foram baixados do domínio oficial em 1 de novembro de 2026.
 Os nomes dos arquivos foram adaptados para o projeto. As gravações não foram cortadas nem editadas.
 O programa ajusta o volume, repete as faixas e faz transições durante a execução.
 Alterações de reprodução: Feral Chase toca a 1,16× no labirinto e 1,07× na perseguição de Mizzery, sem editar os MP3.
-Os bipes de voz, passos, impactos, alertas, pulso grave e jumpscares são síntese original do SENTIA por Web Audio; não usam gravações externas.
+Os bipes de voz, passos, cortes, lâminas no ar, bloqueios, projéteis, alertas, pulso grave, páginas, objetos, água, brasas, vento, ruídos dos quartos e jumpscares são síntese original do SENTIA por Web Audio; não usam gravações externas. A reprodução usa posição estéreo, distância, limites de repetição e volumes separados.
 
 A atribuição deve acompanhar a distribuição do jogo e permanecer acessível nos créditos.
 Não são músicas retiradas de jogos comerciais. Não se trata de composições originais do SENTIA.

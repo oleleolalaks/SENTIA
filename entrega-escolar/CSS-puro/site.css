@@ -917,3 +917,66 @@ body.reduced *,body.reduced *::before,body.reduced *::after { animation:none!imp
 body.reduced .path-card,body.reduced .emotion-card,body.reduced .paper {transition:none;}
 #database-status.error { color:var(--ink); }
 #task-form input:disabled,#task-form button:disabled { opacity:.55;cursor:not-allowed; }
+
+/* Acabamento de leitura, estados vazios e continuidade das ações do plano pessoal. */
+::selection { background:var(--ink);color:var(--bg); }
+.site-header nav a { display:inline-flex;align-items:center;min-height:44px; }
+.icon-button { min-width:44px;min-height:44px;flex-shrink:0; }
+.button:disabled:hover { transform:none;box-shadow:none; }
+.page-heading p,.paper p,.connection p { text-wrap:pretty; }
+.search-box:focus-within { border-color:#bc7342; }
+.search-box input:focus-visible { outline-offset:0; }
+.emotion-card { overflow:hidden; }
+.emotion-card img { transition:transform .18s ease; }
+.emotion-card:hover img,.emotion-card:focus-visible img { transform:translateY(-4px); }
+.empty-state { padding:38px 28px;border:1px dashed var(--line);background:var(--paper);max-width:700px; }
+.empty-state>span { display:block;font-size:30px;margin-bottom:12px; }
+.empty-state h2 { font-size:24px; }
+.empty-state p { margin-top:12px;color:var(--muted);max-width:510px; }
+.task-progress { display:block;width:100%;height:8px;border:0;border-radius:0;background:var(--line);accent-color:var(--ink);margin:-8px 0 20px; }
+.task-progress::-webkit-progress-bar { background:var(--line); }
+.task-progress::-webkit-progress-value { background:var(--ink); }
+.task-progress::-moz-progress-bar { background:var(--ink); }
+.task-filters { display:flex;flex-wrap:wrap;gap:6px;margin:20px 0 8px; }
+.task-filters button { min-height:44px;padding:8px 12px;border:1px solid var(--line);background:var(--bg);font-size:12px;font-weight:700; }
+.task-filters [aria-pressed="true"] { border-color:var(--ink);background:var(--ink);color:var(--bg); }
+.tasks { margin-top:12px; }
+.tasks li { gap:12px;min-height:64px; }
+.tasks li span { min-width:0;font-size:14px;line-height:1.5; }
+.tasks input { flex:0 0 20px;margin:0;accent-color:var(--ink); }
+.tasks button { min-width:44px;min-height:44px;font-size:12px; }
+.tasks button:last-child { font-size:23px; }
+.tasks li.done { background:linear-gradient(90deg,var(--mint),transparent); }
+.task-empty { padding:18px 16px;border-left:3px solid var(--line);background:var(--bg);color:var(--muted);font-size:14px; }
+.database-panel { border-left:3px solid var(--ink); }
+#database-status[data-state="saving"] { font-style:italic; }
+#database-status.error { border-left:3px solid #b57843;padding-left:10px;font-weight:700; }
+input[aria-invalid="true"],textarea[aria-invalid="true"] { border:2px solid #b57843; }
+#form-status:not(:empty) { padding:12px 14px;border-left:3px solid #b57843;background:var(--bg);font-size:14px; }
+.paper form label:first-child { margin-top:0; }
+.puzzle-steps li[aria-current="step"] { font-weight:700; }
+.puzzle-notebook summary:focus-visible { outline:3px solid #da8d4e;outline-offset:5px; }
+.lantern-slot:focus-within { border-color:var(--ink); }
+.puzzle-feedback:not(:empty) { border-left:3px solid var(--ink);padding:14px 16px;background:var(--bg); }
+.puzzle-feedback.success { background:var(--mint); }
+#trail-help { max-width:520px; }
+.trail-grid button:disabled:not([aria-pressed="true"]) { border-style:dashed;color:var(--muted); }
+.trail-grid button[aria-pressed="true"] { box-shadow:inset 0 -3px 0 var(--ink); }
+.trail-grid button:focus-visible { z-index:1;outline-offset:3px; }
+#trail-status.trail-ready { border-width:5px; }
+#puzzle-title:focus,#seal-title:focus,#trail-title:focus { outline:none; }
+@media(max-width:600px) {
+  .site-header { padding:16px 24px; }
+  .site-header nav { column-gap:18px;row-gap:0;justify-content:flex-start; }
+  .site-header nav a { font-size:12px; }
+  .input-row input { min-width:0;flex-basis:100%;font-size:16px; }
+  .input-row .button { width:100%; }
+  .tasks li { gap:8px; }
+  .tasks button { padding-inline:3px; }
+  .alert { gap:12px;padding:14px; }
+  .alert button { flex:0 0 36px;min-height:44px; }
+  .empty-state { padding:26px 22px; }
+  .puzzle-form .actions { gap:12px; }
+  #trail-check { flex-basis:100%; }
+  #modal-body .actions .button { width:100%; }
+}

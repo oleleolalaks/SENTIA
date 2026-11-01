@@ -147,7 +147,7 @@ $('#modal').addEventListener('click', e => {
 });
 // Parte 4: o filtro usa o texto buscado e a coleção para reconstruir os cartões visíveis.
 function renderAtlas() {
-  const q = $('#busca').value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const q = $('#busca').value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   const filtered = emotions.filter(e => (!collectionOnly || collection.has(e[0])) && e.join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes(q));
   $('#emotion-grid').replaceChildren(...filtered.map(e => {
     const b = document.createElement('button');
@@ -187,6 +187,8 @@ function renderAtlas() {
   $('#collection-filter').textContent = collectionOnly ? 'Mostrar todos os sentimentos' : 'Minha coleção (' + collection.size + ')';
   $('#collection-filter').setAttribute('aria-pressed', String(collectionOnly));
   $('#clear-atlas-filters').hidden = !q && !collectionOnly;
+  $('#atlas-empty').hidden = !!filtered.length;
+  $('#atlas-empty p').textContent = collectionOnly && !collection.size ? 'Abra um sentimento no Atlas e toque em “Guardar esta descoberta” para montar sua coleção.' : 'Experimente outra palavra ou limpe os filtros para explorar o Atlas.';
 }
 $('#busca').oninput = renderAtlas;
 $('#clear-atlas-filters').onclick = () => {
@@ -237,19 +239,26 @@ $('#reflect-choice').onchange = () => {
 };
 // Parte 6: esta é uma simulação local. Promise e setTimeout fazem a espera; não há IA externa.
 const reflections = ['Você pode reconhecer um esforço sem esperar um resultado perfeito.', 'Qual coisa pequena pode esperar até amanhã?', 'Um limite também pode ser uma forma de cuidado.', 'É possível pedir companhia sem ter uma explicação pronta.', 'Você não precisa resolver todo o dia de uma vez.'];
+let previousReflection = -1;
 $('#reflection').onclick = async () => {
   const b = $('#reflection');
+  if (b.disabled) return;
   b.disabled = true;
+  $('#reflection-result').setAttribute('aria-busy', 'true');
   b.textContent = 'Preparando uma pausa…';
   $('#reflection-result').hidden=false;
   $('#reflection-text').textContent='Procurando uma pequena reflexão…';
   try {
-    const text = await new Promise(resolve => setTimeout(() => resolve(reflections[Math.floor(Math.random() * reflections.length)]), 700));
+    const choices = reflections.map((_, i) => i).filter(i => i !== previousReflection);
+    const next = choices[Math.floor(Math.random() * choices.length)];
+    const text = await new Promise(resolve => setTimeout(() => resolve(reflections[next]), 700));
+    previousReflection = next;
     $('#reflection-text').textContent = text;
   } catch {
     $('#reflection-text').textContent = 'Não foi possível mostrar a reflexão agora. Tente novamente.';
   } finally {
     b.disabled = false;
+    $('#reflection-result').setAttribute('aria-busy', 'false');
     b.textContent = 'Receber outra reflexão ✦';
   }
 };
@@ -260,16 +269,19 @@ $('#contact-form').onsubmit = e => {
     message = $('#mensagem');
   if (name.value.trim().length < 2) {
     $('#form-status').textContent = 'Escreva um nome com pelo menos 2 letras.';
+    name.setAttribute('aria-invalid', 'true');
     name.focus();
     return;
   }
   if (!email.validity.valid || !email.value.trim()) {
     $('#form-status').textContent = 'Confira o formato do e-mail.';
+    email.setAttribute('aria-invalid', 'true');
     email.focus();
     return;
   }
   if (message.value.trim().length < 10) {
     $('#form-status').textContent = 'A sugestão precisa ter pelo menos 10 caracteres.';
+    message.setAttribute('aria-invalid', 'true');
     message.focus();
     return;
   }
@@ -281,6 +293,14 @@ $('#contact-form').onsubmit = e => {
   finish.addEventListener('click',()=>{$('#contact-form').reset();$('#modal').close();alertBox('Campos conferidos. Nenhuma mensagem foi enviada.');});
   summary.append(heading,description,finish);openModal(summary);
 };
+$('#contact-form').addEventListener('input', e => {
+  e.target.removeAttribute('aria-invalid');
+  $('#form-status').textContent = '';
+});
+$('#contact-form').addEventListener('reset', () => {
+  $('#contact-form').querySelectorAll('[aria-invalid]').forEach(input => input.removeAttribute('aria-invalid'));
+  $('#form-status').textContent = '';
+});
 $('#garden-entry').onclick = () => {
   if (!puzzle.solved) {
     $('#portal-puzzle').scrollIntoView({behavior:reducedMotionEnabled() ? 'auto' : 'smooth',block:'start'});
@@ -313,6 +333,10 @@ function puzzleStatus(text, good = false) {
   $('#puzzle-feedback').classList.toggle('success', good);
   if (!good && location.hash === '#jardim') $('#puzzle-feedback').scrollIntoView({block:'nearest',behavior:reducedMotionEnabled() ? 'auto' : 'smooth'});
 }
+function clearPuzzleFeedback() {
+  $('#puzzle-feedback').textContent = '';
+  $('#puzzle-feedback').classList.remove('success');
+}
 function orderRules(order) {
   const at = id => order.indexOf(id);
   // O índice começa em zero; a posição que aparece no cartão começa em um.
@@ -330,6 +354,7 @@ function validTrail(path, complete = false) {
 }
 function renderTrail() {
   $('#trail-step').hidden = puzzle.stage !== 4;
+  const focusedCell = document.activeElement?.closest('#trail-grid button')?.dataset.cell;
   const selected = puzzle.trail;
   $('#trail-grid').replaceChildren(...trailWeights.map((cost, cell) => {
     const button = document.createElement('button');
@@ -339,17 +364,37 @@ function renderTrail() {
     button.type = 'button';button.dataset.cell = cell;
     if (selected.includes(cell)) button.dataset.step = selected.indexOf(cell) + 1;
     button.innerHTML = '<small>' + place + '</small><span aria-hidden="true">' + symbol + '</span><b>' + cost + '</b>';
-    button.setAttribute('aria-label',place + ', ' + name + ', valor ' + cost);
+    button.setAttribute('aria-label',place + ', ' + name + ', valor ' + cost + (selected.includes(cell) ? ', passo ' + (selected.indexOf(cell) + 1) + ' do caminho' : ''));
     button.setAttribute('aria-pressed', String(selected.includes(cell)));
     button.disabled = puzzle.stage !== 4 || !validTrail([...selected, cell]);
-    button.onclick = () => {puzzle.trail.push(cell);savePuzzle();renderTrail();($('#trail-grid button:not(:disabled)') || $('#trail-check')).focus({preventScroll:true});};
+    button.onclick = () => {clearPuzzleFeedback();puzzle.trail.push(cell);savePuzzle();renderTrail();focusNextTrail();};
     return button;
   }));
   const sum = selected.reduce((total, cell) => total + trailWeights[cell], 0);
   $('#trail-status').textContent = selected.length + '/7 pedras · soma ' + sum + '/16 · Folha ' + (selected.includes(5)?'✓':'por visitar') + ' · Lua ' + (selected.includes(10)?'✓':'por visitar');
   $('#trail-undo').disabled = !selected.length;
+  $('#trail-clear').disabled = !selected.length;
+  $('#trail-status').classList.toggle('trail-ready', selected.length === 7);
+  if (focusedCell !== undefined) {
+    const previous = $('#trail-grid button[data-cell="' + focusedCell + '"]');
+    (previous && !previous.disabled ? previous : $('#trail-grid button:not(:disabled)') || $('#trail-check')).focus({preventScroll:true});
+  }
 }
+function focusNextTrail() {
+  ($('#trail-grid button:not(:disabled)') || $('#trail-check')).focus({preventScroll:true});
+}
+// As setas percorrem as próximas pedras possíveis; Enter e Espaço confirmam o passo.
+$('#trail-grid').addEventListener('keydown', e => {
+  if (!['ArrowRight','ArrowDown','ArrowLeft','ArrowUp','Home','End'].includes(e.key)) return;
+  const choices = [...$('#trail-grid').querySelectorAll('button:not(:disabled)')];
+  if (!choices.length) return;
+  e.preventDefault();
+  const current = Math.max(0, choices.indexOf(document.activeElement));
+  const next = e.key === 'Home' ? 0 : e.key === 'End' ? choices.length - 1 : (current + (['ArrowRight','ArrowDown'].includes(e.key) ? 1 : -1) + choices.length) % choices.length;
+  choices[next].focus({preventScroll:true});
+});
 function renderPuzzle() {
+  const focusedId = document.activeElement?.closest('#lantern-slots select,#seal-slots select')?.id;
   $('#lantern-form > p:not(.eyebrow)').textContent='As posições formam uma única fila, de 1 a 6. No celular, siga a numeração e continue na próxima linha. “Antes” e “depois” se referem aos números, não à linha da tela. Use cada sentimento uma vez e respeite todas as pistas do caderno.';
   $('#puzzle-notebook-title').textContent = 'Meu caderno de pistas · ' + puzzle.clues.length + '/6 fragmentos';
   $('#puzzle-attempts').textContent = puzzle.attempts ? puzzle.attempts + (puzzle.attempts === 1 ? ' verificação feita' : ' verificações feitas') : 'Sem limite de tentativas';
@@ -397,6 +442,7 @@ function renderPuzzle() {
     rune.className = 'lantern-rune';
     rune.textContent = id && puzzle.clues.includes(id) ? puzzle.stage > 1 ? lanternClues[id][0] : '✦' : '·';
     const select = lanternSelect('Lanterna da posição ' + (i + 1), id, value => {
+      clearPuzzleFeedback();
       puzzle.order[i] = value;
       savePuzzle();
       portrait.hidden = !value;
@@ -425,9 +471,11 @@ function renderPuzzle() {
     row.append(legend);
     pair.forEach((id,j) => {
       const select = lanternSelect('Selo ' + (i + 1) + ', sentimento ' + (j + 1), id, value => {
+        clearPuzzleFeedback();
         puzzle.seals[i][j] = value;
         savePuzzle();
       });
+      select.id = 'seal-' + i + '-' + j;
       select.disabled = puzzle.stage > 2;
       row.append(select);
     });
@@ -459,6 +507,10 @@ function renderPuzzle() {
   $('#puzzle-hint').hidden = puzzle.solved;
   $('#puzzle-hint').textContent = puzzle.hints < 3 ? 'Pedir uma pista de raciocínio (' + (puzzle.hints + 1) + '/3)' : 'Rever a última pista';
   renderTrail();
+  if (focusedId) {
+    const current = document.getElementById(focusedId);
+    if (current && !current.disabled) current.focus({preventScroll:true});
+  }
 }
 $('#lantern-form').onsubmit = e => {
   e.preventDefault();
@@ -516,8 +568,9 @@ $('#word-form').onsubmit = e => {
   puzzleStatus('A palavra acendeu o mosaico. Falta traçar uma passagem que respeite as quatro regras.', true);
   $('#trail-title').focus();
 };
-$('#trail-undo').onclick = () => {puzzle.trail.pop();savePuzzle();renderTrail();};
-$('#trail-clear').onclick = () => {puzzle.trail = [];savePuzzle();renderTrail();};
+$('#portal-word').addEventListener('input', clearPuzzleFeedback);
+$('#trail-undo').onclick = () => {clearPuzzleFeedback();puzzle.trail.pop();savePuzzle();renderTrail();focusNextTrail();};
+$('#trail-clear').onclick = () => {clearPuzzleFeedback();puzzle.trail = [];savePuzzle();renderTrail();focusNextTrail();};
 $('#trail-check').onclick = () => {
   if (puzzle.stage !== 4) return;
   puzzle.attempts++;
@@ -617,6 +670,8 @@ function route() {
     preventScroll: true
   });
 }
+// O atalho pula o cabeçalho sem trocar a seção que a pessoa está lendo.
+$('.skip').addEventListener('click', e => {e.preventDefault();$('#conteudo').focus({preventScroll:true});$('#conteudo').scrollIntoView({block:'start',behavior:reducedMotionEnabled() ? 'auto' : 'smooth'});});
 $('#hero-image').src = findAsset('/01-Entrada/03-praca-central.png');
 $('#garden-image').src = findAsset('/01-Entrada/01-portal.png');
 window.addEventListener('hashchange', route);

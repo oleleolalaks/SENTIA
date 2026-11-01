@@ -123,10 +123,12 @@ const G = (() => {
     }
   }
   function valid(s) {
-    return s && (s.room === null || ids.includes(s.room)) && Number.isInteger(s.view) && s.view >= 0 && s.view <= 3 && s.version === 4 && Array.isArray(s.dead) && s.dead.every(x => ids.includes(x)) && Array.isArray(s.items) && Array.isArray(s.log) && s.seen && s.talks && s.flags && s.pending && Array.isArray(s.choices) && Number.isFinite(s.activity) && Number.isFinite(s.sanity) && Number.isFinite(s.playSeconds) && ['explore', 'watch', 'fearChase', 'fearRoom', 'ninfa', 'odio', 'comics', 'arena', 'candy', 'stairs', 'maze', 'insaneChase', 'interrogation', 'revelation', 'keys', 'gate', 'ending', 'complete'].includes(s.phase);
+    const record=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+    return record(s) && (s.room === null || ids.includes(s.room)) && Number.isInteger(s.view) && s.view >= 0 && s.view <= 3 && s.version === 4 && Array.isArray(s.dead) && s.dead.every(x => ids.includes(x)) && Array.isArray(s.items) && s.items.every(x=>typeof x==='string'&&x.length<120) && Array.isArray(s.log) && s.log.every(n=>record(n)&&typeof n.title==='string'&&typeof n.text==='string') && [s.seen,s.talks,s.flags,s.pending,s.lastTalk].every(record) && Array.isArray(s.choices) && Number.isFinite(s.activity) && Number.isFinite(s.sanity) && Number.isFinite(s.playSeconds) && ['explore', 'watch', 'fearChase', 'fearRoom', 'ninfa', 'odio', 'comics', 'arena', 'candy', 'stairs', 'maze', 'insaneChase', 'interrogation', 'revelation', 'keys', 'gate', 'ending', 'complete'].includes(s.phase);
   }
   // Salva no navegador, sem mandar os dados da partida para fora.
   function save() {
+    updateJournalBadge();
     try {
       localStorage.setItem('sentia-garden-v4', JSON.stringify(S));
       $('#save-status').textContent = 'Progresso salvo neste navegador.';
@@ -140,11 +142,41 @@ const G = (() => {
     save();
     window.AudioSentia?.setScene(phase);
   }
-  function note(title, text) {
-    if (!S.log.some(n => n.title === title && n.text === text)) S.log.push({
-      title,
-      text
-    });
+  let journalToastTimer = null, lastJournalSound = -Infinity, modalReturnTarget = null;
+  const entryId = (entry, index) => entry.id || 'entry-' + index;
+  function journalReadIds() {
+    if (!S) return [];
+    // Anotações de saves antigos já existentes não viram centenas de notificações ao atualizar.
+    if (!Array.isArray(S.flags.journalRead)) S.flags.journalRead = S.log.map(entryId);
+    return S.flags.journalRead;
+  }
+  function updateJournalBadge() {
+    const button = $('#journal-button');
+    if (!button) return;
+    const readIds = journalReadIds();
+    const count = S ? S.log.filter((entry,index) => !readIds.includes(entryId(entry,index))).length : 0;
+    let badge = $('#journal-count');
+    if (!badge) {badge=document.createElement('span');badge.id='journal-count';badge.className='journal-count';button.append(badge);}
+    badge.textContent=String(count);badge.hidden=count===0;
+    button.classList.toggle('has-new',count>0);
+    button.setAttribute('aria-label','Registro de descobertas'+(count?' · '+count+' nova(s) anotação(ões)':''));
+    button.disabled=mode==='menu';
+    $('#inventory-button').disabled=mode==='menu';
+  }
+  function note(title, text, meta = {}) {
+    if (S.log.some(n => n.title === title && n.text === text)) return false;
+    journalReadIds();
+    const point=D.points.find(p=>p.name===title);
+    const eco=meta.eco||point?.eco;
+    const voice=window.ObservacaoSentia?.interpretation(title,text,{eco,deaths:S.dead.length,item:meta.item});
+    S.log.push({id:'entry-'+S.log.length,title,text,...(voice?{voice}:{}),source:meta.source||(point?'Observação':'Acontecimento')});
+    updateJournalBadge();
+    let notice=$('#journal-notice');
+    if(!notice){notice=document.createElement('button');notice.id='journal-notice';notice.type='button';notice.className='journal-notice';notice.setAttribute('aria-live','polite');notice.onclick=journal;document.querySelector('.game-footer').append(notice);}
+    notice.textContent='Nova anotação no registro · J';notice.hidden=false;
+    clearTimeout(journalToastTimer);journalToastTimer=setTimeout(()=>{notice.hidden=true;},6500);
+    if(performance.now()-lastJournalSound>1200){window.AudioSentia?.spatialCue?.('notification');lastJournalSound=performance.now();}
+    return true;
   }
   function significant() {
     S.activity++;
@@ -158,11 +190,16 @@ const G = (() => {
     S.dead.push(id);
     delete S.pending[id];
     note('Uma ausência: ' + D.names[id], cause);
+    if(S.room===id&&mode==='explore')$('#stage').classList.add('room-empty');
     significant();
     checkHungerDoor();
   }
   function addItem(id) {
-    if (!S.items.includes(id)) S.items.push(id);
+    if (S.items.includes(id)) return;
+    S.items.push(id);
+    const name=({espada:'Espada de fogo',escudo:'Escudo de fogo',luz:'Luz de Sugar',faca:'Faca vermelha',lanterna:'Lanterna','chave-sanidade':'Chave de Cassidy','chave-insanidade':'Chave de Mizzery'})[id]||id;
+    note('Na bolsa: '+name,'O objeto passou para a sua bolsa e pode ser examinado sem ser equipado.',{item:id,source:'Inventário'});
+    window.AudioSentia?.spatialCue?.('item');
     save();
   }
   // Procura a pose aprovada. Choro vulnerável não confirma morte.
@@ -225,6 +262,7 @@ const G = (() => {
   function resetScene() {
     writing = null;
     window.AudioSentia?.stopVoice?.();
+    window.AudioSentia?.clearRoom?.();
     $('#dialogue').classList.remove('is-writing');
     clearIdle();
     Arena.stop();
@@ -254,11 +292,12 @@ const G = (() => {
     $('#action-panel').className = 'action-panel';
     $('#background').style.opacity = '1';
     $('#stage').classList.remove('light');
-    $('#stage').classList.remove('exploring','chasing','impact','cinematic-closeup','shared-scene');
+    $('#stage').classList.remove('exploring','room-empty','chasing','impact','cinematic-closeup','shared-scene');
     $('#prompt').className='prompt';
     $('#sanity-hud').hidden = true;
     showRoomNotice();
     updateGestureControl();
+    updateJournalBadge();
   }
   function objective(text) {
     $('#objective').textContent = text;
@@ -513,7 +552,7 @@ const G = (() => {
     S.view = 0;
     S.flags.visits=S.flags.visits||{};
     S.flags.visits[id]=(S.flags.visits[id]||0)+1;
-    if (was !== id) S.flags.lastRoom = id;
+    if (was !== id) {S.flags.lastRoom = id;window.AudioSentia?.spatialCue?.('door',{intensity:.45});}
     if (S.pending[id] != null && S.activity > S.pending[id]) return laterDeath(id);
     renderRoom();
   }
@@ -551,6 +590,8 @@ const G = (() => {
     if (!S.talks[first[id]] && !dead(id)) S.view = 0;
     background(roomBg(id, S.view));
     $('#stage').classList.add('exploring');
+    $('#stage').classList.toggle('room-empty',dead(id));
+    window.AudioSentia?.setRoom?.(id,S.view,{dead:dead(id),reduced:settings.reduced});
     $('#location').textContent = D.names[id] + ' · ' + ['Frente', 'Direita', 'Atrás', 'Esquerda'][S.view];
     objective(hint(id));
     setPhase('explore');
@@ -614,9 +655,11 @@ const G = (() => {
     const nav = document.createElement('div');
     nav.className = 'room-nav';
     nav.append(btn('← Olhar à esquerda', () => {
+      window.AudioSentia?.spatialCue?.('turn',{pan:-.5,intensity:.4});
       S.view = (S.view + 3) % 4;
       renderRoom();
     }), btn('Voltar à praça', hub), btn('Olhar à direita →', () => {
+      window.AudioSentia?.spatialCue?.('turn',{pan:.5,intensity:.4});
       S.view = (S.view + 1) % 4;
       renderRoom();
     }));
@@ -762,6 +805,7 @@ const G = (() => {
     say(dead(p.eco) ? null : p.eco, entries, renderRoom);
   }
   function holdObject(sprite,gesture) {
+    window.AudioSentia?.spatialCue?.('inspect',{intensity:.4});
     explorationHands(gesture);
     $('#hands').classList.add('inspecting-hands');
     $('#actor').hidden=true;clearIdle();
@@ -868,7 +912,7 @@ const G = (() => {
     return null;
   }
   function availableTopics(id) {
-    return (window.CONVIVENCIA || []).filter(t=>t.eco===id && (!t.clues||t.clues.some(x=>S.seen[x])) && (!t.talks||t.talks.every(x=>S.talks[x])) && (!t.items||t.items.every(x=>S.items.includes(x))) && (!t.flags||t.flags.every(x=>S.flags[x])));
+    return (window.CONVIVENCIA || []).filter(t=>t.eco===id && !dead(id) && (!t.clues||t.clues.some(x=>S.seen[x])) && (!t.allClues||t.allClues.every(x=>S.seen[x])) && (!t.alive||t.alive.every(x=>!dead(x))) && (!t.dead||t.dead.every(x=>dead(x))) && (!t.talks||t.talks.every(x=>S.talks[x])) && (!t.items||t.items.every(x=>S.items.includes(x))) && (!t.flags||t.flags.every(x=>S.flags[x])));
   }
   function talk(id) {
     if (dead(id)) return renderRoom();
@@ -886,7 +930,11 @@ const G = (() => {
     const visitor=guestFor(id);if(visitor)options.push({label:'Conversar com '+D.names[visitor.people.find(x=>x!==id)]+' em visita',go:()=>sharedVisit(visitor)});
     const topicMenu=(selected,revisit)=>say(id,[{text:revisit?'Qual conversa você quer relembrar?':'Qual descoberta você quer comentar?',choices:[
       ...selected.map(t=>({label:t.label,go:()=>say(id,t.lines,()=>{
-        if(!S.flags['topic-'+t.id]){S.flags['topic-'+t.id]=true;note('Conversa com '+D.names[id],t.label);significant();}
+        if(!S.flags['topic-'+t.id]){
+          S.flags['topic-'+t.id]=true;
+          const remembered=t.lines.map(line=>Array.isArray(line)?{who:line[0],text:line[1]}:line).filter(line=>line.text&&line.who!=='Você').slice(-2).map(line=>(line.who||D.names[id])+': '+line.text).join('\n');
+          note('Conversa com '+D.names[id]+' · '+t.label,remembered||t.label,{eco:id,source:'Conversa'});significant();
+        }
         talkMenu(id);
       })})),{label:'Voltar aos assuntos',go:()=>talkMenu(id)}
     ]}],renderRoom);
@@ -1145,6 +1193,7 @@ const G = (() => {
       return cb();
     }
     if(qte.eco==='tristeza') {
+      window.AudioSentia?.sfx?.('wave',{pan:move==='left'?.55:move==='right'?-.55:0,distance:1.2,intensity:.6});
       const sequence=[[2,3,4],[5,6,7],[8,9,10],[11,12,13],[14,15,1,3],[4,8,13]][S.checkpoint%6];
       const step=qte.visualStep||0;qte.visualStep=step+1;
       const pose=sequence[step%sequence.length];
@@ -1155,6 +1204,7 @@ const G = (() => {
       explorationHands(move==='guard'?'09-pare':'01-alcancar');
     }
     if(qte.moves && ['intercept','hold','push'].includes(move)) {
+      window.AudioSentia?.sfx?.('grab',{intensity:.4});
       actor('medo','base','combat');$('#actor').src=asset('/02-Medo/'+({intercept:'09-terror-agarrar',hold:'12-terror-bloquear',push:'03-virar-esquina-normal'})[move]+'.png');
       explorationHands(move==='push'?'09-pare':'01-alcancar');
     }
@@ -1205,7 +1255,10 @@ const G = (() => {
           qte = null;
           return;
         }
-      } else if (current.eco === 'tristeza') ninfaConsecutive = 0;
+      } else {
+        if(current.eco==='tristeza')ninfaConsecutive=0;
+        window.AudioSentia?.sfx?.(move==='guard'?'block':['intercept','hold','push'].includes(move)?'grab':'nearMiss',{intensity:.4,pan:move==='left'?.6:move==='right'?-.6:0});
+      }
       defer(settings.assist ? .3 : .16, nextQTE);
     });
   }
@@ -1411,7 +1464,7 @@ const G = (() => {
         if(c.danger>=8)return chaseFailure(c,'Você perdeu distância no obstáculo. A presença alcançou você.');
         return;
       }
-      c.turnFeedback=dir;c.feedbackLeft=.4;window.AudioSentia?.sfx?.('turn');
+      c.turnFeedback=dir;c.feedbackLeft=.4;window.AudioSentia?.spatialCue?.('turn',{pan:dir==='left'?-.6:dir==='right'?.6:0,intensity:.45});
       c.waiting=false;mode='chase';
       if(!isTurn)return;
       c.index++;
@@ -1430,7 +1483,9 @@ const G = (() => {
     if(!c.waiting)c.progress+=dt*(running&&!c.lookingBack?1:.1);
     c.danger=Math.max(settings.assist?1:2.2,c.danger+dt*(c.waiting?.22:running&&!c.lookingBack?(settings.assist?-.09:-.025):c.lookingBack?1.65:2.45));
     c.stepClock+=dt;
-    if(running&&!c.waiting&&c.stepClock>.31){c.stepClock=0;window.AudioSentia?.sfx?.('step');}
+    if(!c.waiting&&c.stepClock>(running?.31:.58)){c.stepClock=0;window.AudioSentia?.sfx?.('step',{pace:running?'run':'walk',surface:'stone',intensity:.55});}
+    c.presenceClock=(c.presenceClock||0)+dt;
+    if(c.danger>3&&c.presenceClock>1.25&&!c.waiting){c.presenceClock=0;window.AudioSentia?.sfx?.('approach',{pan:Math.sin(c.index*2.1)*.65,distance:Math.max(.5,(8-c.danger)*.4),intensity:.45});}
     Perseguicao.draw(dt,{...c,running,distance,reduced:settings.reduced,catchingUp:c.danger>5.5,threatCue:Math.max(0,(c.danger-4)/4)});
     $('#status').textContent='Passagem '+(c.index+1)+' / '+c.length+' · '+(running?'Correndo':'CORRA · Shift ou botão')+' · Margem '+Math.max(0,Math.round((8-c.danger)*12.5))+'%';
     $('#chase-run')?.setAttribute('aria-pressed',String(running));
@@ -1981,6 +2036,7 @@ const G = (() => {
     });
   }
   function modal(content) {
+    if(!$('#game-modal').open) modalReturnTarget=document.activeElement;
     paused = true;
     keysHeld = {};
     Arena.pause(true);
@@ -1997,6 +2053,7 @@ const G = (() => {
     }
     $('#game-modal').scrollTop = 0;
     if (!$('#game-modal').open) $('#game-modal').showModal();
+    if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
   }
   function closeModal() {
     if ($('#game-modal').open) $('#game-modal').close();
@@ -2005,6 +2062,8 @@ const G = (() => {
     window.AudioSentia?.resume();
     loopLast = performance.now();
     updateGestureControl();
+    if(modalReturnTarget?.isConnected)modalReturnTarget.focus({preventScroll:true});
+    modalReturnTarget=null;
   }
   function saveSettings() {
     try {
@@ -2092,6 +2151,7 @@ const G = (() => {
     modal(wrap);
   }
   function inventory() {
+    if(mode==='menu')return;
     const wrap = document.createElement('div');
     const h = document.createElement('h2');
     h.textContent = 'O que ficou com você';
@@ -2122,9 +2182,15 @@ const G = (() => {
       p.textContent = itemNames[id]?.[1] || 'Um objeto do Jardim.';
       t.append(h3, p);
       item.append(t);
-      const icon={espada:'espada-fogo',escudo:'escudo-fogo',luz:'luz-amor'}[id]||id;
+      const icon={espada:'espada-fogo',escudo:'escudo-fogo',luz:'luz-amor',faca:'faca-vermelha'}[id]||id;
       const iconSource=asset('/01-Itens-64/'+icon+'.png')||asset('/03-Objetos-Extras-64/'+icon+'.png');
       if(iconSource){const image=document.createElement('img');image.src=iconSource;image.alt='';image.className='bag-icon';item.prepend(image);}
+      const examine=btn('Observar',()=>{
+        const content=ObservacaoSentia.itemPanel({id,name:itemNames[id]?.[0]||id,description:itemNames[id]?.[1]||'Um objeto do Jardim.',sprite:iconSource,
+          sound:kind=>window.AudioSentia?.spatialCue?.(kind,{ui:true}),onBack:inventory,
+          onObserve:(detail,text)=>{S.flags['item-inspected-'+id]=true;note('Detalhe: '+(itemNames[id]?.[0]||id)+' · '+detail,text,{item:id,source:'Inventário'});save();}});
+        modal(content);window.AudioSentia?.spatialCue?.('inspect',{ui:true});
+      });examine.dataset.inspectItem=id;item.append(examine);
       if(['espada','escudo','faca','luz','lanterna','chave-sanidade','chave-insanidade'].includes(id)) item.append(btn(S.flags.equipped===id?'Equipado':'Equipar',()=>{
         S.flags.equipped=id;save();if(mode==='explore') explorationHands();if(mode==='arena') Arena.equip(id);closeModal();
       }));
@@ -2132,26 +2198,43 @@ const G = (() => {
     });
     wrap.append(bag, btn('Guardar equipamento',()=>{delete S.flags.equipped;save();if(mode==='explore') explorationHands();if(mode==='arena')Arena.equip(null);closeModal();}),btn('Voltar', closeModal));
     modal(wrap);
+    window.AudioSentia?.spatialCue?.('bag',{ui:true});
   }
   function journal() {
+    if(mode==='menu')return;
     const wrap = document.createElement('div');
     const h = document.createElement('h2');
     h.textContent = 'Registro de descobertas';
     wrap.append(h);
-    const list = document.createElement('div');
-    list.className = 'journal-list';
-    if (!S.log.length) list.textContent = 'Observe os lugares. O que você encontrar será registrado aqui.';
-    S.log.slice().reverse().forEach(n => {
-      const article = document.createElement('article'),
-        h3 = document.createElement('h3'),
-        p = document.createElement('p');
-      h3.textContent = n.title;
-      p.textContent = n.text;
-      article.append(h3, p);
-      list.append(article);
-    });
+    const intro=document.createElement('p');intro.className='hint';intro.textContent='O protagonista escreve a própria interpretação. Abra uma anotação para conferir também o que realmente foi observado.';
+    const filters=document.createElement('div');filters.className='journal-toolbar';
+    const search=document.createElement('input');search.type='search';search.placeholder='Buscar uma lembrança…';search.setAttribute('aria-label','Buscar no registro');
+    const onlyNew=btn('Mostrar apenas novas',()=>{newOnly=!newOnly;onlyNew.setAttribute('aria-pressed',String(newOnly));onlyNew.textContent=newOnly?'Mostrar todas':'Mostrar apenas novas';renderEntries();});onlyNew.setAttribute('aria-pressed','false');
+    const markAll=btn('Marcar todas como lidas',()=>{S.flags.journalRead=S.log.map(entryId);save();renderEntries();window.AudioSentia?.spatialCue?.('page',{ui:true});});
+    const list=document.createElement('div');list.className='journal-list';let newOnly=false;
+    function renderEntries(){
+      const query=search.value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+      const readIds=journalReadIds();
+      const entries=S.log.map((entry,index)=>({entry,id:entryId(entry,index)})).reverse().filter(({entry,id})=>(!newOnly||!readIds.includes(id))&&(entry.title+' '+entry.text+' '+(entry.voice||'')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(query));
+      list.replaceChildren();
+      if(!entries.length){const empty=document.createElement('p');empty.textContent=S.log.length?'Nenhuma anotação neste filtro.':'Observe os lugares. O que encontrar será registrado aqui.';list.append(empty);}
+      for(const {entry,id} of entries){
+        const details=document.createElement('details');details.className='journal-entry';details.dataset.entryId=id;
+        const summary=document.createElement('summary');summary.textContent=entry.title;
+        const unread=!readIds.includes(id);details.classList.toggle('unread',unread);
+        const tag=document.createElement('span');tag.className='journal-new';tag.textContent='NOVO';tag.hidden=!unread;summary.append(tag);details.append(summary);
+        if(entry.voice){const label=document.createElement('p');label.className='journal-source';label.textContent='Escrito pelo protagonista';const voice=document.createElement('p');voice.className='journal-voice';voice.textContent=entry.voice;details.append(label,voice);}
+        const evidence=document.createElement('div');evidence.className='journal-evidence';const label=document.createElement('strong');label.textContent=entry.voice?'O que foi observado':'Registro do acontecimento';const fact=document.createElement('p');fact.textContent=entry.text;evidence.append(label,fact);details.append(evidence);
+        details.addEventListener('toggle',()=>{if(!details.open)return;if(!journalReadIds().includes(id)){S.flags.journalRead.push(id);save();tag.hidden=true;details.classList.remove('unread');}window.AudioSentia?.spatialCue?.('page',{ui:true});});
+        list.append(details);
+      }
+      onlyNew.disabled=!S.log.length;markAll.disabled=!S.log.some((entry,index)=>!journalReadIds().includes(entryId(entry,index)));
+    }
+    search.oninput=renderEntries;filters.append(search,onlyNew,markAll);wrap.append(intro,filters);renderEntries();
     wrap.append(list, btn('Voltar', closeModal));
     modal(wrap);
+    $('#journal-notice')?.setAttribute('hidden','');
+    window.AudioSentia?.spatialCue?.('page',{ui:true});
   }
   $('#pause-button').onclick = pauseMenu;
   $('#inventory-button').onclick = inventory;
@@ -2195,6 +2278,7 @@ const G = (() => {
     background(asset('/01-Entrada/01-portal.png'));
     const stored = read('sentia-garden-v4', null);
     S = valid(stored) ? stored : fresh();
+    updateJournalBadge();
     updateGestureControl();
     settings = {
       ...settings,

@@ -5,7 +5,7 @@
 window.RegistrosSentia = (() => {
   const $ = selector => document.querySelector(selector);
   let rows = [], ready = false, busy = false, hooks;
-  let previous = [], mode='local', personal=[];
+  let previous = [], mode='local', personal=[], filter='all';
   try { mode=localStorage.getItem('sentia-record-mode')==='mysql'?'mysql':'local'; } catch {}
   try {
     const saved=JSON.parse(localStorage.getItem('sentia-tasks')||'[]');
@@ -29,7 +29,9 @@ window.RegistrosSentia = (() => {
         default:throw new Error('Operação de registro desconhecida.');
       }
       // Só muda o estado depois de salvar; uma falha não aparece como sucesso.
-      localStorage.setItem('sentia-personal-tasks',JSON.stringify(next));personal=next;
+      try {localStorage.setItem('sentia-personal-tasks',JSON.stringify(next));}
+      catch {throw new Error('Não foi possível guardar a alteração neste navegador. Confira o espaço disponível ou a permissão de armazenamento e tente novamente.');}
+      personal=next;
       return {ok:true};
     }
     return sqlRequest(path,method,data);
@@ -51,9 +53,10 @@ window.RegistrosSentia = (() => {
       throw error;
     } finally {clearTimeout(timeout);}
   }
-  function status(text, failed=false) {
+  function status(text, failed=false, saving=false) {
     $('#database-status').textContent=text;
     $('#database-status').classList.toggle('error',failed);
+    $('#database-status').dataset.state=failed?'error':saving?'saving':'saved';
   }
   // Desabilita somente operações em andamento; escolher local não depende do XAMPP.
   function controls() {
@@ -66,23 +69,33 @@ window.RegistrosSentia = (() => {
     $('#database-install').disabled=busy;
     document.querySelectorAll('#tasks input,#tasks button').forEach(el=>el.disabled=busy||!ready);
     $('#tasks').setAttribute('aria-busy',String(busy));
+    $('#task-form').setAttribute('aria-busy',String(busy));
     $('#record-storage').disabled=busy;
+    document.querySelectorAll('[data-task-filter]').forEach(button=>button.disabled=busy);
     $('#database-actions').hidden=mode!=='mysql';
   }
   // Renderiza cada item a partir do array. textContent impede que texto digitado vire HTML.
   function render() {
-    $('#tasks').replaceChildren(...rows.map(t=>{
+    const completed=rows.filter(t=>t.done).length;
+    const visible=rows.filter(t=>filter==='all'||(filter==='done'?t.done:!t.done));
+    $('#tasks').replaceChildren(...visible.map(t=>{
       const item=document.createElement('li');item.classList.toggle('done',t.done);
+      item.dataset.taskId=t.id;
       const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=t.done;
-      checkbox.setAttribute('aria-label','Concluir '+t.text);
+      checkbox.dataset.taskAction='toggle';checkbox.setAttribute('aria-label',(t.done?'Marcar como pendente: ':'Concluir ')+t.text);
       checkbox.onchange=()=>mutate(async()=>{await request('registros.php','PUT',{id:t.id,done:checkbox.checked});},'Ação atualizada.');
       const text=document.createElement('span');text.textContent=t.text;
-      const edit=document.createElement('button');edit.textContent='Editar';edit.dataset.taskEdit=t.id;edit.onclick=()=>editRecord(t);
-      const remove=document.createElement('button');remove.textContent='×';remove.setAttribute('aria-label','Apagar '+t.text);
+      const edit=document.createElement('button');edit.type='button';edit.textContent='Editar';edit.dataset.taskEdit=t.id;edit.dataset.taskAction='edit';edit.title='Editar '+t.text;edit.onclick=()=>editRecord(t);
+      const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.dataset.taskAction='remove';remove.setAttribute('aria-label','Apagar '+t.text);
       remove.onclick=()=>mutate(()=>request('registros.php','DELETE',{id:t.id}),'Ação removida.');
       item.append(checkbox,text,edit,remove);return item;
     }));
-    $('#task-status').textContent=ready?(rows.length?`${rows.reduce((total,t)=>total+(t.done?1:0),0)} de ${rows.length} ações concluídas.`:'Seu registro ainda está vazio.'):'Conecte o banco local para criar e editar ações.';
+    $('#task-status').textContent=ready?(rows.length?`${completed} de ${rows.length} ações concluídas.`:'Seu registro ainda está vazio.'):'Conecte o banco local para criar e editar ações.';
+    $('#task-progress').max=rows.length||1;$('#task-progress').value=completed;$('#task-progress').hidden=!ready||!rows.length;
+    $('#task-filters').hidden=!ready||!rows.length;
+    document.querySelectorAll('[data-task-filter]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.taskFilter===filter)));
+    $('#task-empty').hidden=!ready||!!visible.length;
+    $('#task-empty').textContent=rows.length?(filter==='done'?'As ações concluídas aparecerão aqui. Um passo de cada vez.':'Nenhuma ação pendente. Você pode incluir um novo passo quando quiser.'):'Seu próximo passo pode ser pequeno. Escreva uma ação acima para começar.';
     $('#local-records').hidden=mode!=='mysql'||!previous.length;
     $('#local-record-count').textContent=previous.length+' ação(ões) do seu plano pessoal continuam neste navegador. Importe se quiser copiá-las para o registro compartilhado.';
     controls();
@@ -96,16 +109,25 @@ window.RegistrosSentia = (() => {
   // Uma operação concluída atualiza o estado e redesenha a lista; erros mantêm o formulário recuperável.
   async function mutate(action, message) {
     if(busy||!ready)return false;
-    busy=true;controls();
+    const origin=document.activeElement,task=origin?.closest('#tasks li'),actionName=origin?.dataset.taskAction;
+    const nextTask=task?.nextElementSibling?.dataset.taskId||task?.previousElementSibling?.dataset.taskId;
+    busy=true;controls();status('Salvando alteração…',false,true);
     try {
       await action();await loadRows();status(message+(mode==='local'?' Plano guardado neste navegador.':' Dados guardados nesta instalação.'));return true;
     } catch(error) {status(error.message,true);render();return false;}
-    finally {busy=false;controls();}
+    finally {
+      busy=false;controls();
+      // A lista é recriada ao salvar. O teclado continua na ação correspondente ou no próximo item.
+      if(task&&!$('#modal').open){
+        const find=id=>id?document.querySelector('[data-task-id="'+CSS.escape(id)+'"] [data-task-action="'+actionName+'"]'):null;
+        (find(task.dataset.taskId)||find(nextTask)||$('#task')).focus({preventScroll:true});
+      }
+    }
   }
   // Modo pessoal abre direto; a conexão PHP só é necessária no modo MySQL.
   async function connect() {
     if(busy)return;
-    ready=false;busy=true;controls();status('Conectando os registros…');
+    ready=false;busy=true;controls();status(mode==='local'?'Abrindo seu plano pessoal…':'Conectando os registros…',false,true);
     $('#database-install').hidden=true;
     try {
       if(mode==='local'){await loadRows();ready=true;status('Plano pessoal salvo apenas neste navegador.');return;}
@@ -136,10 +158,11 @@ window.RegistrosSentia = (() => {
       previous=personal.map(t=>({...t}));rows.splice(0,rows.length);void connect();
     });
     $('#task-form').onsubmit=async e=>{
-      e.preventDefault();const text=$('#task').value.trim();if(!text)return;
+      e.preventDefault();const text=$('#task').value.trim();if(!text||busy||!ready)return;
       const id=window.crypto?.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2);
-      if(await mutate(()=>request('registros.php','POST',{id,text,done:false}),'Ação adicionada.')){$('#task-form').reset();hooks.onDiscover();$('#task').focus();}
+      if(await mutate(()=>request('registros.php','POST',{id,text,done:false}),'Ação adicionada.')){filter='all';render();$('#task-form').reset();hooks.onDiscover();$('#task').focus();}
     };
+    document.querySelectorAll('[data-task-filter]').forEach(button=>button.addEventListener('click',()=>{filter=button.dataset.taskFilter;render();}));
     $('#clear-tasks').onclick=()=>{if(rows.length&&confirm(mode==='local'?'Apagar todas as ações do seu plano neste navegador?':'Apagar todas as ações do banco desta instalação?'))void mutate(()=>request('registros.php','DELETE',{all:true}),'Registro limpo.');};
     $('#download-tasks').onclick=()=>{
       const data=ready?rows:previous,text='MEU REGISTRO · SENTIA\n\n'+data.map(t=>(t.done?'[x] ':'[ ] ')+t.text).join('\n');

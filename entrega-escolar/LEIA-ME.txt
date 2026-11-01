@@ -7,3 +7,9 @@ Para o modo compartilhado: copie Sentia para a pasta htdocs do XAMPP, inicie Apa
 O botão Reiniciar SENTIA fica no rodapé e pede confirmação. Ele limpa as descobertas, a coleção, o enigma e o plano pessoal, voltando ao início no modo pessoal. A partida e as preferências do Jardim, o tema, a redução de movimento e os registros compartilhados do MySQL são preservados. O portal inclui quatro desafios, com dicas graduais e progresso salvo: lanternas, vínculos, palavra e mosaico.
 
 As pastas HTML-puro, CSS-puro, JavaScript-puro, PHP-servidor e SQL servem para estudar cada linguagem separadamente. Para usar o projeto completo, abra sempre o index.html da raiz. O portfólio com as telas incorporadas está em portfolio/SENTIA-portfolio.excalidraw; abra-o no Excalidraw. Os créditos das quatro músicas estão em CREDITOS-AUDIO.txt.
+
+No Jardim, Registro (J) avisa quando aparece uma anotação nova. Abra a anotação para marcar como lida e comparar a interpretação do protagonista com o acontecimento observado. A busca e o filtro de novas anotações ajudam a retomar descobertas. Anotações antigas e a partida são preservadas ao atualizar o projeto.
+
+Em Bolsa (I), use Observar para ampliar, girar e examinar os objetos sem equipá-los. Arraste a imagem ampliada ou use as setas com a imagem em foco; Home centraliza. Os detalhes examinados vão para o registro. Voltar à bolsa mantém a pausa, e Voltar ou Esc retorna ao jogo.
+
+O áudio começa após uma interação no jogo. A pausa permite regular trilha, vozes e efeitos separadamente, testar a voz e silenciar tudo. Sons direcionais acompanham o quarto, os ataques, os bloqueios e as perseguições. Pausar ou esconder a aba interrompe a execução. Na exploração, quartos de moradores mortos ficam mais escuros por efeitos de CSS/JavaScript; as artes aprovadas foram mantidas.

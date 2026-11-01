@@ -23,8 +23,11 @@ window.AudioSentia = (() => {
   let context = null, voiceBus = null, effectsBus = null, pulseTimer = null, duckTimer = null;
   let voiceDuckTimer = null, previewTimer = null, speechDucked = false, effectDucked = false, previewing = false;
   let previewGeneration = 0;
+  let uiPreviewing = false, uiTimer = null, uiGeneration = 0;
+  let pageHidden = document.visibilityState === 'hidden', room = null, roomTimer = null, roomGeneration = 0;
+  let ambientPlayed = 0, lastAmbient = '', spatialPlayed = 0;
   let lastVoice = -Infinity, voicePlayed = 0, effectsPlayed = 0, lastVoiceProfile = null, stepSide = false;
-  const voices = new Set(), effects = new Set(), lastEffect = new Map();
+  const voices = new Set(), effects = new Set(), ambience = new Set(), uiEffects = new Set(), uiPending = new Set(), lastEffect = new Map();
   try {
     const settings = JSON.parse(localStorage.getItem('sentia-audio') || '{}');
     if (Number.isFinite(settings.volume)) volume = Math.max(0, Math.min(1, settings.volume));
@@ -63,7 +66,7 @@ window.AudioSentia = (() => {
   }
   // A música anterior baixa enquanto a próxima entra. A troca não reinicia uma faixa que já está tocando.
   async function playSelected(duration = .75) {
-    if (!unlocked || paused || muted || volume === 0 || !selected) {
+    if (!unlocked || paused || muted || pageHidden || volume === 0 || !selected) {
       stopChannels();
       return false;
     }
@@ -72,7 +75,7 @@ window.AudioSentia = (() => {
     try {
       await audio.play();
       if (token !== generation) {
-        if (selected !== id) audio.pause();
+        if (selected !== id || paused || muted || pageHidden || volume === 0) audio.pause();
         return false;
       }
       error = '';
@@ -103,8 +106,9 @@ window.AudioSentia = (() => {
   async function unlock() {
     unlocked = true;
     ensureSynth();
-    if (context?.state === 'suspended') { try { await context.resume(); } catch {} }
+    if (!pageHidden && context?.state === 'suspended') { try { await context.resume(); } catch {} }
     startPulse();
+    startRoom();
     return playSelected(.25);
   }
   function setScene(value) {
@@ -126,7 +130,9 @@ window.AudioSentia = (() => {
   function setMuted(value) {
     muted = Boolean(value);
     persist();
-    if (muted) { stopChannels(); stopSynth(); } else { startPulse(); void playSelected(.25); }
+    if (muted) { stopChannels(); stopSynth(); }
+    else if (unlocked && !paused && !pageHidden) resume();
+    else { startPulse(); startRoom(); void playSelected(.25); }
   }
   function pause() {
     paused = true;
@@ -136,9 +142,9 @@ window.AudioSentia = (() => {
   }
   function resume() {
     paused = false;
-    stopVoice();
-    if (unlocked && context?.state === 'suspended') void context.resume().then(startPulse).catch(() => {});
-    else startPulse();
+    stopVoice(); stopUi();
+    if (unlocked && !pageHidden && context?.state === 'suspended') void context.resume().then(() => { startPulse(); startRoom(); }).catch(() => {});
+    else { startPulse(); startRoom(); }
     void playSelected(.25);
   }
 
@@ -160,7 +166,7 @@ window.AudioSentia = (() => {
     } catch { context = null; }
   }
   function allowed(group) {
-    return unlocked && (!paused || (group === 'voice' && previewing)) && !muted && context?.state === 'running' && (group === 'voice' ? voiceVolume > 0 : effectsVolume > 0);
+    return unlocked && !pageHidden && (!paused || (group === 'voice' && previewing) || (group === 'ui' && uiPreviewing)) && !muted && context?.state === 'running' && (group === 'voice' ? voiceVolume > 0 : effectsVolume > 0);
   }
   function removeNode(entry, group) {
     group.delete(entry);
@@ -192,20 +198,28 @@ window.AudioSentia = (() => {
     previewTimer = null;
     const wasPreviewing = previewing; previewing = false;
     releaseVoiceDuck();
-    if (wasPreviewing && paused && context?.state === 'running') void context.suspend().catch(() => {});
+    if (wasPreviewing && paused && !uiPreviewing && context?.state === 'running') void context.suspend().catch(() => {});
+  }
+  function stopUi(suspend=false) {
+    uiGeneration++; uiPending.clear();
+    if (uiTimer !== null) clearTimeout(uiTimer);
+    uiTimer = null; uiPreviewing = false;
+    stopGroup(uiEffects);
+    if (suspend && paused && !previewing && context?.state === 'running') void context.suspend().catch(() => {});
   }
   function stopSynth() {
-    stopVoice(); stopGroup(effects);
+    stopUi(); stopVoice(); stopGroup(effects);
+    stopRoom();
     if (pulseTimer !== null) clearInterval(pulseTimer);
     if (duckTimer !== null) clearTimeout(duckTimer);
     pulseTimer = null; duckTimer = null; effectDucked = false;
   }
-  function emit({frequency=180, end=frequency, duration=.1, delay=0, amplitude=.08, wave='sine', group='effects', cutoff=1100, noise=false, pan=0}) {
+  function emit({frequency=180, end=frequency, duration=.1, delay=0, amplitude=.08, wave='sine', group='effects', cutoff=1100, noise=false, pan=0, distance=1, attack=.006}) {
     if (!allowed(group)) return false;
-    const pool = group === 'voice' ? voices : effects;
-    if (pool.size >= (group === 'voice' ? 3 : 8) || voices.size + effects.size >= 8) return false;
+    const pool = group === 'voice' ? voices : group === 'ambient' ? ambience : group === 'ui' ? uiEffects : effects;
+    if (pool.size >= (group === 'voice' ? 3 : group === 'ambient' ? 3 : group === 'ui' ? 4 : 8) || voices.size + effects.size + uiEffects.size >= 8) return false;
     const now = context.currentTime + Math.max(0, Math.min(.4, delay));
-    const length = Math.max(group==='voice'?.018:.025, Math.min(.65, duration));
+    const length = Math.max(group==='voice'?.018:.025, Math.min(group==='ambient'?2.4:.65, duration));
     const gain = context.createGain(), filter = context.createBiquadFilter();
     filter.type = 'lowpass'; filter.frequency.value = Math.max(100, Math.min(1800, cutoff)); filter.Q.value = .6;
     let source;
@@ -220,9 +234,10 @@ window.AudioSentia = (() => {
       source.frequency.setValueAtTime(Math.max(35, Math.min(800, frequency)), now);
       source.frequency.exponentialRampToValueAtTime(Math.max(35, Math.min(800, end)), now + length);
     }
-    const peak = Math.max(0, Math.min(.18, amplitude));
+    const depth = Math.max(1, Math.min(8, Number(distance) || 1));
+    const peak = Math.max(0, Math.min(group==='ambient'?.07:.18, amplitude)) / (1 + (depth - 1) * .55);
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(peak, now + Math.min(.006, length / 4));
+    gain.gain.linearRampToValueAtTime(peak, now + Math.min(Math.max(.003, attack), length / 3));
     if (group === 'voice') gain.gain.setValueAtTime(peak * .85, now + length * .42);
     gain.gain.exponentialRampToValueAtTime(.0001, now + length);
     source.connect(filter); filter.connect(gain);
@@ -231,11 +246,142 @@ window.AudioSentia = (() => {
     if (pan && context.createStereoPanner) {
       panner = context.createStereoPanner(); panner.pan.value = Math.max(-.4, Math.min(.4, pan));
       gain.connect(panner); panner.connect(bus);
+    } else if (pan && context.createPanner) {
+      // Mesmo volume no fallback; só a direção muda entre os canais.
+      panner = context.createPanner(); panner.panningModel = 'equalpower'; panner.rolloffFactor = 0;
+      const angle = Math.max(-.4, Math.min(.4, pan)) * Math.PI / 2;
+      if (panner.positionX) {
+        panner.positionX.value = Math.sin(angle); panner.positionY.value = 0; panner.positionZ.value = -Math.cos(angle);
+      } else panner.setPosition(Math.sin(angle), 0, -Math.cos(angle));
+      gain.connect(panner); panner.connect(bus);
     } else gain.connect(bus);
     const entry = {source, gain, filter, panner}; pool.add(entry);
     source.addEventListener('ended', () => removeNode(entry, pool), {once:true});
     source.start(now); source.stop(now + length + (group==='voice'?.01:.015));
     return true;
+  }
+  // Pequenos acontecimentos espaçados dão presença aos cômodos sem criar outra trilha em loop.
+  const roomSounds = {
+    felicidade:['pollen','air'], amor:['pollen','air'], tristeza:['water','creaks'],
+    orgulho:['embers','creaks'], determinacao:['air','distantsteps'], calma:['water','air'],
+    ansiedade:['distantsteps','air'], culpa:['creaks','water'], medo:['air','distantsteps'],
+    odio:['embers','creaks'], jardim:['pollen','air'], praca:['water','air'],
+    sanidade:['air','water'], insanidade:['creaks','distantsteps']
+  };
+  function stopRoom() {
+    roomGeneration++;
+    if (roomTimer !== null) clearTimeout(roomTimer);
+    roomTimer = null;
+    stopGroup(ambience);
+  }
+  function clearRoom() { stopRoom(); room = null; lastAmbient = ''; }
+  function setRoom(id, view=0, options={}) {
+    if (id === null || id === undefined || id === '') { clearRoom(); return; }
+    const next = {id:String(id), view:((Math.trunc(Number(view) || 0) % 4) + 4) % 4, dead:options.dead === true, reduced:options.reduced === true};
+    if (room && Object.keys(next).every(key => room[key] === next[key])) return;
+    room = next;
+    startRoom();
+  }
+  function roomSound(kind, pan, distance) {
+    const softness = room?.reduced ? .65 : 1;
+    let result = false;
+    const tone = options => { result = emit({...options, amplitude:(options.amplitude || .04) * softness, group:'ambient', pan, distance}) || result; };
+    if (kind === 'air') tone({noise:true,duration:1.7,attack:.35,amplitude:.06,cutoff:490});
+    else if (kind === 'pollen') {
+      tone({noise:true,duration:1.1,attack:.25,amplitude:.035,cutoff:720});
+      tone({frequency:245 + Math.random()*45,end:230,duration:.46,delay:.18,attack:.06,amplitude:.022,cutoff:650});
+    } else if (kind === 'water') {
+      const pitch = 270 + Math.random()*90;
+      tone({frequency:pitch,end:pitch*.7,duration:.19,attack:.008,amplitude:.058,cutoff:900});
+      tone({noise:true,duration:.4,delay:.14,attack:.06,amplitude:.032,cutoff:780});
+    } else if (kind === 'embers') {
+      tone({noise:true,duration:.12,attack:.008,amplitude:.044,cutoff:670});
+      tone({frequency:75,end:54,duration:.38,attack:.04,amplitude:.035,cutoff:240});
+    } else if (kind === 'creaks') {
+      tone({frequency:135 + Math.random()*25,end:96,duration:.46,attack:.09,amplitude:.046,wave:'triangle',cutoff:420});
+      tone({noise:true,duration:.35,delay:.08,attack:.08,amplitude:.023,cutoff:400});
+    } else if (kind === 'distantsteps') {
+      tone({noise:true,duration:.095,amplitude:.06,cutoff:330});
+      tone({frequency:84,end:58,duration:.13,amplitude:.045,cutoff:190});
+      tone({noise:true,duration:.1,delay:.29,amplitude:.043,cutoff:350});
+    }
+    if (result) { ambientPlayed++; lastAmbient = kind; }
+  }
+  function startRoom() {
+    stopRoom();
+    if (!room || !allowed('ambient')) return;
+    const token = roomGeneration;
+    const schedule = initial => {
+      const spacing = (room.reduced ? 4700 : 2900) + Math.random()*2500 + (room.dead ? 900 : 0);
+      roomTimer = setTimeout(() => {
+        roomTimer = null;
+        if (token !== roomGeneration || !room || !allowed('ambient')) return;
+        const choices = room.dead ? ['air','creaks'] : roomSounds[room.id] || ['air','creaks'];
+        const kind = choices[Math.floor(Math.random()*choices.length)];
+        const sourceAngle = (choices.indexOf(kind) ? 1.1 : -.8) - room.view*Math.PI/2;
+        roomSound(kind, Math.sin(sourceAngle)*.34, kind==='distantsteps'?3.4:1.5);
+        schedule(false);
+      }, initial ? 900 + Math.random()*500 : spacing);
+    };
+    schedule(true);
+  }
+  function spatialCue(kind, options={}) {
+    if (kind && typeof kind === 'object') { options = kind; kind = options.kind; }
+    const isUi = options.ui === true && paused;
+    if (!allowed('effects') && !(isUi && unlocked && !muted && !pageHidden && effectsVolume > 0 && context)) return false;
+    const key = String(kind);
+    const intervals = {inspect:.28,item:.55,notification:.6,page:.18,bag:.24,turn:.12,door:.6,enter:.8};
+    if (!Object.prototype.hasOwnProperty.call(intervals,key)) return false;
+    const now = context.currentTime, timerKey = 'spatial:' + key;
+    if (now - (lastEffect.get(timerKey) ?? -Infinity) < intervals[key]) return false;
+    lastEffect.set(timerKey, now);
+    const pan = Number(options.pan) || 0, distance = Number(options.distance) || 1;
+    const closing = options.variant === 'close';
+    const token = uiGeneration;
+    const play = () => {
+    if (isUi) {
+      if (token !== uiGeneration || !paused || muted || pageHidden || effectsVolume === 0) return false;
+      uiPreviewing = true;
+    }
+    let result = false;
+    const tone = values => { result = emit({...values,pan,distance,group:isUi?'ui':'effects'}) || result; };
+    if (key === 'item') {
+      [261.63,329.63,392].forEach((frequency,index) => tone({frequency,end:frequency*.99,duration:.17,delay:index*.065,amplitude:.065,cutoff:1000}));
+    } else if (key === 'notification') {
+      tone({frequency:369.99,end:349.23,duration:.14,amplitude:.055,cutoff:850});
+      tone({frequency:293.66,end:277.18,duration:.18,delay:.13,amplitude:.045,cutoff:750});
+    } else if (key === 'inspect') {
+      tone({frequency:196,end:220,duration:.09,amplitude:.05,cutoff:750});
+      tone({frequency:261.63,end:246.94,duration:.13,delay:.07,amplitude:.04,cutoff:850});
+    } else if (key === 'page') {
+      tone({noise:true,duration:.13,attack:.018,amplitude:.085,cutoff:950});
+      tone({noise:true,duration:.09,delay:.09,amplitude:.045,cutoff:650});
+    } else if (key === 'bag') {
+      tone({noise:true,duration:.16,attack:.022,amplitude:.075,cutoff:closing?520:700});
+      tone({frequency:closing?145:120,end:closing?105:155,duration:.12,delay:.05,amplitude:.04,cutoff:420});
+    } else if (key === 'turn') tone({noise:true,duration:.09,attack:.012,amplitude:.055,cutoff:650});
+    else if (key === 'door') {
+      tone({frequency:closing?135:115,end:closing?90:155,duration:.3,attack:.045,amplitude:.07,wave:'triangle',cutoff:420});
+      tone({noise:true,duration:.13,delay:closing?.2:0,amplitude:.07,cutoff:430});
+    } else if (key === 'enter') tone({noise:true,duration:.55,attack:.1,amplitude:.055,cutoff:600});
+    if (result) { effectsPlayed++; spatialPlayed++; }
+    if (isUi) {
+      if (uiTimer !== null) clearTimeout(uiTimer);
+      uiTimer = setTimeout(() => stopUi(true), 750);
+    }
+    return result;
+    };
+    if (isUi && context.state === 'suspended') {
+      if (uiPending.size >= 3) return false;
+      const pending = {}; uiPending.add(pending);
+      void context.resume().then(() => {
+        uiPending.delete(pending);
+        const played = play();
+        if (!played && (paused || pageHidden || muted) && !uiPreviewing && !previewing && uiPending.size === 0 && context.state === 'running') void context.suspend().catch(() => {});
+      }).catch(() => { uiPending.delete(pending); });
+      return true;
+    }
+    return play();
   }
   const profiles = {
     sunny:[380,'triangle'], felicidade:[380,'triangle'], sugar:[550,'sine'], candy:[550,'sine'], amor:[550,'sine'],
@@ -258,14 +404,14 @@ window.AudioSentia = (() => {
     const semitones = ((character.toLocaleLowerCase('pt-BR').charCodeAt(0) % 7) - 3) * .45;
     const frequency = profile[0] * Math.pow(2, semitones / 12);
     // A fala precisa sobressair à música; a trilha baixa só enquanto há letras sendo escritas.
-    const done = emit({group:'voice',frequency,end:frequency*.98,duration:.034,delay:scheduled-now,amplitude:.16,wave:profile[1],cutoff:profile[1]==='sawtooth'?650:1300});
+    const done = emit({group:'voice',frequency,end:frequency*.98,duration:.034,delay:scheduled-now,amplitude:profile[1]==='sawtooth'?.14:.16,wave:profile[1],cutoff:profile[1]==='sawtooth'?600:profile[1]==='triangle'?1050:1200});
     if (done) { lastVoice = scheduled; voicePlayed++; lastVoiceProfile = {speaker:String(speaker),frequency:Math.round(frequency),wave:profile[1]}; if (!previewing) duckForVoice(); }
     return done;
   }
   async function previewVoice(speaker='Anata') {
     stopVoice();
     const token = previewGeneration;
-    if (muted || voiceVolume === 0) return false;
+    if (muted || pageHidden || voiceVolume === 0) return false;
     await unlock();
     if (token !== previewGeneration || muted || voiceVolume === 0 || context?.state !== 'running') return false;
     previewing = true;
@@ -289,8 +435,8 @@ window.AudioSentia = (() => {
     const number = Number(value); if (!Number.isFinite(number)) return;
     effectsVolume = Math.max(0, Math.min(1, number)); persist();
     if (effectsBus) effectsBus.gain.setTargetAtTime(effectsVolume, context.currentTime, .015);
-    if (effectsVolume === 0) { stopGroup(effects); if (pulseTimer !== null) clearInterval(pulseTimer); pulseTimer = null; }
-    else startPulse();
+    if (effectsVolume === 0) { stopGroup(effects); stopUi(true); stopRoom(); if (pulseTimer !== null) clearInterval(pulseTimer); pulseTimer = null; }
+    else { startPulse(); startRoom(); }
   }
   function startPulse() {
     if (pulseTimer !== null) clearInterval(pulseTimer);
@@ -302,31 +448,66 @@ window.AudioSentia = (() => {
       emit({frequency:75,end:50,duration:.1,delay:.14,amplitude:.055,cutoff:260});
     }, 545);
   }
-  function sfx(kind) {
+  function sfx(kind, options={}) {
+    if (['inspect','item','notification','page','bag','door','enter'].includes(String(kind))) return spatialCue(kind, options);
     if (!allowed('effects')) return false;
-    const key = String(kind), now = context.currentTime;
-    const intervals = {step:.14,turn:.12,hit:.08,attack:.1,guard:.1,alert:.25,discovery:.5,death:.8,jumpscare:.9};
+    const key = ({slash:'cut',shield:'block',projectilePass:'projectile',enemyApproach:'approach'})[String(kind)] || String(kind), now = context.currentTime;
+    const intensity = Number.isFinite(Number(options.intensity)) ? Math.max(0,Math.min(1,Number(options.intensity))) : 1;
+    if (!intensity) return false;
+    const stepInterval = options.pace === 'run' ? .12 : options.pace === 'sneak' ? .3 : .18;
+    const intervals = {step:stepInterval,turn:.12,hit:.08,attack:.1,guard:.1,alert:.25,discovery:.5,death:.8,jumpscare:.9,cut:.09,knife:.09,block:.12,charge:.4,projectile:.13,nearMiss:.25,approach:.55,wave:.3,grab:.22};
     if (!(key in intervals) || now - (lastEffect.get(key) ?? -Infinity) < intervals[key]) return false;
     lastEffect.set(key, now);
     let result = false;
-    const tone = options => { result = emit(options) || result; };
+    const tone = values => {
+      result = emit({...values, amplitude:(values.amplitude ?? .08)*intensity, pan:options.pan ?? values.pan ?? 0, distance:options.distance ?? 1}) || result;
+    };
     if (key === 'step') {
       stepSide = !stepSide;
-      tone({noise:true,duration:.075,amplitude:.13,cutoff:stepSide?360:450,pan:stepSide?-.15:.15});
-      tone({frequency:stepSide?85:100,end:55,duration:.08,amplitude:.06,cutoff:220});
+      const sneaking = options.pace === 'sneak', running = options.pace === 'run', water = options.surface === 'water', wood = options.surface === 'wood';
+      const weight = sneaking ? .5 : running ? .9 : .75;
+      tone({noise:true,duration:water?.13:running?.065:.085,amplitude:.12*weight,cutoff:water?700:wood?530:stepSide?360:450,pan:stepSide?-.15:.15});
+      tone({frequency:(stepSide?85:100)*(wood?1.12:1),end:55,duration:.09,amplitude:.065*weight,cutoff:240});
     } else if (key === 'turn') tone({frequency:200,end:290,duration:.065,amplitude:.07,cutoff:600});
-    else if (key === 'attack') { tone({noise:true,duration:.12,amplitude:.15,cutoff:1250}); tone({frequency:130,end:60,duration:.16,amplitude:.1,cutoff:400}); }
-    else if (key === 'hit') { tone({noise:true,duration:.13,amplitude:.18,cutoff:650}); tone({frequency:85,end:40,duration:.2,amplitude:.14,cutoff:240}); }
+    else if (key === 'attack') { tone({noise:true,duration:.105,attack:.016,amplitude:.085,cutoff:1050}); tone({frequency:145,end:65,duration:.13,amplitude:.075,cutoff:400}); }
+    else if (key === 'cut' || key === 'knife') {
+      const quick = key === 'knife';
+      tone({noise:true,duration:quick?.065:.095,attack:.012,amplitude:quick?.065:.085,cutoff:quick?1050:1200});
+      tone({frequency:quick?245:210,end:quick?160:110,duration:quick?.065:.11,amplitude:.04,wave:'triangle',cutoff:650});
+    } else if (key === 'hit') { tone({noise:true,duration:.1,amplitude:.12,cutoff:550}); tone({frequency:85,end:43,duration:.17,amplitude:.1,cutoff:240}); }
     else if (key === 'guard') { tone({frequency:220,end:180,duration:.16,amplitude:.1,wave:'triangle',cutoff:900}); tone({frequency:330,end:280,duration:.1,amplitude:.05,wave:'sine',cutoff:950}); }
+    else if (key === 'block') {
+      tone({frequency:255,end:205,duration:.12,amplitude:.075,wave:'triangle',cutoff:780});
+      tone({frequency:340,end:285,duration:.16,delay:.025,amplitude:.035,cutoff:800});
+      tone({noise:true,duration:.055,amplitude:.05,cutoff:550});
+    } else if (key === 'charge') {
+      tone({frequency:80,end:145,duration:.4,attack:.07,amplitude:.085,cutoff:410});
+      tone({noise:true,duration:.32,attack:.07,amplitude:.035,cutoff:510});
+    } else if (key === 'wave') {
+      tone({noise:true,duration:.38,attack:.08,amplitude:.075,cutoff:650});
+      tone({frequency:185,end:125,duration:.34,attack:.05,amplitude:.05,cutoff:480});
+      tone({frequency:280,end:210,duration:.18,delay:.16,attack:.025,amplitude:.025,cutoff:720});
+    } else if (key === 'grab') {
+      tone({noise:true,duration:.14,attack:.023,amplitude:.08,cutoff:480});
+      tone({frequency:96,end:59,duration:.17,attack:.018,amplitude:.075,cutoff:260});
+    } else if (key === 'projectile') {
+      tone({noise:true,duration:.11,attack:.016,amplitude:.06,cutoff:930});
+      tone({frequency:280,end:155,duration:.14,amplitude:.04,cutoff:750});
+    } else if (key === 'nearMiss') tone({noise:true,duration:.16,attack:.027,amplitude:.07,cutoff:780,pan:.3});
+    else if (key === 'approach') {
+      tone({noise:true,duration:.075,amplitude:.07,cutoff:330});
+      tone({frequency:80,end:52,duration:.12,amplitude:.055,cutoff:210});
+      tone({noise:true,duration:.08,delay:.23,amplitude:.052,cutoff:360});
+    }
     else if (key === 'alert') { tone({frequency:420,end:350,duration:.12,amplitude:.1,cutoff:900}); tone({frequency:300,end:260,duration:.14,delay:.14,amplitude:.09,cutoff:700}); }
     else if (key === 'discovery') [261.63,329.63,392].forEach((frequency,index)=>tone({frequency,duration:.2,delay:index*.08,amplitude:.075,cutoff:1200}));
     else if (key === 'death') { tone({frequency:145,end:38,duration:.6,amplitude:.16,wave:'triangle',cutoff:500}); tone({noise:true,duration:.4,amplitude:.11,cutoff:400}); }
     else if (key === 'jumpscare') {
       stopVoice();
-      tone({noise:true,duration:.38,amplitude:.18,cutoff:1100});
-      tone({frequency:65,end:42,duration:.55,amplitude:.16,wave:'triangle',cutoff:350});
-      tone({frequency:230,end:155,duration:.4,amplitude:.1,wave:'sawtooth',cutoff:800});
-      tone({frequency:247,end:170,duration:.35,amplitude:.07,wave:'triangle',cutoff:850});
+      tone({noise:true,duration:.33,attack:.012,amplitude:.13,cutoff:900});
+      tone({frequency:65,end:42,duration:.5,amplitude:.13,wave:'triangle',cutoff:350});
+      tone({frequency:230,end:155,duration:.35,amplitude:.065,wave:'sawtooth',cutoff:650});
+      tone({frequency:247,end:170,duration:.3,amplitude:.045,wave:'triangle',cutoff:750});
       clearFade();
       effectDucked = true;
       channels.forEach((audio,id) => { audio.volume = Math.min(audio.volume, musicGain(tracks.find(track => track.id === id))); });
@@ -342,8 +523,11 @@ window.AudioSentia = (() => {
       scene, track:selected, title:current?.title || '', author:current?.author || '',
       source:current?.source || '', license:current?.license || '', licenseURL:current?.licenseURL || '',
       volume, musicVolume:volume, voiceVolume, effectsVolume, muted, paused, unlocked, error,
-      contextState:context?.state || 'uncreated', voicesActive:voices.size, effectsActive:effects.size,
+      contextState:context?.state || 'uncreated', voicesActive:voices.size, effectsActive:effects.size + uiEffects.size,
       voicePlayed, effectsPlayed, lastVoiceProfile, pulseActive:pulseTimer !== null, playbackRate:sceneRate(),
+      pageHidden, room:room ? {...room} : null, ambientActive:ambience.size, ambientTimerActive:roomTimer !== null,
+      ambientPlayed, lastAmbient, spatialPlayed,
+      uiEffectsActive:uiEffects.size, uiPreviewing,
       speechDucked, previewing, musicLevel:channels.get(selected)?.volume || 0,
       playing: [...channels.values()].some(audio => !audio.paused && audio.volume > 0),
       tracks:tracks.map(track => ({...track}))
@@ -356,5 +540,15 @@ window.AudioSentia = (() => {
   };
   document.addEventListener('pointerdown', firstGesture, {passive:true});
   document.addEventListener('keydown', firstGesture);
-  return Object.freeze({unlock, setScene, setVolume, setVoiceVolume, setEffectsVolume, setMuted, pause, resume, state, voice, stopVoice, previewVoice, sfx});
+  document.addEventListener('visibilitychange', () => {
+    pageHidden = document.visibilityState === 'hidden';
+    if (pageHidden) {
+      stopChannels(); stopSynth();
+      if (context?.state === 'running') void context.suspend().then(() => {
+        // Uma troca de aba muito rápida também precisa desfazer uma suspensão que terminou atrasada.
+        if (!pageHidden && !paused && !muted) resume();
+      }).catch(() => {});
+    } else if (unlocked && !paused && !muted) resume();
+  });
+  return Object.freeze({unlock, setScene, setVolume, setVoiceVolume, setEffectsVolume, setMuted, pause, resume, state, voice, stopVoice, previewVoice, sfx, setRoom, clearRoom, spatialCue});
 })();
