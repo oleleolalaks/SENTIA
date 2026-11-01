@@ -60,3 +60,12 @@ Importação iniciada em 2026-11-01T14:27:46.675136+00:00 (UTC).
 - Última data observada nos arquivos principais do ZIP, sem fuso: `2026-11-01T10:07:14`.
 - Arquivos importados do ZIP: 901.
 - Exclusões: nenhuma.
+
+### arquivo-20261101-xampp
+
+- Origem: `SENTIA-COMPLETO-XAMPP.zip`.
+- Tamanho do ZIP: 495347103 bytes.
+- SHA-256 do ZIP: `07789b9f54c2cf5f5db970f66e6d3a39355544b24c5713796da78b07ac66122e`.
+- Última data observada nos arquivos principais do ZIP, sem fuso: `2026-11-01T11:01:36`.
+- Arquivos importados do ZIP: 930.
+- Exclusões: nenhuma.

@@ -845,3 +845,8 @@ body.reduced *,body.reduced *::before,body.reduced *::after {
 html.reduced { scroll-behavior:auto; }
 body.reduced *,body.reduced *::before,body.reduced *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
 #clear-atlas-filters { min-height:44px; }
+.database-panel,.local-records { margin:18px 0;padding:14px;border:1px solid var(--line);background:var(--bg);font-size:13px;line-height:1.6; }
+.database-panel p,.local-records p { margin:0 0 8px;overflow-wrap:anywhere; }
+.database-panel .record-actions { margin:0;gap:14px; }
+#database-status.error { color:var(--ink); }
+#task-form input:disabled,#task-form button:disabled { opacity:.55;cursor:not-allowed; }

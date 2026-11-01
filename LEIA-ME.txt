@@ -1,16 +1,19 @@
 SENTIA — PROJETO COMPLETO PARA VISUAL STUDIO CODE
 
-COMO ABRIR
+COMO ABRIR NO XAMPP
 1. Use Extrair Tudo no ZIP e espere terminar. Não abra o HTML dentro do ZIP.
-2. No VS Code, use Arquivo > Abrir Pasta e selecione a pasta Sentia extraída.
-3. Clique com o botão direito no index.html > Open with Live Server. Também pode abrir ABRIR-SENTIA.cmd para executar diretamente no navegador.
-4. Mantenha css, js, assets e documentacao ao lado dos dois HTMLs.
+2. Coloque a pasta completa Sentia dentro de htdocs do XAMPP (normalmente C:\xampp\htdocs\Sentia).
+3. No painel do XAMPP, inicie Apache e MySQL.
+4. Abra http://localhost/Sentia/ no navegador. Abra essa mesma pasta no VS Code para editar.
+5. Na página Meu registro, clique em Preparar banco local se essa opção aparecer. Alternativamente, importe banco/schema.sql pelo phpMyAdmin.
+6. Se houver outra porta/senha, veja documentacao/BANCO-XAMPP.txt e api/config.local.example.php.
+O front-end continua em HTML, CSS e JavaScript puros. A API PHP conecta o site ao MySQL; Live Server e abrir por file:// não executam PHP.
 
 SITE E JARDIM
 O index.html é o site educativo. A opção O Jardim contém um enigma em três etapas. As pistas ficam no Atlas e na Convergência: a liberação agora exige resolver as relações, não apenas visitar páginas.
-Após resolver, escolha PC ou celular para entrar no jardim.html. O cabeçalho do Jardim retorna ao site. São duas páginas conectadas do mesmo projeto.
+Após resolver, escolha PC ou celular para entrar no jardim.html. Um clarão único cobre a passagem e se desfaz na chegada; há uma versão suave para movimentos reduzidos. O cabeçalho do Jardim retorna ao site. São duas páginas conectadas do mesmo projeto.
 As falas do Jardim aparecem letra por letra com bipes individuais. Um clique na fala ou em Continuar revela tudo; o seguinte avança. Descobertas já lidas não são repetidas automaticamente: use Reler ou o Registro. Assuntos já conversados ficam em Relembrar conversas anteriores.
-A coleção do Atlas e o registro de pequenas ações ficam salvos no navegador. O registro pode ser exportado como TXT.
+A coleção do Atlas e o enigma ficam neste navegador. As ações de Meu registro usam o banco MySQL desta instalação: podem ser criadas, consultadas, editadas, concluídas e apagadas. O registro pode ser exportado como TXT. Como não há login, a lista é compartilhada nesta instalação. Ações antigas do navegador podem ser importadas explicitamente; não são apagadas pela importação.
 
 CONTROLES DO JARDIM
 Quartos: converse primeiro com o morador; depois use as setas da tela e os pontos dos objetos. Os moradores podem visitar outros quartos e conversar juntos. As novas pistas liberam assuntos.
@@ -23,13 +26,14 @@ Na Pausa, abra “Controles desta cena” para consultar os comandos atuais. O v
 Bolsa: equipar ou guardar itens. Registro: reler as descobertas.
 
 ÁUDIO
-Há uma faixa de fundo e três de ação/perseguição, em arquivos locais. O navegador libera o som depois da primeira interação. Controle música, vozes e efeitos separadamente pela Pausa, ou use o mudo geral. Passos, impactos, alertas e jumpscares usam síntese original local. O labirinto toca Feral Chase a 1,16× com um pulso grave de tensão.
+Há uma faixa de fundo e três de ação/perseguição, em arquivos locais. O navegador libera o som depois da primeira interação. Controle música, vozes e efeitos separadamente pela Pausa, ou use o mudo geral. O botão Testar voz toca uma amostra do personagem enquanto o jogo continua pausado. A trilha diminui durante os bipes para deixar a fala audível. Passos, impactos, alertas e jumpscares usam síntese original local. O labirinto toca Feral Chase a 1,16× com um pulso grave de tensão.
 As quatro faixas são de Kevin MacLeod, sob CC BY 4.0. A atribuição completa, fontes e licença estão em documentacao/CREDITOS-AUDIO.txt e na Pausa do jogo.
 
 ARQUIVOS PARA A ESCOLA
 Raiz + css + js + assets: projeto completo funcional, em HTML/CSS/JavaScript puros, separados.
 entrega-escolar/HTML-puro: código HTML sem importar CSS/JS.
 entrega-escolar/CSS-puro e JavaScript-puro: cópias isoladas das linguagens.
+entrega-escolar/PHP-servidor e SQL: cópias dos códigos do servidor e do banco. A API funcional fica em api/ e o script de importação em banco/.
 Os ZIPs dentro de entrega-escolar agrupam cada linguagem para avaliação; não incluem imagens. Para executar, use o index.html da raiz.
 portfolio: capturas PC/celular e arquivo Excalidraw com as capturas incorporadas e títulos editáveis.
 Os comentários explicam os blocos principais. O aluno deve estudar e revisar o material; houve assistência de IA.
@@ -38,4 +42,5 @@ O endereço público nos comentários HTML ainda precisa ser preenchido com a UR
 PROGRESSO E VERIFICAÇÃO
 O progresso anterior pode continuar. Para ver todos os novos encontros desde o começo, exporte a partida na Pausa e escolha Começar outra partida. O puzzle novo do portal tem um estado próprio e não apaga os registros do site ou o save do Jardim.
 Foram testados puzzle/persistência, controles reais de mouse e toque da arena, perda/coleta da espada, defesa com fôlego, perseguições, consequências das QTEs, enquadramento no celular e uma sequência contínua da abertura até a arena final.
+O encontro final de Anata foi ampliado: 72 entradas de roteiro e seis perguntas com respostas ramificadas, que retomam as ações do protagonista e distinguem sua vontade da de quem joga. Não consulta dados escolares nem tenta inferir a vida pessoal de quem joga.
 O equilíbrio e a duração total ainda precisam de uma jogatina humana completa. Não há uma medição que comprove 2–3 horas, e o jogo não impõe espera para impedir que alguém avance rapidamente as falas.

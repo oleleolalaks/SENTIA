@@ -21,6 +21,8 @@ window.AudioSentia = (() => {
   let scene = 'explore', selected = 'garden', unlocked = false, paused = false;
   let volume = .45, voiceVolume = .28, effectsVolume = .45, muted = false, fade = null, generation = 0, error = '';
   let context = null, voiceBus = null, effectsBus = null, pulseTimer = null, duckTimer = null;
+  let voiceDuckTimer = null, previewTimer = null, speechDucked = false, effectDucked = false, previewing = false;
+  let previewGeneration = 0;
   let lastVoice = -Infinity, voicePlayed = 0, effectsPlayed = 0, lastVoiceProfile = null, stepSide = false;
   const voices = new Set(), effects = new Set(), lastEffect = new Map();
   try {
@@ -31,6 +33,7 @@ window.AudioSentia = (() => {
     if (Number.isFinite(settings.effectsVolume)) effectsVolume = Math.max(0, Math.min(1, settings.effectsVolume));
   } catch { /* Se o navegador impedir o armazenamento, o controle de volume continua funcionando. */ }
   const channels = new Map();
+  function musicGain(track) { return volume * track.gain * (speechDucked ? .3 : 1) * (effectDucked ? .35 : 1); }
   function persist() {
     try { localStorage.setItem('sentia-audio', JSON.stringify({volume, voiceVolume, effectsVolume, muted})); } catch {}
   }
@@ -75,14 +78,13 @@ window.AudioSentia = (() => {
       error = '';
       audio.playbackRate = sceneRate();
       if ('preservesPitch' in audio) audio.preservesPitch = true;
-      const target = volume * tracks.find(track => track.id === id).gain;
       const beginnings = new Map([...channels].map(([key, item]) => [key, item.volume]));
       const start = performance.now();
       fade = setInterval(() => {
         if (token !== generation) return;
         const progress = Math.min(1, Math.max(0, (performance.now() - start) / (duration * 1000)));
         channels.forEach((item, key) => {
-          const final = key === id ? target : 0;
+          const final = key === id ? musicGain(tracks.find(track => track.id === id)) : 0;
           item.volume = Math.max(0, Math.min(1, beginnings.get(key) + (final - beginnings.get(key)) * progress));
         });
         if (progress === 1) {
@@ -134,6 +136,7 @@ window.AudioSentia = (() => {
   }
   function resume() {
     paused = false;
+    stopVoice();
     if (unlocked && context?.state === 'suspended') void context.resume().then(startPulse).catch(() => {});
     else startPulse();
     void playSelected(.25);
@@ -157,7 +160,7 @@ window.AudioSentia = (() => {
     } catch { context = null; }
   }
   function allowed(group) {
-    return unlocked && !paused && !muted && context?.state === 'running' && (group === 'voice' ? voiceVolume > 0 : effectsVolume > 0);
+    return unlocked && (!paused || (group === 'voice' && previewing)) && !muted && context?.state === 'running' && (group === 'voice' ? voiceVolume > 0 : effectsVolume > 0);
   }
   function removeNode(entry, group) {
     group.delete(entry);
@@ -169,12 +172,33 @@ window.AudioSentia = (() => {
       removeNode(entry, group);
     }
   }
-  function stopVoice() { stopGroup(voices); lastVoice = -Infinity; }
+  function releaseVoiceDuck() {
+    if (voiceDuckTimer !== null) clearTimeout(voiceDuckTimer);
+    voiceDuckTimer = null;
+    const wasDucked = speechDucked;
+    speechDucked = false;
+    if (wasDucked && !paused && !muted) void playSelected(.18);
+  }
+  function duckForVoice() {
+    speechDucked = true;
+    channels.forEach((audio,id) => { audio.volume = Math.min(audio.volume, musicGain(tracks.find(track => track.id === id))); });
+    if (voiceDuckTimer !== null) clearTimeout(voiceDuckTimer);
+    voiceDuckTimer = setTimeout(releaseVoiceDuck, 150);
+  }
+  function stopVoice() {
+    previewGeneration++;
+    stopGroup(voices); lastVoice = -Infinity;
+    if (previewTimer !== null) clearTimeout(previewTimer);
+    previewTimer = null;
+    const wasPreviewing = previewing; previewing = false;
+    releaseVoiceDuck();
+    if (wasPreviewing && paused && context?.state === 'running') void context.suspend().catch(() => {});
+  }
   function stopSynth() {
     stopVoice(); stopGroup(effects);
     if (pulseTimer !== null) clearInterval(pulseTimer);
     if (duckTimer !== null) clearTimeout(duckTimer);
-    pulseTimer = null; duckTimer = null;
+    pulseTimer = null; duckTimer = null; effectDucked = false;
   }
   function emit({frequency=180, end=frequency, duration=.1, delay=0, amplitude=.08, wave='sine', group='effects', cutoff=1100, noise=false, pan=0}) {
     if (!allowed(group)) return false;
@@ -196,9 +220,10 @@ window.AudioSentia = (() => {
       source.frequency.setValueAtTime(Math.max(35, Math.min(800, frequency)), now);
       source.frequency.exponentialRampToValueAtTime(Math.max(35, Math.min(800, end)), now + length);
     }
-    const peak = Math.max(0, Math.min(group === 'voice' ? .075 : .18, amplitude));
+    const peak = Math.max(0, Math.min(.18, amplitude));
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(peak, now + Math.min(.012, length / 4));
+    gain.gain.linearRampToValueAtTime(peak, now + Math.min(.006, length / 4));
+    if (group === 'voice') gain.gain.setValueAtTime(peak * .85, now + length * .42);
     gain.gain.exponentialRampToValueAtTime(.0001, now + length);
     source.connect(filter); filter.connect(gain);
     const bus = group === 'voice' ? voiceBus : effectsBus;
@@ -219,7 +244,7 @@ window.AudioSentia = (() => {
     hermes:[490,'triangle'], ansiedade:[490,'triangle'], lumen:[325,'sine'], culpa:[325,'sine'],
     hunger:[125,'sawtooth'], medo:[125,'sawtooth'], beerus:[105,'triangle'], odio:[105,'triangle'],
     cassidy:[410,'sine'], sanidade:[410,'sine'], mizzery:[160,'sawtooth'], insanidade:[160,'sawtooth'],
-    anata:[250,'sine'], neutralidade:[250,'sine'], jardim:[255,'sine'], voce:[300,'triangle']
+    anata:[250,'triangle'], neutralidade:[250,'triangle'], jardim:[255,'sine'], voce:[300,'triangle']
   };
   function voice(letter, speaker='Jardim') {
     const character = String(letter || '').charAt(0);
@@ -232,9 +257,27 @@ window.AudioSentia = (() => {
     const profile = profiles[name] || [280,'sine'];
     const semitones = ((character.toLocaleLowerCase('pt-BR').charCodeAt(0) % 7) - 3) * .45;
     const frequency = profile[0] * Math.pow(2, semitones / 12);
-    const done = emit({group:'voice',frequency,end:frequency*.98,duration:.022,delay:scheduled-now,amplitude:.055,wave:profile[1],cutoff:profile[1]==='sawtooth'?650:1300});
-    if (done) { lastVoice = scheduled; voicePlayed++; lastVoiceProfile = {speaker:String(speaker),frequency:Math.round(frequency),wave:profile[1]}; }
+    // A fala precisa sobressair à música; a trilha baixa só enquanto há letras sendo escritas.
+    const done = emit({group:'voice',frequency,end:frequency*.98,duration:.034,delay:scheduled-now,amplitude:.16,wave:profile[1],cutoff:profile[1]==='sawtooth'?650:1300});
+    if (done) { lastVoice = scheduled; voicePlayed++; lastVoiceProfile = {speaker:String(speaker),frequency:Math.round(frequency),wave:profile[1]}; if (!previewing) duckForVoice(); }
     return done;
+  }
+  async function previewVoice(speaker='Anata') {
+    stopVoice();
+    const token = previewGeneration;
+    if (muted || voiceVolume === 0) return false;
+    await unlock();
+    if (token !== previewGeneration || muted || voiceVolume === 0 || context?.state !== 'running') return false;
+    previewing = true;
+    const accepted = voice('a',speaker);
+    // Três bipes curtos permitem conferir o volume sem tirar o jogo da pausa.
+    if (accepted) {
+      const profile = lastVoiceProfile;
+      emit({group:'voice',frequency:profile.frequency*1.06,duration:.055,delay:.085,amplitude:.16,wave:profile.wave});
+      emit({group:'voice',frequency:profile.frequency*.97,duration:.055,delay:.18,amplitude:.16,wave:profile.wave});
+    }
+    previewTimer = setTimeout(stopVoice, 280);
+    return accepted;
   }
   function setVoiceVolume(value) {
     const number = Number(value); if (!Number.isFinite(number)) return;
@@ -285,9 +328,10 @@ window.AudioSentia = (() => {
       tone({frequency:230,end:155,duration:.4,amplitude:.1,wave:'sawtooth',cutoff:800});
       tone({frequency:247,end:170,duration:.35,amplitude:.07,wave:'triangle',cutoff:850});
       clearFade();
-      channels.forEach(audio => { audio.volume *= .35; });
+      effectDucked = true;
+      channels.forEach((audio,id) => { audio.volume = Math.min(audio.volume, musicGain(tracks.find(track => track.id === id))); });
       if (duckTimer !== null) clearTimeout(duckTimer);
-      duckTimer = setTimeout(() => { duckTimer = null; if (!paused && !muted) void playSelected(.3); }, 750);
+      duckTimer = setTimeout(() => { duckTimer = null; effectDucked = false; if (!paused && !muted) void playSelected(.3); }, 750);
     }
     if (result) effectsPlayed++;
     return result;
@@ -300,6 +344,7 @@ window.AudioSentia = (() => {
       volume, musicVolume:volume, voiceVolume, effectsVolume, muted, paused, unlocked, error,
       contextState:context?.state || 'uncreated', voicesActive:voices.size, effectsActive:effects.size,
       voicePlayed, effectsPlayed, lastVoiceProfile, pulseActive:pulseTimer !== null, playbackRate:sceneRate(),
+      speechDucked, previewing, musicLevel:channels.get(selected)?.volume || 0,
       playing: [...channels.values()].some(audio => !audio.paused && audio.volume > 0),
       tracks:tracks.map(track => ({...track}))
     };
@@ -311,5 +356,5 @@ window.AudioSentia = (() => {
   };
   document.addEventListener('pointerdown', firstGesture, {passive:true});
   document.addEventListener('keydown', firstGesture);
-  return Object.freeze({unlock, setScene, setVolume, setVoiceVolume, setEffectsVolume, setMuted, pause, resume, state, voice, stopVoice, sfx});
+  return Object.freeze({unlock, setScene, setVolume, setVoiceVolume, setEffectsVolume, setMuted, pause, resume, state, voice, stopVoice, previewVoice, sfx});
 })();

@@ -1926,44 +1926,7 @@ const G = (() => {
     background(null);
     $('#background').style.opacity = '.08';
     actor('neutralidade');
-    const lines = D.ending.map(([who, text]) => ({
-      who,
-      text
-    }));
-    lines.splice(3, 0, {
-      choices: [{
-        label: 'As inseguranças',
-        reply: 'Você disse isso antes de conhecer os nomes.'
-      }, {
-        label: 'O que me fazia sofrer',
-        reply: 'E aprendeu os nomes para encontrar onde doía.'
-      }, {
-        label: 'Ficar em silêncio',
-        reply: 'Você soube responder quando eram os outros.'
-      }]
-    });
-    const index = lines.findIndex(l => l.text?.startsWith('Até agora'));
-    lines.splice(index, 0, {
-      text: S.flags.sparedFear ? 'Você deixou que Medo saísse. O desfecho depois não apaga a escolha naquele quarto.' : 'Você viu Medo voltar à forma habitual. Ele estava chorando antes do gesto seguinte.'
-    }, {
-      text: S.flags.triedSugar ? 'Com Sugar, você tentou antes. A alternativa desapareceu. Aquela vontade de poupá-la não foi a vontade dele.' : 'Com Sugar, a alternativa esteve diante de você. A história conhece o gesto que recebeu.'
-    });
-    const at = lines.findIndex(l => l.text?.startsWith('Se todos'));
-    lines.splice(at, 0, {
-      choices: [{
-        label: 'Eu queria saber o final',
-        reply: 'Uma história pode levar alguém adiante sem pedir concordância com quem anda.'
-      }, {
-        label: 'Eu queria tentar salvar alguém',
-        reply: 'Você tentou. O que não esteve sob seu controle também faz parte do que viu.'
-      }, {
-        label: 'Eu queria entender',
-        reply: 'Então não deixe a intenção do protagonista apagar a dos outros.'
-      }, {
-        label: 'Prefiro não responder',
-        reply: 'Você pode guardar essa resposta.'
-      }]
-    });
+    const lines = ANATA.script(S);
     say('neutralidade', lines, () => {
       S.complete = true;
       setPhase('complete');
@@ -2071,6 +2034,17 @@ const G = (() => {
         const input=document.createElement('input');input.type='range';input.min='0';input.max='100';input.value=String(Math.round((audio.state()[key]??.5)*100));input.setAttribute('aria-label',title);
         input.oninput=()=>{audio[setter]?.(Number(input.value)/100);output.textContent=input.value+'%';};
         label.append(output,input);extras.push(label);
+      }
+      if(typeof audio.previewVoice==='function'){
+        const previewName=D.names[currentEco]||D.names[S.room]||'Anata';
+        const previewStatus=document.createElement('p');previewStatus.className='hint';previewStatus.setAttribute('role','status');
+        const preview=btn('Testar voz de '+previewName,async()=>{
+          if(audio.state().muted||audio.state().voiceVolume===0){previewStatus.textContent='Ative o áudio e aumente o volume das vozes para ouvir a amostra.';return;}
+          preview.disabled=true;
+          try{const played=await audio.previewVoice(previewName);previewStatus.textContent=played?'Amostra da voz. O jogo continua pausado.':'Toque novamente para liberar o som neste navegador.';}
+          finally{preview.disabled=false;}
+        });
+        extras.push(preview,previewStatus);
       }
       sound.append(volumeLabel,...extras,muteLabel,credits);wrap.append(sound);
     }

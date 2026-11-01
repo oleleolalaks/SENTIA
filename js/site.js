@@ -23,16 +23,14 @@ const findAsset = part => ASSETS.find(p => p.includes(part));
 const sprite = id => findAsset('/02-No-Cenario-64/' + id + '/00-base.png');
 const storedDiscoveries = storage.get('sentia-discoveries', []);
 let discoveries = new Set((Array.isArray(storedDiscoveries) ? storedDiscoveries : []).filter(x => Number.isInteger(x) && x >= 0 && x < 7));
-let tasks = storage.get('sentia-tasks', []);
-if (!Array.isArray(tasks)) tasks = [];
 const lanternIds = ['medo', 'calma', 'orgulho', 'amor', 'tristeza', 'determinacao'];
 const lanternClues = {
-  medo: ['E', 'A lanterna de Medo fica imediatamente à esquerda da lanterna de Calma.'],
-  calma: ['S', 'Calma tem uma vizinha de cada lado: não ocupa nenhuma das pontas.'],
-  orgulho: ['C', 'Orgulho fica à direita de Calma e à esquerda de Amor.'],
-  amor: ['U', 'Amor fica duas posições à esquerda de Determinação.'],
-  tristeza: ['T', 'Tristeza fica imediatamente à esquerda de Determinação.'],
-  determinacao: ['A', 'Cada lanterna ocupa uma posição diferente. Leia as marcas da esquerda para a direita.']
+  medo: ['E', 'Na fila numerada de 1 a 6, Medo vem imediatamente antes de Calma, sem outra lanterna entre os dois.'],
+  calma: ['S', 'Calma não ocupa nenhuma ponta da fila: sua posição fica entre 2 e 5.'],
+  orgulho: ['C', 'Orgulho vem depois de Calma e antes de Amor. Essas posições não precisam ser vizinhas.'],
+  amor: ['U', 'Amor vem exatamente duas posições antes de Determinação: há uma lanterna entre os dois.'],
+  tristeza: ['T', 'Tristeza vem imediatamente antes de Determinação, sem outra lanterna entre os dois.'],
+  determinacao: ['A', 'Use cada sentimento uma única vez. Leia as marcas pela numeração: posição 1, depois 2, até 6, mesmo se os cartões aparecerem em várias linhas.']
 };
 const sealPairs = ['calma+medo', 'amor+tristeza', 'determinacao+orgulho'];
 const sealVerses = ['O aviso encontra espaço para respirar.', 'A falta ainda guarda um vínculo.', 'Reconhecer o caminho e dar o próximo passo.'];
@@ -40,10 +38,10 @@ const storedPuzzle = storage.get('sentia-portal-puzzle-v2', {}) || {};
 const puzzle = {
   version: 2,
   stage: [1, 2, 3, 4].includes(storedPuzzle.stage) ? storedPuzzle.stage : 1,
-  clues: Array.isArray(storedPuzzle.clues) ? storedPuzzle.clues.filter(x => lanternIds.includes(x)) : [],
-  combinations: Array.isArray(storedPuzzle.combinations) ? storedPuzzle.combinations.filter(x => sealPairs.includes(x)) : [],
+  clues: Array.isArray(storedPuzzle.clues) ? [...new Set(storedPuzzle.clues.filter(x => lanternIds.includes(x)))] : [],
+  combinations: Array.isArray(storedPuzzle.combinations) ? [...new Set(storedPuzzle.combinations.map(x => typeof x==='string'?x.split('+').sort().join('+'):'').filter(x => sealPairs.includes(x)))] : [],
   order: Array.isArray(storedPuzzle.order) && storedPuzzle.order.length === 6 ? storedPuzzle.order.map(x => lanternIds.includes(x) ? x : '') : Array(6).fill(''),
-  seals: Array.isArray(storedPuzzle.seals) && storedPuzzle.seals.length === 3 ? storedPuzzle.seals.map(pair => Array.isArray(pair) && pair.length === 2 ? pair.map(x => lanternIds.includes(x) ? x : '') : ['', '']) : Array.from({length:3}, () => ['', '']),
+  seals: Array.isArray(storedPuzzle.seals??storedPuzzle.pairs) && (storedPuzzle.seals??storedPuzzle.pairs).length === 3 ? (storedPuzzle.seals??storedPuzzle.pairs).map(pair => Array.isArray(pair) && pair.length === 2 ? pair.map(x => lanternIds.includes(x) ? x : '') : ['', '']) : Array.from({length:3}, () => ['', '']),
   attempts: Number.isInteger(storedPuzzle.attempts) && storedPuzzle.attempts >= 0 ? storedPuzzle.attempts : 0,
   hints: Number.isInteger(storedPuzzle.hints) ? Math.max(0, Math.min(3, storedPuzzle.hints)) : 0,
   solved: storedPuzzle.solved === true
@@ -52,6 +50,17 @@ if (puzzle.solved) puzzle.stage = 4;
 else if (puzzle.stage === 4) puzzle.stage = 1;
 const storedCollection = storage.get('sentia-collection', []);
 let collection = new Set((Array.isArray(storedCollection) ? storedCollection : []).filter(x => emotions.some(e => e[0] === x)));
+// Uma descoberta já guardada no Atlas também conta no caderno após atualizar o site.
+for(const id of lanternIds)if(collection.has(id)&&!puzzle.clues.includes(id))puzzle.clues.push(id);
+let puzzleRestored=false;
+if(!puzzle.solved) {
+  const validOrder=new Set(puzzle.order).size===6&&puzzle.order.every(Boolean)&&orderRules(puzzle.order).every(Boolean);
+  const validSeals=puzzle.seals.every((pair,i)=>pair[0]&&pair[1]&&[...pair].sort().join('+')===sealPairs[i]);
+  // Etapa antiga incompleta volta a ser editável, preservando tudo que já foi preenchido.
+  if(puzzle.stage>1&&!validOrder){puzzle.stage=1;puzzleRestored=true;}
+  else if(puzzle.stage>2&&!validSeals){puzzle.stage=2;puzzleRestored=true;}
+}
+storage.set('sentia-portal-puzzle-v2',puzzle);
 let collectionOnly = false;
 function savePuzzle() {
   storage.set('sentia-portal-puzzle-v2', puzzle);
@@ -208,94 +217,8 @@ $('#combinar').onclick = () => {
     renderPuzzle();
   }
 };
-// Aq a lista lê, cria, edita e apaga ações. O texto digitado entra como texto, nunca como HTML.
-function renderTasks() {
-  $('#tasks').replaceChildren(...tasks.map(t => {
-    const li = document.createElement('li');
-    li.classList.toggle('done', t.done);
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = !!t.done;
-    cb.setAttribute('aria-label', 'Concluir ' + t.text);
-    cb.onchange = () => {
-      t.done = cb.checked;
-      saveTasks();
-    };
-    const span = document.createElement('span');
-    span.textContent = t.text;
-    const edit = document.createElement('button');
-    edit.textContent = 'Editar';
-    edit.dataset.taskEdit = t.id;
-    edit.onclick = () => {
-      const form = document.createElement('form');
-      const label = document.createElement('label');
-      label.textContent = 'Editar ação';
-      const input = document.createElement('input');
-      input.value = t.text;
-      input.maxLength = 160;
-      input.required = true;
-      label.append(input);
-      const ok = document.createElement('button');
-      ok.className = 'button primary';
-      ok.textContent = 'Salvar';
-      form.append(label, ok);
-      form.onsubmit = e => {
-        e.preventDefault();
-        if (!input.value.trim()) return;
-        t.text = input.value.trim();
-        saveTasks();
-        $('#modal').close();
-      };
-      openModal(form);
-    };
-    const del = document.createElement('button');
-    del.textContent = '×';
-    del.setAttribute('aria-label', 'Apagar ' + t.text);
-    del.onclick = () => {
-      tasks = tasks.filter(x => x.id !== t.id);
-      saveTasks();
-    };
-    li.append(cb, span, edit, del);
-    return li;
-  }));
-  $('#task-status').textContent = tasks.length ? tasks.reduce((total, t) => total + (t.done ? 1 : 0), 0) + ' de ' + tasks.length + ' ações concluídas.' : 'Seu registro ainda está vazio.';
-  $('#download-tasks').disabled = !tasks.length;
-}
-function saveTasks() {
-  storage.set('sentia-tasks', tasks);
-  renderTasks();
-}
-$('#task-form').onsubmit = e => {
-  e.preventDefault();
-  const text = $('#task').value.trim();
-  if (!text) {
-    alertBox('Escreva uma ação antes de adicionar.');
-    return;
-  }
-  tasks.push({
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-    text,
-    done: false
-  });
-  $('#task').value = '';
-  saveTasks();
-  discover(4);
-};
-$('#clear-tasks').onclick = () => {
-  if (tasks.length && confirm('Apagar todas as ações deste navegador?')) {
-    tasks = [];
-    saveTasks();
-  }
-};
-$('#download-tasks').onclick = () => {
-  const text = 'MEU REGISTRO · SENTIA\n\n' + tasks.map(t => (t.done ? '[x] ' : '[ ] ') + t.text).join('\n');
-  const url = URL.createObjectURL(new Blob([text], {type:'text/plain;charset=utf-8'}));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'meu-registro-sentia.txt';
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-};
+// A lista escolar usa a API PHP e o MySQL do XAMPP. O save do Jardim permanece separado.
+RegistrosSentia.init({openModal,onDiscover:()=>discover(4)});
 $('#reflect-choice').onchange = () => {
   if ($('#reflect-choice').value) discover(5);
 };
@@ -348,7 +271,7 @@ $('#garden-entry').onclick = () => {
   wrap.innerHTML = '<p class="eyebrow">ANTES DE ATRAVESSAR</p><h2>Jardim dos Ecos</h2><p>Uma narrativa ficcional de terror psicológico, com violência sugerida, perdas e sustos. A história questiona a intenção do protagonista; não recomenda eliminar sentimentos.</p><p>Escolha como vai jogar. Você poderá mudar nas configurações.</p><div class="actions"><button class="button primary" data-device="pc">PC · teclado e mouse</button><button class="button secondary" data-device="mobile">Celular · toque</button></div>';
   wrap.querySelectorAll('[data-device]').forEach(b => b.onclick = () => {
     storage.set('sentia-device', b.dataset.device);
-    location.href = 'jardim.html';
+    PortalSentia.enter();
   });
   openModal(wrap);
 };
@@ -374,6 +297,7 @@ function orderRules(order) {
   return [at('calma') === at('medo') + 1, at('calma') > 0 && at('calma') < 5, at('orgulho') > at('calma') && at('orgulho') < at('amor'), at('determinacao') === at('amor') + 2, at('determinacao') === at('tristeza') + 1];
 }
 function renderPuzzle() {
+  $('#lantern-form > p:not(.eyebrow)').textContent='As posições formam uma única fila, de 1 a 6. No celular, siga a numeração e continue na próxima linha. “Antes” e “depois” se referem aos números, não à linha da tela. Use cada sentimento uma vez e respeite todas as pistas do caderno.';
   $('#puzzle-notebook-title').textContent = 'Meu caderno de pistas · ' + puzzle.clues.length + '/6 fragmentos';
   $('#puzzle-attempts').textContent = puzzle.attempts ? puzzle.attempts + (puzzle.attempts === 1 ? ' verificação feita' : ' verificações feitas') : 'Sem limite de tentativas';
   $('#puzzle-steps').replaceChildren(...['As lanternas', 'Os vínculos', 'A palavra'].map((text, i) => {
@@ -451,8 +375,8 @@ function renderPuzzle() {
     return row;
   }));
   $('#puzzle-hint-text').textContent = puzzle.hints ? [
-    'Comece pelas relações de vizinhança. Monte pequenos blocos antes de preencher as seis posições.',
-    'Um bloco tem Medo seguido de Calma. Outro tem Amor, Tristeza e Determinação, nessa ordem.',
+    'Siga as posições de 1 a 6, mesmo no celular. Comece pelos vizinhos obrigatórios e monte blocos antes de preencher a fila.',
+    'Um bloco tem Medo seguido de Calma. Outro tem Amor, Tristeza e Determinação em posições consecutivas, nessa ordem.',
     'Orgulho precisa ficar depois do primeiro bloco e antes do segundo. Confira se nenhuma lanterna se repete.'
   ][puzzle.hints - 1] : '';
   $('#puzzle-hint').textContent = puzzle.hints < 3 ? 'Pedir uma pista de raciocínio (' + (puzzle.hints + 1) + '/3)' : 'Rever a última pista';
@@ -460,7 +384,10 @@ function renderPuzzle() {
 $('#lantern-form').onsubmit = e => {
   e.preventDefault();
   if (puzzle.stage > 1) return;
-  if (puzzle.clues.length < 6) return puzzleStatus('O caderno ainda tem ' + (6 - puzzle.clues.length) + ' marcas por encontrar. Elas estão no Atlas; os links do caderno ajudam a localizá-las.');
+  if (puzzle.clues.length < 6) {
+    $('.puzzle-notebook').open=true;
+    return puzzleStatus('Faltam os fragmentos de '+lanternIds.filter(id=>!puzzle.clues.includes(id)).map(emotionName).join(', ')+'. Abra cada um pelos links do caderno e toque em “Guardar esta descoberta”. Sua disposição continua salva.');
+  }
   puzzle.attempts++;
   if (puzzle.order.some(x => !x) || new Set(puzzle.order).size !== 6) {
     savePuzzle();
@@ -475,7 +402,7 @@ $('#lantern-form').onsubmit = e => {
     puzzleStatus('As seis marcas acenderam. Agora associe os vínculos aos três selos.', true);
     $('#seal-title').focus();
   } else {
-    const feedback = ['Confira quem precisa ficar imediatamente antes de Calma.', 'Calma não ocupa uma ponta.', 'Releia a relação entre Calma, Orgulho e Amor.', 'Conte a distância entre Amor e Determinação.', 'Confira a vizinha imediatamente antes de Determinação.'];
+    const feedback = ['Medo precisa ocupar a posição imediatamente anterior à de Calma.', 'Calma precisa ficar em uma das posições de 2 a 5.', 'Confira a ordem numérica: primeiro Calma, depois Orgulho, depois Amor.', 'A posição de Determinação precisa ser o número da posição de Amor mais 2.', 'A posição de Determinação precisa ser o número da posição de Tristeza mais 1.'];
     savePuzzle();renderPuzzle();
     puzzleStatus(rules.filter(Boolean).length + ' de 5 relações estão coerentes. ' + feedback[rules.indexOf(false)]);
   }
@@ -486,8 +413,11 @@ $('#seal-form').onsubmit = e => {
   puzzle.attempts++;
   const correct = puzzle.seals.map((pair,i) => pair[0] && pair[1] && pair[0] !== pair[1] && [...pair].sort().join('+') === sealPairs[i]);
   savePuzzle();renderPuzzle();
-  if (!correct.every(Boolean)) return puzzleStatus('Os selos ainda não se alinharam. Pense no significado de cada verso e experimente os pares na Convergência.');
-  if (puzzle.combinations.length < 3) return puzzleStatus('As escolhas fazem sentido. Falta registrar ' + (3 - puzzle.combinations.length) + ' vínculo(s) na Convergência: combine os pares escolhidos para conferir seus versos.');
+  if (!correct.every(Boolean)) return puzzleStatus('Confira o selo '+(correct.indexOf(false)+1)+': cada verso pede seu próprio par. A ordem dos dois sentimentos dentro do mesmo selo não importa. Teste os pares na Convergência e compare o verso encontrado com o título do selo.');
+  if (puzzle.combinations.length < 3) {
+    $('.puzzle-notebook').open=true;
+    return puzzleStatus('Os pares dos selos estão corretos. Falta registrar na Convergência: '+sealPairs.filter(pair=>!puzzle.combinations.includes(pair)).map(pair=>pair.split('+').map(emotionName).join(' + ')).join('; ')+'. Combine esses pares e volte para conferir os vínculos; suas escolhas continuam salvas.');
+  }
   puzzle.stage = 3;savePuzzle();renderPuzzle();
   puzzleStatus('Os três vínculos se fecharam. Leia as marcas das lanternas na ordem encontrada.', true);
   $('#portal-word').focus();
@@ -564,7 +494,7 @@ $('#garden-image').src = findAsset('/01-Entrada/01-portal.png');
 window.addEventListener('hashchange', route);
 theme();
 renderAtlas();
-renderTasks();
 renderPuzzle();
+if(puzzleRestored)puzzleStatus('Recuperamos seu enigma anterior. A primeira etapa incompleta voltou a ser editável; suas pistas e escolhas foram preservadas.');
 renderDiscoveries();
 route();

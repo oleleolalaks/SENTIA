@@ -1,11 +1,13 @@
-ABRIR O SENTIA
+ABRIR O SENTIA COM BANCO NO XAMPP
 
-Extraia o ZIP inteiro antes de abrir qualquer HTML.
-Abra a pasta Sentia no VS Code e use Open with Live Server no index.html.
-Ou dê dois cliques em ABRIR-SENTIA.cmd.
+1. Extraia o ZIP inteiro.
+2. Copie a pasta Sentia para htdocs do XAMPP. Exemplo: C:\xampp\htdocs\Sentia.
+3. No painel XAMPP, inicie Apache e MySQL.
+4. Acesse http://localhost/Sentia/.
+5. Em Meu registro, clique em Preparar banco local. Outra opção é importar banco/schema.sql no phpMyAdmin.
+6. Edite os arquivos pelo VS Code. Para executar com banco, use o endereço do Apache, não Live Server nem file://.
 
-A estrutura deve manter index.html e jardim.html junto de css, js, assets, documentacao e portfolio.
-No site, use O Jardim e resolva o enigma das lanternas com as pistas do Atlas e da Convergência. O portal abre o jogo com escolha PC/celular.
-Não execute o HTML-puro de entrega-escolar: ele é a cópia isolada para leitura do professor, sem o visual nem as interações.
-Se estiver sem cores/imagens, confira se o endereço está na pasta extraída, e não em Temp/...zip...
-Mais instruções: LEIA-ME.txt.
+Se Apache/MySQL usam outras configurações, consulte documentacao/BANCO-XAMPP.txt.
+ABRIR-SENTIA.cmd apenas abre http://localhost/Sentia/; ele não instala nem inicia o XAMPP.
+Para ler os códigos isolados do professor, use entrega-escolar. Para executar, use o projeto completo na raiz.
+O Jardim é acessado no site, depois do enigma, e não usa o MySQL.

@@ -1,0 +1,9 @@
+/* O clarão atravessa as duas páginas, com uma versão suave para movimentos reduzidos. */
+#portal-light { position:fixed;inset:0;z-index:2147483647;pointer-events:auto;background:#fffbe9;opacity:0;transition:opacity .48s ease-in; }
+#portal-light.bright { opacity:1; }
+#portal-light::backdrop { background:transparent;backdrop-filter:none; }
+dialog#portal-light { width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;box-shadow:none; }
+.portal-arriving #game-modal { visibility:hidden; }
+.portal-arriving #game-modal::backdrop { background:transparent;backdrop-filter:none; }
+#portal-light.gentle { background:#e7e0cd;transition-duration:.2s; }
+@media(prefers-reduced-motion:reduce) { #portal-light { background:#e7e0cd;transition-duration:.2s; } }
