@@ -263,6 +263,7 @@ const G = (() => {
     writing = null;
     window.AudioSentia?.stopVoice?.();
     window.AudioSentia?.clearRoom?.();
+    window.AudioSentia?.clearTension?.();
     $('#dialogue').classList.remove('is-writing');
     clearIdle();
     Arena.stop();
@@ -292,7 +293,10 @@ const G = (() => {
     $('#action-panel').className = 'action-panel';
     $('#background').style.opacity = '1';
     $('#stage').classList.remove('light');
-    $('#stage').classList.remove('exploring','room-empty','chasing','impact','cinematic-closeup','shared-scene');
+    $('#stage').classList.remove('exploring','room-empty','chasing','impact','ninfa-pressure','cinematic-closeup','shared-scene');
+    delete $('#stage').dataset.urgency;
+    $('#stage').style.removeProperty('--wave-pressure');
+    $('#stage').style.removeProperty('--orb-scale');
     $('#prompt').className='prompt';
     $('#sanity-hud').hidden = true;
     showRoomNotice();
@@ -1155,6 +1159,7 @@ const G = (() => {
   }
   function prompt(label, actions, seconds, done) {
     mode = 'prompt';
+    if(!chase)$('#status').textContent=qte?'Reaja ao movimento':'';
     $('#prompt').hidden = false;
     $('#prompt-label').textContent = label;
     $('#prompt-actions').replaceChildren(...actions.map(a => btn(a.label, () => {
@@ -1175,12 +1180,14 @@ const G = (() => {
   }
   // Os comandos rápidos aceitam toque e teclado. Pausar congela o prazo.
   function startQTE(moves, onDone, onFail, eco = null) {
+    if(!eco&&moves.some(move=>['intercept','hold','push'].includes(move)))eco='medo';
     qte = {
       moves: [...moves],
       onDone,
       onFail,
       eco
     };
+    $('#stage').classList.toggle('ninfa-pressure',eco==='tristeza');
     nextQTE();
   }
   function nextQTE() {
@@ -1190,6 +1197,9 @@ const G = (() => {
       const cb = qte.onDone;
       qte = null;
       $('#prompt').hidden = true;
+      $('#stage').classList.remove('ninfa-pressure');
+      delete $('#stage').dataset.urgency;
+      window.AudioSentia?.clearTension?.();
       return cb();
     }
     if(qte.eco==='tristeza') {
@@ -1243,6 +1253,8 @@ const G = (() => {
     qte.expected = move;
     const pressure=qte.eco==='tristeza'?(S.flags.ninfaPressure||0):0;
     const seconds=settings.assist?3.2:Math.max(.72,1.22-(qte.eco==='tristeza'?S.checkpoint*.055:0)-pressure*.12);
+    qte.tensionClock=0;
+    window.AudioSentia?.setTension?.(qte.eco==='tristeza'?.5+S.checkpoint*.06:.68,{kind:qte.eco==='tristeza'?'ninfa':'chase',proximity:.65,health:qte.eco==='tristeza'?(S.flags.ninfaVitality||100)/100:1,charging:false});
     if(qte.eco==='tristeza')$('#prompt-status').textContent='Fôlego '+S.flags.ninfaVitality+' / 100 · Erros '+ninfaErrors+' · Responda antes da onda';
     prompt(labels[move], all, seconds, result => {
       const ok = result === move;
@@ -1420,7 +1432,7 @@ const G = (() => {
       index,
       progress: 0,
       danger: Number.isFinite(carryDanger)?carryDanger:settings.assist?2:3.8,
-      stepClock:0, obstacleDone:false, feedbackLeft:0,
+      stepClock:0, obstacleDone:false, feedbackLeft:0, tensionClock:0, elapsed:0,
       runLatched,
       lookingBack: false,
       length: n,
@@ -1478,6 +1490,7 @@ const G = (() => {
   function tickChase(dt) {
     const c=chase;if(!c)return;
     const running=!!(keysHeld.run||c.runLatched),distance=c.kind==='medo'?2.6:2.9;
+    c.elapsed+=dt;
     c.feedbackLeft=Math.max(0,c.feedbackLeft-dt);if(!c.feedbackLeft)c.turnFeedback=null;
     // Correr mantém a distância; não apaga os erros anteriores.
     if(!c.waiting)c.progress+=dt*(running&&!c.lookingBack?1:.1);
@@ -1486,8 +1499,16 @@ const G = (() => {
     if(!c.waiting&&c.stepClock>(running?.31:.58)){c.stepClock=0;window.AudioSentia?.sfx?.('step',{pace:running?'run':'walk',surface:'stone',intensity:.55});}
     c.presenceClock=(c.presenceClock||0)+dt;
     if(c.danger>3&&c.presenceClock>1.25&&!c.waiting){c.presenceClock=0;window.AudioSentia?.sfx?.('approach',{pan:Math.sin(c.index*2.1)*.65,distance:Math.max(.5,(8-c.danger)*.4),intensity:.45});}
-    Perseguicao.draw(dt,{...c,running,distance,reduced:settings.reduced,catchingUp:c.danger>5.5,threatCue:Math.max(0,(c.danger-4)/4)});
-    $('#status').textContent='Passagem '+(c.index+1)+' / '+c.length+' · '+(running?'Correndo':'CORRA · Shift ou botão')+' · Margem '+Math.max(0,Math.round((8-c.danger)*12.5))+'%';
+    // A presença cresce e recua entre as curvas. A margem fatal continua ligada aos erros reais.
+    const ratio=Math.min(1,c.progress/distance),progression=c.index/Math.max(1,c.length-1);
+    const surge=Math.max(0,Math.sin((ratio-.12)*Math.PI))*(.38+progression*.35);
+    const proximity=Math.min(1,c.danger/8);
+    const tension=Math.min(1,proximity*.72+surge*.32+progression*.12+(c.waiting?.08:0));
+    c.tensionClock+=dt;
+    if(c.tensionClock>=.12){c.tensionClock=0;window.AudioSentia?.setTension?.(tension,{kind:'chase',proximity,health:1,charging:c.waiting});}
+    Perseguicao.draw(dt,{...c,running,distance,proximity,surge,reduced:settings.reduced,catchingUp:c.danger>5.5,threatCue:tension});
+    const presence=c.danger>6?'MUITO PERTO':c.danger>4.6?'A presença se aproxima':'Passos atrás de você';
+    $('#status').textContent='Passagem '+(c.index+1)+' / '+c.length+' · '+(running?'Correndo':'CORRA · Shift ou botão')+' · '+presence;
     $('#chase-run')?.setAttribute('aria-pressed',String(running));
     if(c.danger>=8)return chaseFailure(c,'A presença alcançou você. Corra, reaja aos obstáculos e evite olhar para trás por muito tempo.');
     if(c.waiting)return;
@@ -1561,6 +1582,7 @@ const G = (() => {
     explorationHands('09-pare');
     setPhase('ninfa', index);
     S.flags.ninfaDefeated=false;
+    window.AudioSentia?.setTension?.(.3+index*.07,{kind:'ninfa',proximity:.35+index*.08,health:(S.flags.ninfaVitality||100)/100,charging:false});
     if(intro||!Number.isFinite(S.flags.ninfaVitality))S.flags.ninfaVitality=100;
     background(list('/03-Abismo-Tristeza/02-Base/')[index % 5]);
     actor('tristeza', 'base', 'combat');
@@ -1658,6 +1680,7 @@ const G = (() => {
     Arena.start({
       free,
       assist:settings.assist,
+      reduced:settings.reduced,
       collected: S.flags.swordPicked,
       items: S.items,
       equipped:S.flags.equipped,
@@ -2482,6 +2505,16 @@ const G = (() => {
         timed.left -= dt;
         if (mode === 'dialogue') $('#status').textContent = 'Resposta · ' + Math.ceil(Math.max(0, timed.left)) + ' s';
         $('#timer-fill').style.transform = 'scaleX(' + Math.max(0, timed.left / timed.total) + ')';
+        if(qte&&mode==='prompt'){
+          const incoming=1-Math.max(0,timed.left/timed.total);
+          $('#stage').dataset.urgency=incoming>.72?'critical':'incoming';
+          if(qte.eco==='tristeza'){
+            $('#stage').style.setProperty('--wave-pressure',String(.3+incoming*.5));
+            $('#stage').style.setProperty('--orb-scale',String(settings.reduced?1:.88+incoming*.15));
+          }
+          qte.tensionClock=(qte.tensionClock||0)+dt;
+          if(qte.tensionClock>=.12){qte.tensionClock=0;window.AudioSentia?.setTension?.(Math.min(1,.4+incoming*.24+(qte.eco==='tristeza'?S.checkpoint*.055:ninfaErrors*.05)),{kind:qte.eco==='tristeza'?'ninfa':'chase',proximity:.5+incoming*.35,health:qte.eco==='tristeza'?(S.flags.ninfaVitality||100)/100:1,charging:incoming>.58});}
+        }
         if (timed.left <= 0) {
           const fn = timed.done;
           timed = null;

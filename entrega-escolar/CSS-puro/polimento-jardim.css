@@ -53,6 +53,14 @@
 }
 body.reduced .dialogue.is-writing #speech::after,body.reduced .dialogue[data-writing="true"] #speech::after { animation:none;opacity:.7; }
 body.reduced .watch-switches .orb { animation:none;transition:none; }
+/* A água ocupa as bordas durante a investida; os comandos permanecem acima dela. */
+.stage.ninfa-pressure::after { content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(0deg,#072d45b0,transparent 42%),linear-gradient(90deg,#0215239c,transparent 25%,transparent 75%,#0215239c);opacity:var(--wave-pressure,.3); }
+.ninfa-pressure #effect { transform:scale(var(--orb-scale,1));opacity:.86; }
+.ninfa-pressure .timer-track { border-color:#8cd3e8; }
+.ninfa-pressure[data-urgency="critical"] .timer-track { box-shadow:0 0 0 1px #c6f0ff; }
+.ninfa-pressure[data-urgency="critical"] #timer-fill { background:#e7f8ff; }
+body.reduced .ninfa-pressure #effect { transform:none; }
+@media(prefers-reduced-motion:reduce) { .ninfa-pressure #effect {transform:none;} }
 /* A atmosfera acompanha a área da arte, sem cobrir alvos ou alterar os sprites aprovados. */
 .room-atmosphere { position:absolute;inset:0;overflow:hidden;pointer-events:none;isolation:isolate; }
 .room-atmosphere.spent { opacity:.25; }

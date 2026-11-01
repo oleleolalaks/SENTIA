@@ -43,8 +43,16 @@ window.Arena = (() => {
     resizeObserver = null,
     renderedHand = null,
     lightAge = 9,
-    audioTimes = {};
+    audioTimes = {},
+    tensionAt = 0,
+    impactAngle = 0,
+    impactBlocked = false,
+    phaseAge = 9;
   const angleDiff = (a,b) => Math.atan2(Math.sin(a-b),Math.cos(a-b));
+  const clamp = (value,min=0,max=1) => Math.max(min,Math.min(max,value));
+  function reducedMotion() {
+    return !!config?.reduced || !!document.body?.classList?.contains('reduced') || !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  }
   // Os sons acontecem nas ações, nn a cada quadro do desenho.
   function sound(name, spacing=.14, options={}) {
     if(elapsed-(audioTimes[name]??-99)<spacing)return;
@@ -186,6 +194,10 @@ window.Arena = (() => {
     staminaDelay = 0;
     lightAge = 9;
     audioTimes = {};
+    tensionAt = 0;
+    impactAngle = 0;
+    impactBlocked = false;
+    phaseAge = 9;
     dragPointer = null;
     active = true;
     paused = false;
@@ -195,6 +207,7 @@ window.Arena = (() => {
   }
   function stop() {
     active = false;
+    window.AudioSentia?.clearTension?.();
     keys = {};
     cancelDrag();
     cancelAnimationFrame(frameId);
@@ -308,6 +321,7 @@ window.Arena = (() => {
     }
     if (enemy.hp <= 20) {
       active = false;
+      window.AudioSentia?.clearTension?.();
       keys={};cancelDrag();
       config.onFinish?.();
     }
@@ -318,6 +332,8 @@ window.Arena = (() => {
     const angle = Math.atan2(source.y-player.y, source.x-player.x)-player.a;
     const facing = Math.abs(Math.atan2(Math.sin(angle),Math.cos(angle))) < 1.05;
     const guarding = blockable && keys.guard && attackAge>.36 && lightAge>.65 && guardBroken <= 0 && player.stamina > 8 && (facing || config.assist);
+    impactAngle = Math.atan2(source.y-player.y,source.x-player.x);
+    impactBlocked = !!guarding;
     n*=config.assist?.62:1;
     if(guarding) {
       player.stamina = Math.max(0,player.stamina-n*1.15);
@@ -331,12 +347,14 @@ window.Arena = (() => {
     hit = .3;
     if (player.hp <= 0) {
       active = false;
+      window.AudioSentia?.clearTension?.();
       keys={};cancelDrag();
       config.onDeath?.();
     }
   }
   function tick(dt) {
     elapsed += dt;
+    phaseAge += dt;
     hurtInv = Math.max(0, hurtInv - dt);
     hit = Math.max(0, hit - dt);
     attackAge += dt;
@@ -378,7 +396,7 @@ window.Arena = (() => {
     }
     enemy.timer -= dt;
     const enraged=enemy.hp<enemy.maxHp*.5;
-    if(enraged&&enemy.phaseNumber===1) {enemy.phaseNumber=2;sound('alert',.5);}
+    if(enraged&&enemy.phaseNumber===1) {enemy.phaseNumber=2;phaseAge=0;sound('alert',.5);}
     const d = Math.hypot(player.x - enemy.x, player.y - enemy.y),
       a = Math.atan2(player.y - enemy.y, player.x - enemy.x),
       visible=lineClear(enemy.x,enemy.y);
@@ -455,6 +473,12 @@ window.Arena = (() => {
       }
       return b.life>0;
     });
+    if(active&&elapsed>=tensionAt) {
+      tensionAt=elapsed+.12;
+      const proximity=clamp(1-d/12),chargeProgress=enemy.phase==='prepare'?clamp(1-enemy.timer/enemy.windup):0;
+      const pressure=enemy.phase==='recover'?.14:enemy.phase==='prepare'?.48+chargeProgress*.24:enemy.phase==='attack'?.85:.24+proximity*.24;
+      window.AudioSentia?.setTension?.(clamp(pressure+(enraged?.1:0)+(1-player.hp/100)*.12),{kind:'boss',proximity,health:clamp(player.hp/100),charging:enemy.phase==='prepare'});
+    }
     config.onHud?.({
       hp: Math.max(0, Math.ceil(player.hp)),
       enemy: Math.max(0, Math.ceil(enemy.hp)),
@@ -497,7 +521,120 @@ window.Arena = (() => {
     if(config.items.includes('espada')||collected)return attackAge<.48?images['swing'+Math.min(4,Math.floor(attackAge/.12)+1)]:config.items.includes('escudo')?images.paired:images.swing1;
     return attackAge<.3?images.punch:images.fist;
   }
+  // O aviso usa a mesma direção e os mesmos alcances do golpe real.
+  // A marca no chão para nos pilares; nn revela um ataque através da cobertura.
+  function threatInfo() {
+    if(freeMode||!enemy)return {danger:false,locked:false};
+    const dx=player.x-enemy.x,dy=player.y-enemy.y,d=Math.hypot(dx,dy);
+    const relative=angleDiff(Math.atan2(dy,dx),enemy.aim??0),visible=lineClear(enemy.x,enemy.y);
+    let danger=false;
+    if(visible&&['prepare','attack'].includes(enemy.phase)) {
+      if([0,3,5,6].includes(enemy.pattern)) danger=d<[3,0,0,2.4,0,4.3,2.8][enemy.pattern]&&Math.abs(relative)<1.1;
+      else if(enemy.pattern===2) danger=Math.cos(relative)*d>0&&Math.cos(relative)*d<(config.assist?4.9:7.2)&&Math.abs(Math.sin(relative)*d)<1.2;
+      else {
+        const count=enemy.pattern===4?7:config.assist?1:3,spread=enemy.pattern===4?.22:.14;
+        for(let i=0;i<count;i++) {
+          const angle=relative-(i-(count-1)/2)*spread;
+          if(Math.cos(angle)*d>0&&Math.abs(Math.sin(angle)*d)<.65)danger=true;
+        }
+      }
+    }
+    return {danger,locked:!!enemy.aimLocked,visible,distance:d};
+  }
+  function floorPoint(x,y) {
+    const dx=x-player.x,dy=y-player.y,z=dx*Math.cos(player.a)+dy*Math.sin(player.a);
+    if(z<.14)return null;
+    return {x:W/2+(-dx*Math.sin(player.a)+dy*Math.cos(player.a))/z/Math.tan(fov/2)*W/2,y:H/2+H*.5/z,z};
+  }
+  function floorLine(x1,y1,x2,y2,depth,color,width=1.5) {
+    const steps=Math.max(1,Math.ceil(Math.hypot(x2-x1,y2-y1)/.14));
+    ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();
+    for(let i=0;i<steps;i++) {
+      const t=(i+.5)/steps,x=x1+(x2-x1)*t,y=y1+(y2-y1)*t;
+      if(solid(x,y))continue;
+      const p=floorPoint(x1+(x2-x1)*i/steps,y1+(y2-y1)*i/steps),q=floorPoint(x1+(x2-x1)*(i+1)/steps,y1+(y2-y1)*(i+1)/steps);
+      if(!p||!q)continue;
+      const sx=(p.x+q.x)/2,sy=(p.y+q.y)/2;
+      if(sx<0||sx>=W||sy>H||depth[sx|0]<(p.z+q.z)/2-.08)continue;
+      ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);
+    }
+    ctx.stroke();
+  }
+  function threatFloor(depth,cue) {
+    if(freeMode||enemy.phase!=='prepare'||!cue.visible)return;
+    const color=enemy.aimLocked?'#ee715cc4':'#dbb87999',width=Math.max(1,H*.004);
+    const ray=(angle,length,offset=0)=>{
+      const x=enemy.x-Math.sin(angle)*offset,y=enemy.y+Math.cos(angle)*offset;
+      let end=length;
+      for(let d=.1;d<length;d+=.12)if(solid(x+Math.cos(angle)*d,y+Math.sin(angle)*d)){end=d;break;}
+      floorLine(x,y,x+Math.cos(angle)*end,y+Math.sin(angle)*end,depth,color,width);
+    };
+    if(enemy.pattern===2) {
+      ray(enemy.aim,config.assist?4.9:7.2,-1.15);ray(enemy.aim,config.assist?4.9:7.2,1.15);
+      ray(enemy.aim,config.assist?4.9:7.2);
+    } else if([1,4].includes(enemy.pattern)) {
+      const count=enemy.pattern===4?7:config.assist?1:3,spread=enemy.pattern===4?.22:.14;
+      for(let i=0;i<count;i++)ray(enemy.aim+(i-(count-1)/2)*spread,14);
+    } else {
+      const radius=[3,0,0,2.4,0,4.3,2.8][enemy.pattern];
+      ray(enemy.aim-1.1,radius);ray(enemy.aim+1.1,radius);
+      for(let i=0;i<24;i++) {
+        const a=enemy.aim-1.1+i*2.2/24,b=a+2.2/24;
+        const x=enemy.x+Math.cos(a)*radius,y=enemy.y+Math.sin(a)*radius;
+        const x2=enemy.x+Math.cos(b)*radius,y2=enemy.y+Math.sin(b)*radius;
+        if(clearBetween(enemy.x,enemy.y,x,y)&&clearBetween(enemy.x,enemy.y,x2,y2))floorLine(x,y,x2,y2,depth,color,width);
+      }
+    }
+  }
+  function combatFeedback(cue) {
+    if(freeMode)return;
+    const reduced=reducedMotion(),enraged=enemy.phaseNumber===2;
+    const low=clamp((42-player.hp)/42),impact=hit/.3;
+    // Só as bordas escurecem. O centro, os projéteis e a câmera ficam estáveis.
+    const edge=ctx.createRadialGradient(W/2,H*.48,H*.2,W/2,H*.48,Math.max(W,H)*.62);
+    const breath=reduced?0:low*(.015+.015*Math.sin(elapsed*2.1));
+    edge.addColorStop(0,'rgba(28,8,19,0)');
+    edge.addColorStop(.62,'rgba(44,10,23,0)');
+    edge.addColorStop(1,`rgba(${enraged?'105,24,38':'105,14,26'},${clamp(low*.3+breath+(enraged?.13:0)+impact*.08,0,.48)})`);
+    ctx.fillStyle=edge;ctx.fillRect(0,0,W,H);
+    if(hit>0) {
+      const direction=angleDiff(impactAngle,player.a);
+      ctx.strokeStyle=impactBlocked?`rgba(244,210,153,${impact*.9})`:`rgba(248,99,79,${impact*.9})`;
+      ctx.lineWidth=Math.max(3,H*.014);ctx.beginPath();
+      for(let i=0;i<=12;i++) {
+        const a=direction-.25+i*.5/12,x=W/2+Math.sin(a)*W*.43,y=H/2-Math.cos(a)*H*.41;
+        if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+    if(!['prepare','attack','recover'].includes(enemy.phase)&&phaseAge>2.4)return;
+    const preparing=enemy.phase==='prepare',recovering=enemy.phase==='recover';
+    const text=recovering?'ABERTURA · CONTRA-ATAQUE':preparing?(enemy.aimLocked?(cue.danger?'MIRA TRAVADA · ESQUIVE':'MIRA TRAVADA'):'PREPARANDO O GOLPE'):enemy.phase==='approach'?'FASE II · FÚRIA':'GOLPE · MANTENHA DISTÂNCIA';
+    const color=recovering?'#ead8af':preparing&&enemy.aimLocked?'#ff9a7c':'#e0c591';
+    let fontSize=Math.max(9,Math.min(13,H*.034));
+    ctx.font=`600 ${fontSize}px sans-serif`;
+    if(ctx.measureText(text).width>W*.86) {
+      fontSize=Math.max(8,fontSize*W*.86/ctx.measureText(text).width);ctx.font=`600 ${fontSize}px sans-serif`;
+    }
+    ctx.textAlign='center';
+    const textWidth=ctx.measureText(text).width,panelWidth=Math.min(W*.94,textWidth+20),top=H*.205;
+    ctx.fillStyle='rgba(17,11,19,.76)';ctx.fillRect((W-panelWidth)/2,top,panelWidth,H*.072+8);
+    ctx.fillStyle=color;ctx.fillText(text,W/2,top+H*.046+2);
+    const remaining=preparing?clamp(enemy.timer/(enemy.windup||1)):recovering?clamp(enemy.timer/(config.assist?2.15:enemy.pattern===2?1.65:enraged?1.15:1.45)):0;
+    if(preparing||recovering) {
+      ctx.fillStyle='#ffffff24';ctx.fillRect(W*.34,top+H*.064+5,W*.32,2);
+      ctx.fillStyle=color;ctx.fillRect(W*.34,top+H*.064+5,W*.32*remaining,2);
+    }
+    // Um sinal lateral permite reencontrar Beerus sem mover a visão à força.
+    const bearing=angleDiff(Math.atan2(enemy.y-player.y,enemy.x-player.x),player.a);
+    if(Math.abs(bearing)>fov*.48&&!recovering) {
+      const side=Math.sin(bearing)>=0?1:-1,x=side>0?W*.95:W*.05,y=H*.38;
+      ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-side*6,y-6);ctx.lineTo(x,y);ctx.lineTo(x-side*6,y+6);ctx.stroke();
+    }
+    ctx.textAlign='start';
+  }
   function draw() {
+    const cue=threatInfo();
     ctx.fillStyle = '#24151c';
     ctx.fillRect(0, 0, W, H / 2);
     const floor = ctx.createLinearGradient(0, H / 2, 0, H);
@@ -569,6 +706,7 @@ window.Arena = (() => {
         ctx.fillRect(x, top, 2, h);
       }
     }
+    threatFloor(depth,cue);
     const objects = freeMode ? [{
       x: 3.5,
       y: 4.5,
@@ -608,10 +746,18 @@ window.Arena = (() => {
       const cy = H / 2 + H / z / 2 - (o.low ? size * .3 : size * .5);
       if (o.orb) {
         if (depth[Math.max(0, Math.min(W - 1, cx | 0))] > z) {
-          ctx.fillStyle = '#ff624e';
-          ctx.fillRect(cx - size / 2, cy - size / 2, size, size);
-          ctx.fillStyle = '#ffe5af';
-          ctx.fillRect(cx - size / 4, cy - size / 4, size / 2, size / 2);
+          const orbY=H/2-H*.4/z,orbSize=Math.max(3,size);
+          const tail=floorPoint(o.x-o.vx*.085,o.y-o.vy*.085);
+          if(tail&&depth[Math.max(0,Math.min(W-1,tail.x|0))]>tail.z) {
+            ctx.strokeStyle='#fa9e6e99';ctx.lineWidth=Math.max(1,orbSize*.28);
+            ctx.beginPath();ctx.moveTo(tail.x,tail.y-H*.9/tail.z);ctx.lineTo(cx,orbY);ctx.stroke();
+          }
+          ctx.fillStyle = '#f46c5044';
+          ctx.fillRect(cx-orbSize,orbY-orbSize,orbSize*2,orbSize*2);
+          ctx.fillStyle = '#ff7958';
+          ctx.fillRect(cx-orbSize/2,orbY-orbSize/2,orbSize,orbSize);
+          ctx.fillStyle = '#fff1cd';
+          ctx.fillRect(cx-orbSize/4,orbY-orbSize/4,orbSize/2,orbSize/2);
         }
         continue;
       }
@@ -623,6 +769,7 @@ window.Arena = (() => {
         ctx.drawImage(o.img, sourceX, 0, 1, o.img.naturalHeight, sx, cy - size / 2, 1, size);
       }
     }
+    ctx.lineWidth=1;
     ctx.strokeStyle = '#ffffff9a';
     ctx.beginPath();
     ctx.moveTo(W / 2 - 4, H / 2);
@@ -638,7 +785,7 @@ window.Arena = (() => {
       const scale=Math.min(W*.96/hand.naturalWidth,H*.64/hand.naturalHeight);
       const width=hand.naturalWidth*scale,height=hand.naturalHeight*scale;
       const moving=keys.up||keys.down||keys.left||keys.right;
-      const bob=moving?Math.sin(elapsed*(keys.run?11:7))*H*.006:0;
+      const bob=moving&&!reducedMotion()?Math.sin(elapsed*(keys.run?11:7))*H*.006:0;
       ctx.drawImage(hand,(W-width)/2,H-height+H*.015+bob,width,height);
     }
     const cut=images[(knife?'faca':'espada')+'Cut'+Math.min(2,Math.floor(attackAge/.1))];
@@ -647,19 +794,11 @@ window.Arena = (() => {
       ctx.drawImage(cut, W * .2, H * .2, W * .6, H * .5);
       ctx.globalAlpha = 1;
     }
-    if(!freeMode&&enemy.phase==='prepare') {
-      // O aviso também aparece no visor: o ritmo fica legível mesmo sem som.
-      ctx.fillStyle=enemy.aimLocked?'#ff6a4d':'#ffcc66';
-      ctx.fillRect(W*.37,H*.58,W*.26*Math.max(0,enemy.timer/enemy.windup),Math.max(2,H*.008));
-    }
     if(!freeMode&&enemy.phase==='attack'&&Math.hypot(enemy.x-player.x,enemy.y-player.y)<4&&Math.abs(angleDiff(Math.atan2(enemy.y-player.y,enemy.x-player.x),player.a))<.6&&lineClear(enemy.x,enemy.y)) {
       const index=({0:2,1:0,2:3,4:1})[enemy.pattern], fx=images['attackEffect'+index];
       if(fx?.complete&&fx.naturalWidth){ctx.globalAlpha=.45;ctx.drawImage(fx,W*.15,H*.1,W*.7,H*.7);ctx.globalAlpha=1;}
     }
-    if (hit > 0) {
-      ctx.fillStyle = 'rgba(170,20,25,' + hit * .8 + ')';
-      ctx.fillRect(0, 0, W, H);
-    }
+    combatFeedback(cue);
   }
   function loop(now) {
     if (!active) return;
@@ -715,6 +854,9 @@ window.Arena = (() => {
       lightCooldown,
       attackCooldown,
       elapsed,
+      threat:enemy&&player?threatInfo():null,
+      feedback:{angle:impactAngle,blocked:impactBlocked,remaining:hit},
+      reduced:reducedMotion(),
       bullets:bullets.map(b=>({...b})),
       dragging:dragPointer!==null,
       resolution:{width:W,height:H}

@@ -20,14 +20,17 @@ window.AudioSentia = (() => {
   };
   let scene = 'explore', selected = 'garden', unlocked = false, paused = false;
   let volume = .45, voiceVolume = .28, effectsVolume = .45, muted = false, fade = null, generation = 0, error = '';
-  let context = null, voiceBus = null, effectsBus = null, pulseTimer = null, duckTimer = null;
+  let context = null, voiceBus = null, effectsBus = null, tensionBus = null, pulseTimer = null, duckTimer = null;
   let voiceDuckTimer = null, previewTimer = null, speechDucked = false, effectDucked = false, previewing = false;
   let previewGeneration = 0;
   let uiPreviewing = false, uiTimer = null, uiGeneration = 0;
   let pageHidden = document.visibilityState === 'hidden', room = null, roomTimer = null, roomGeneration = 0;
   let ambientPlayed = 0, lastAmbient = '', spatialPlayed = 0;
   let lastVoice = -Infinity, voicePlayed = 0, effectsPlayed = 0, lastVoiceProfile = null, stepSide = false;
-  const voices = new Set(), effects = new Set(), ambience = new Set(), uiEffects = new Set(), uiPending = new Set(), lastEffect = new Map();
+  let tension = null, tensionLevel = 0, legacyPulse = false, pulseGeneration = 0, pulseStarts = 0;
+  let pulseLastTime = 0, nextBeat = 0, nextBreath = 0, nextDrone = 0, restUntil = 0, windupPending = false;
+  let pulsePlayed = 0, tensionBreaths = 0, tensionDrones = 0, tensionWindups = 0, tensionPauses = 0, tensionPhase = 'silent';
+  const voices = new Set(), effects = new Set(), tensionSources = new Set(), ambience = new Set(), uiEffects = new Set(), uiPending = new Set(), lastEffect = new Map();
   try {
     const settings = JSON.parse(localStorage.getItem('sentia-audio') || '{}');
     if (Number.isFinite(settings.volume)) volume = Math.max(0, Math.min(1, settings.volume));
@@ -36,7 +39,18 @@ window.AudioSentia = (() => {
     if (Number.isFinite(settings.effectsVolume)) effectsVolume = Math.max(0, Math.min(1, settings.effectsVolume));
   } catch { /* Se o navegador impedir o armazenamento, o controle de volume continua funcionando. */ }
   const channels = new Map();
-  function musicGain(track) { return volume * track.gain * (speechDucked ? .3 : 1) * (effectDucked ? .35 : 1); }
+  function musicGain(track) { return volume * track.gain * (speechDucked ? .3 : 1) * (effectDucked ? .35 : 1) * (1 - tensionLevel * .23); }
+  function refreshMusicMix(amount=1) {
+    if (fade !== null) return;
+    channels.forEach((audio,id) => {
+      if (audio.paused) return;
+      const target = id === selected ? musicGain(tracks.find(track => track.id === id)) : 0;
+      audio.volume = Math.max(0, Math.min(1, audio.volume + (target - audio.volume) * amount));
+    });
+  }
+  function refreshTensionMix() {
+    if (tensionBus) tensionBus.gain.setTargetAtTime(speechDucked ? .3 : effectDucked ? .55 : 1, context.currentTime, .025);
+  }
   function persist() {
     try { localStorage.setItem('sentia-audio', JSON.stringify({volume, voiceVolume, effectsVolume, muted})); } catch {}
   }
@@ -115,7 +129,7 @@ window.AudioSentia = (() => {
     const key = Object.prototype.hasOwnProperty.call(aliases, value) ? aliases[value] : 'garden';
     const previous = scene;
     scene = value;
-    if (previous !== scene) { stopVoice(); startPulse(); }
+    if (previous !== scene) { stopVoice(); legacyPulse = scene === 'maze' && !tension; startPulse(); }
     if (selected === key) { const current = channels.get(key); if (current) current.playbackRate = sceneRate(); return; }
     selected = key;
     void playSelected();
@@ -138,7 +152,9 @@ window.AudioSentia = (() => {
     paused = true;
     stopChannels();
     stopSynth();
-    if (context?.state === 'running') void context.suspend().catch(() => {});
+    if (context?.state === 'running') void context.suspend().then(() => {
+      if (!paused && !muted && !pageHidden) resume();
+    }).catch(() => {});
   }
   function resume() {
     paused = false;
@@ -160,9 +176,9 @@ window.AudioSentia = (() => {
       const limiter = context.createDynamicsCompressor();
       limiter.threshold.value = -15; limiter.knee.value = 12; limiter.ratio.value = 8;
       limiter.attack.value = .003; limiter.release.value = .12;
-      voiceBus = context.createGain(); effectsBus = context.createGain();
+      voiceBus = context.createGain(); effectsBus = context.createGain(); tensionBus = context.createGain();
       voiceBus.gain.value = voiceVolume; effectsBus.gain.value = effectsVolume;
-      voiceBus.connect(master); effectsBus.connect(master); master.connect(limiter); limiter.connect(context.destination);
+      voiceBus.connect(master); effectsBus.connect(master); tensionBus.connect(effectsBus); master.connect(limiter); limiter.connect(context.destination);
     } catch { context = null; }
   }
   function allowed(group) {
@@ -183,10 +199,12 @@ window.AudioSentia = (() => {
     voiceDuckTimer = null;
     const wasDucked = speechDucked;
     speechDucked = false;
+    refreshTensionMix();
     if (wasDucked && !paused && !muted) void playSelected(.18);
   }
   function duckForVoice() {
     speechDucked = true;
+    refreshTensionMix();
     channels.forEach((audio,id) => { audio.volume = Math.min(audio.volume, musicGain(tracks.find(track => track.id === id))); });
     if (voiceDuckTimer !== null) clearTimeout(voiceDuckTimer);
     voiceDuckTimer = setTimeout(releaseVoiceDuck, 150);
@@ -210,16 +228,19 @@ window.AudioSentia = (() => {
   function stopSynth() {
     stopUi(); stopVoice(); stopGroup(effects);
     stopRoom();
-    if (pulseTimer !== null) clearInterval(pulseTimer);
+    stopPulse();
     if (duckTimer !== null) clearTimeout(duckTimer);
     pulseTimer = null; duckTimer = null; effectDucked = false;
+    refreshTensionMix();
   }
   function emit({frequency=180, end=frequency, duration=.1, delay=0, amplitude=.08, wave='sine', group='effects', cutoff=1100, noise=false, pan=0, distance=1, attack=.006}) {
     if (!allowed(group)) return false;
-    const pool = group === 'voice' ? voices : group === 'ambient' ? ambience : group === 'ui' ? uiEffects : effects;
-    if (pool.size >= (group === 'voice' ? 3 : group === 'ambient' ? 3 : group === 'ui' ? 4 : 8) || voices.size + effects.size + uiEffects.size >= 8) return false;
+    const pool = group === 'voice' ? voices : group === 'ambient' ? ambience : group === 'ui' ? uiEffects : group === 'tension' ? tensionSources : effects;
+    const active = voices.size + effects.size + uiEffects.size + tensionSources.size;
+    // A camada contínua reserva espaço para a fala e para os avisos de combate.
+    if (pool.size >= (group === 'voice' ? 3 : group === 'ambient' ? 3 : group === 'ui' || group === 'tension' ? 4 : 8) || active >= 8 || (group === 'tension' && active >= 5)) return false;
     const now = context.currentTime + Math.max(0, Math.min(.4, delay));
-    const length = Math.max(group==='voice'?.018:.025, Math.min(group==='ambient'?2.4:.65, duration));
+    const length = Math.max(group==='voice'?.018:.025, Math.min(group==='ambient'?2.4:group==='tension'?1.3:.65, duration));
     const gain = context.createGain(), filter = context.createBiquadFilter();
     filter.type = 'lowpass'; filter.frequency.value = Math.max(100, Math.min(1800, cutoff)); filter.Q.value = .6;
     let source;
@@ -241,7 +262,7 @@ window.AudioSentia = (() => {
     if (group === 'voice') gain.gain.setValueAtTime(peak * .85, now + length * .42);
     gain.gain.exponentialRampToValueAtTime(.0001, now + length);
     source.connect(filter); filter.connect(gain);
-    const bus = group === 'voice' ? voiceBus : effectsBus;
+    const bus = group === 'voice' ? voiceBus : group === 'tension' ? tensionBus : effectsBus;
     let panner = null;
     if (pan && context.createStereoPanner) {
       panner = context.createStereoPanner(); panner.pan.value = Math.max(-.4, Math.min(.4, pan));
@@ -435,18 +456,121 @@ window.AudioSentia = (() => {
     const number = Number(value); if (!Number.isFinite(number)) return;
     effectsVolume = Math.max(0, Math.min(1, number)); persist();
     if (effectsBus) effectsBus.gain.setTargetAtTime(effectsVolume, context.currentTime, .015);
-    if (effectsVolume === 0) { stopGroup(effects); stopUi(true); stopRoom(); if (pulseTimer !== null) clearInterval(pulseTimer); pulseTimer = null; }
+    if (effectsVolume === 0) {
+      stopGroup(effects); stopUi(true); stopRoom(); stopPulse();
+      if (duckTimer !== null) clearTimeout(duckTimer);
+      duckTimer = null; effectDucked = false; refreshTensionMix(); refreshMusicMix();
+    }
     else { startPulse(); startRoom(); }
   }
-  function startPulse() {
+  function unit(value, fallback=0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.max(0, Math.min(1, parsed)) : fallback;
+  }
+  function pulseProfile() {
+    return tension || (legacyPulse && scene === 'maze' ? {value:.65,kind:'chase',proximity:.55,health:1,charging:false} : null);
+  }
+  function stopPulse() {
+    pulseGeneration++;
     if (pulseTimer !== null) clearInterval(pulseTimer);
     pulseTimer = null;
-    if (scene !== 'maze' || !allowed('effects')) return;
+    stopGroup(tensionSources);
+    tensionLevel = 0; tensionPhase = 'silent';
+    restUntil = 0; windupPending = false;
+    refreshMusicMix();
+  }
+  // O motor só fornece perigo/distância/vida. Um único relógio cria o ritmo, sem reiniciar a cada quadro.
+  function setTension(value, options={}) {
+    const amount = unit(value);
+    if (!amount) { clearTension(); return; }
+    if (!options || typeof options !== 'object') options = {};
+    const next = {
+      value:amount, kind:['boss','chase','ninfa'].includes(options.kind) ? options.kind : 'chase',
+      proximity:unit(options.proximity), health:unit(options.health, 1), charging:options.charging === true
+    };
+    const previous = tension;
+    if (previous && Object.keys(next).every(key => next[key] === previous[key])) { startPulse(); return; }
+    tension = next; legacyPulse = false;
+    if (previous && previous.kind !== next.kind) stopPulse();
+    if (next.charging && !previous?.charging && allowed('tension')) {
+      // A respiração prende por um instante; o aviso do golpe tem espaço antes do grave subir.
+      stopGroup(tensionSources); restUntil = context.currentTime + .28; windupPending = true;
+      nextBeat = restUntil + .32;
+    } else if (previous?.charging && !next.charging) {
+      restUntil = 0; windupPending = false;
+      if (context) { nextBeat = context.currentTime + .12; nextBreath = context.currentTime + .9; }
+    }
+    startPulse();
+  }
+  function clearTension() {
+    tension = null; legacyPulse = false;
+    stopPulse();
+  }
+  function startPulse() {
+    if (!pulseProfile() || !allowed('tension')) { stopPulse(); return; }
+    if (pulseTimer !== null) return;
+    const token = pulseGeneration;
+    pulseStarts++;
+    pulseLastTime = context.currentTime;
+    nextBeat = pulseLastTime + .2; nextBreath = pulseLastTime + 1.1; nextDrone = pulseLastTime + .4;
+    if (pulseProfile().charging) { restUntil = pulseLastTime + .28; windupPending = true; }
     pulseTimer = setInterval(() => {
-      if (!allowed('effects') || scene !== 'maze') return;
-      emit({frequency:65,end:43,duration:.12,amplitude:.095,cutoff:240});
-      emit({frequency:75,end:50,duration:.1,delay:.14,amplitude:.055,cutoff:260});
-    }, 545);
+      if (token !== pulseGeneration) return;
+      const profile = pulseProfile();
+      if (!profile || !allowed('tension')) { stopPulse(); return; }
+      const now = context.currentTime, dt = Math.min(.25, Math.max(0, now - pulseLastTime));
+      pulseLastTime = now;
+      const target = Math.min(1, profile.value * (.68 + profile.proximity * .27 + (1 - profile.health) * .15));
+      // O perigo aproxima em cerca de um segundo e dá alívio mais devagar, sem saltos de volume.
+      tensionLevel += (target - tensionLevel) * (1 - Math.exp(-dt / (target > tensionLevel ? .62 : 1.45)));
+      refreshMusicMix(.2);
+      if (now < restUntil) { tensionPhase = 'pause'; return; }
+      const level = tensionLevel, close = profile.proximity, fragile = 1 - profile.health;
+      const softness = profile.kind === 'ninfa' ? .8 : 1;
+      const tone = values => emit({...values,amplitude:values.amplitude * softness,group:'tension'});
+      if (profile.charging) {
+        tensionPhase = 'windup';
+        if (windupPending) {
+          if (tone({frequency:46,end:83,duration:.58,attack:.15,amplitude:.026 + level*.014,cutoff:220})) tensionWindups++;
+          windupPending = false;
+        }
+        return;
+      }
+      tensionPhase = 'breathing';
+      if (now >= nextBeat) {
+        const pitch = profile.kind === 'ninfa' ? 72 : profile.kind === 'boss' ? 57 : 64;
+        const weight = .028 + level*.035 + close*.009 + fragile*.006;
+        const first = tone({frequency:pitch,end:40,duration:.13,attack:.012,amplitude:weight,cutoff:180 + close*90});
+        tone({frequency:pitch*1.08,end:44,duration:.1,delay:.14 + (1-level)*.035,amplitude:weight*.56,cutoff:210});
+        if (first) pulsePlayed++;
+        const pace = (profile.kind === 'ninfa' ? 1.18 : profile.kind === 'boss' ? 1.04 : .98) - level*.39;
+        nextBeat = now + pace * (.95 + Math.random()*.1);
+        // Uma pausa curta a cada frase evita que o pulso vire um metrônomo constante.
+        if (first && pulsePlayed % 7 === 0) {
+          restUntil = now + pace + .38; nextBeat = restUntil + .12;
+          nextBreath = Math.max(nextBreath, restUntil + .3); nextDrone = Math.max(nextDrone, restUntil + .7);
+          tensionPauses++;
+        }
+      }
+      if (now >= nextBreath) {
+        if (tone({noise:true,duration:.88 - level*.18,attack:.18,amplitude:.023 + level*.012,cutoff:300 + close*170})) tensionBreaths++;
+        nextBreath = now + 3.5 - level*.85 + Math.random()*.35;
+      }
+      if (now >= nextDrone) {
+        if (tone({frequency:profile.kind === 'ninfa'?58:43,end:profile.kind === 'ninfa'?47:38,duration:1.1,attack:.3,amplitude:.018 + level*.012,cutoff:150})) tensionDrones++;
+        nextDrone = now + 4.2 - level*.8 + Math.random()*.45;
+      }
+    }, 100);
+  }
+  function duckForEffect(duration=420) {
+    effectDucked = true;
+    refreshTensionMix();
+    channels.forEach((audio,id) => { audio.volume = Math.min(audio.volume, musicGain(tracks.find(track => track.id === id))); });
+    if (duckTimer !== null) clearTimeout(duckTimer);
+    duckTimer = setTimeout(() => {
+      duckTimer = null; effectDucked = false; refreshTensionMix();
+      if (!paused && !muted && !pageHidden) void playSelected(.3);
+    }, duration);
   }
   function sfx(kind, options={}) {
     if (['inspect','item','notification','page','bag','door','enter'].includes(String(kind))) return spatialCue(kind, options);
@@ -509,12 +633,11 @@ window.AudioSentia = (() => {
       tone({frequency:230,end:155,duration:.35,amplitude:.065,wave:'sawtooth',cutoff:650});
       tone({frequency:247,end:170,duration:.3,amplitude:.045,wave:'triangle',cutoff:750});
       clearFade();
-      effectDucked = true;
-      channels.forEach((audio,id) => { audio.volume = Math.min(audio.volume, musicGain(tracks.find(track => track.id === id))); });
-      if (duckTimer !== null) clearTimeout(duckTimer);
-      duckTimer = setTimeout(() => { duckTimer = null; effectDucked = false; if (!paused && !muted) void playSelected(.3); }, 750);
     }
-    if (result) effectsPlayed++;
+    if (result) {
+      effectsPlayed++;
+      if (['jumpscare','hit','charge','grab','nearMiss'].includes(key)) duckForEffect(key === 'jumpscare' ? 750 : key === 'charge' ? 550 : 360);
+    }
     return result;
   }
   function state() {
@@ -523,12 +646,15 @@ window.AudioSentia = (() => {
       scene, track:selected, title:current?.title || '', author:current?.author || '',
       source:current?.source || '', license:current?.license || '', licenseURL:current?.licenseURL || '',
       volume, musicVolume:volume, voiceVolume, effectsVolume, muted, paused, unlocked, error,
-      contextState:context?.state || 'uncreated', voicesActive:voices.size, effectsActive:effects.size + uiEffects.size,
+      contextState:context?.state || 'uncreated', voicesActive:voices.size, effectsActive:effects.size + uiEffects.size + tensionSources.size,
       voicePlayed, effectsPlayed, lastVoiceProfile, pulseActive:pulseTimer !== null, playbackRate:sceneRate(),
+      tension:tension ? {...tension} : null, tensionLevel, tensionSourcesActive:tensionSources.size,
+      tensionTimerActive:tension !== null && pulseTimer !== null, pulseMode:pulseTimer === null ? null : tension ? 'tension' : 'maze',
+      pulsePlayed, pulseStarts, tensionBreaths, tensionDrones, tensionWindups, tensionPauses, tensionPhase,
       pageHidden, room:room ? {...room} : null, ambientActive:ambience.size, ambientTimerActive:roomTimer !== null,
       ambientPlayed, lastAmbient, spatialPlayed,
       uiEffectsActive:uiEffects.size, uiPreviewing,
-      speechDucked, previewing, musicLevel:channels.get(selected)?.volume || 0,
+      speechDucked, effectDucked, previewing, musicLevel:channels.get(selected)?.volume || 0,
       playing: [...channels.values()].some(audio => !audio.paused && audio.volume > 0),
       tracks:tracks.map(track => ({...track}))
     };
@@ -550,5 +676,5 @@ window.AudioSentia = (() => {
       }).catch(() => {});
     } else if (unlocked && !paused && !muted) resume();
   });
-  return Object.freeze({unlock, setScene, setVolume, setVoiceVolume, setEffectsVolume, setMuted, pause, resume, state, voice, stopVoice, previewVoice, sfx, setRoom, clearRoom, spatialCue});
+  return Object.freeze({unlock, setScene, setVolume, setVoiceVolume, setEffectsVolume, setMuted, pause, resume, state, voice, stopVoice, previewVoice, sfx, setRoom, clearRoom, spatialCue, setTension, clearTension});
 })();
