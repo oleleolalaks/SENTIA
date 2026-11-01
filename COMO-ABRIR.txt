@@ -1,0 +1,13 @@
+SENTIA E JARDIM SÃO O MESMO PROJETO
+
+1. Clique com o botão direito no ZIP e escolha Extrair Tudo. Aguarde terminar.
+2. Abra a pasta Sentia extraída. Ela deve conter index.html, jardim.html, css, js e assets.
+3. Para abrir direto no navegador, dê dois cliques em ABRIR-SENTIA.cmd ou em index.html. Não abra dentro do ZIP.
+4. No VS Code: Arquivo > Abrir Pasta > selecione Sentia. Instale a extensão Live Server (recomendada pelo projeto) e clique com o botão direito no index.html > Open with Live Server.
+5. No SENTIA, escolha O Jardim. Explore as descobertas das páginas para liberar o portal; depois escolha PC ou Celular. O botão abre jardim.html. No cabeçalho do Jardim, SENTIA retorna ao site.
+
+Ter dois HTMLs é normal: são duas páginas conectadas do mesmo site. Não precisa juntar o código de ambas.
+
+Os HTMLs da pasta de avaliação HTML-puro não importam CSS nem JS, conforme solicitado para entrega. Eles vão aparecer sem o visual. Para executar use sempre o index.html do projeto completo.
+
+Se aparecer texto sem visual: confira se a barra de endereço aponta para a pasta extraída e se css/site.css, css/jardim.css e a pasta js estão ao lado dos HTMLs. O arquivo js/assets.js é apenas a lista de caminhos; as imagens reais são os PNGs, SVGs, GIFs e WebPs nas subpastas de assets.

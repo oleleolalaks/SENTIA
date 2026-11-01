@@ -1,0 +1,41 @@
+SENTIA — INSTRUÇÕES DA VERSÃO LOCAL
+
+COMO ABRIR
+Abra index.html no navegador. Não precisa instalar dependências nem compilar.
+O portal do Jardim permite escolher PC ou mobile. O jogo também oferece essa escolha no menu.
+Use os controles indicados na tela. O progresso fica salvo neste navegador; o menu do jogo permite exportar e importar o progresso.
+
+ONDE ESTÁ CADA PARTE
+index.html + css/site.css + js/site.js: site educativo e exercícios escolares.
+jardim.html + css/jardim.css + demais arquivos js: Jardim dos Ecos.
+assets: imagens aprovadas já existentes do SENTIA. Não são referências para gerar outras imagens.
+portfolio: capturas de PC/mobile e arquivo Excalidraw com capturas incorporadas e títulos editáveis. As capturas são imagens; seus componentes internos não são objetos editáveis.
+documentacao/ROTEIRO-V4.txt: contexto narrativo.
+
+ENTREGA DO PROFESSOR
+1. Portfólio: imagens em portfolio e SENTIA-portfolio.excalidraw.
+2. HTML isolado: entrega-escolar/HTML-puro, sem importação de CSS e JS.
+3. CSS isolado: entrega-escolar/CSS-puro.
+4. JavaScript isolado: entrega-escolar/JavaScript-puro. O material informado é de JS, não Java.
+5. Código completo funcional: arquivos da raiz, pastas css, js e assets juntos.
+6. Comentários explicativos estão nos arquivos de código, por responsabilidade e bloco.
+As cópias isoladas servem para leitura e avaliação; o HTML isolado não inclui o visual nem as interações do projeto integrado.
+Após alterações, executar preparar-entrega.cjs atualiza essas cópias. Esse script é uma ferramenta de organização, não faz parte do site.
+
+CONCEITOS NO SITE EDUCATIVO
+HTML semântico, formulários, navegação; CSS responsivo, cores, layout, estados e tema; JS com eventos, funções, condicionais, arrays, DOM, validação, armazenamento local, tarefas editáveis e operação assíncrona demonstrativa.
+As atividades escolares ficam no site, não no jogo. A reflexão é uma simulação local e não chama uma IA; o formulário não envia mensagens.
+Não foi comprovada cobertura de todos os itens das apostilas compactadas: comparar os conceitos exigidos pelo professor antes de entregar.
+
+ANTES DA ENTREGA FINAL
+Publicar no GitHub e substituir o comentário de URL pública nos HTML pela URL real. Nenhuma publicação foi feita por estes arquivos.
+Revisar os comentários e compreender o código. Este material recebeu assistência de IA; não representa autoria exclusivamente humana, como exige o enunciado do professor.
+Atualizar as capturas do portfólio se mudar textos, cores ou disposição das telas.
+
+VALIDAÇÃO E LIMITES
+Há verificações automatizadas em verificar*.cjs e relatórios em documentacao.
+Parte dos testes usa saves de capítulos avançados: não substitui uma partida completa desde o começo.
+A duração de 2–3 horas é uma meta narrativa, não uma duração comprovada em teste humano.
+Balanceamento, ritmo e conteúdo ainda precisam dessa partida completa. Não há áudio final integrado.
+O Excalidraw foi gerado com imagens incorporadas; a importação no aplicativo ainda precisa ser conferida. As capturas PNG podem ser vistas diretamente.
+Não apagar os assets descartados por conta própria: o inventário representa o pacote aprovado disponível, e nem todo arquivo é utilizado em todas as cenas.

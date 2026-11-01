@@ -1,0 +1,26 @@
+# Histórico importado de SENTIA
+
+Este histórico foi reconstruído de arquivos ZIP locais salvos. Os commits de importação foram criados agora; as datas observadas nos ZIPs são somente metadados de procedência, sem fuso horário garantido. Elas não foram usadas para retroagir as datas dos commits.
+
+A identidade “SENTIA snapshot import” identifica a operação de importação. Ela não atribui autoria original do código, arte ou conteúdo a essa identidade, a um aluno ou a outra pessoa. Os avisos e créditos existentes nos pacotes foram mantidos, inclusive as referências a assistência de IA.
+
+Cada revisão conserva literalmente os arquivos do seu ZIP, salvo exclusões explicitamente registradas abaixo. Este documento de procedência é um acréscimo da importação e não fazia parte dos ZIPs.
+
+A primeira revisão é uma atualização incremental de 21 arquivos e está incompleta de propósito: não contém assets nem o roteiro apontado pelo HTML. Nenhuma base completa anterior foi encontrada entre os ZIPs da raiz. Os assets aprovados surgem no pacote VSCODE subsequente; não foram inventados arquivos para a revisão anterior.
+
+`SENTIA-ATUALIZACAO.zip` e `SENTIA-ATUALIZACAO-PROGRESSAO.zip` são cópias idênticas e correspondem ao mesmo commit. A tag `arquivo-atualizacao` é um alias da primeira revisão.
+
+Os ZIPs completos de 474–501 MB usados como fontes não são copiados para este repositório. Seus arquivos internos são versionados; Git compartilha automaticamente o mesmo conteúdo entre revisões. Os pequenos ZIPs de linguagens que já estavam dentro dos pacotes são preservados.
+
+Importação iniciada em 2026-11-01T14:27:46.675136+00:00 (UTC).
+
+## Revisões importadas até este commit
+
+### arquivo-20261031-progressao
+
+- Origem: `SENTIA-ATUALIZACAO-PROGRESSAO.zip`.
+- Tamanho do ZIP: 100250 bytes.
+- SHA-256 do ZIP: `23254450fb47c9f024f61845492a8fa27223f5fbdcc4e04ab8deb6f5233dd6a7`.
+- Última data observada nos arquivos principais do ZIP, sem fuso: `2026-10-31T23:38:18`.
+- Arquivos importados do ZIP: 21.
+- Exclusões: nenhuma.

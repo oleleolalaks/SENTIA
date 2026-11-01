@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101718"><title>Jardim dos Ecos · SENTIA</title>
+  <link rel="stylesheet" href="css/jardim.css">
+  <script src="js/carregamento.js" defer></script>
+  <script src="js/assets.js" defer></script><script src="js/roteiro.js" defer></script><script src="js/memorias.js" defer></script><script src="js/convivencia.js" defer></script><script src="js/texturas.js" defer></script><script src="js/arena.js" defer></script><script src="js/jardim.js" defer></script>
+</head>
+<!-- GitHub público: preencher com o endereço real do repositório após a publicação. -->
+<body>
+  <aside id="loading-help" role="status"><strong>Preparando o SENTIA…</strong><p>Se a página continuar sem cores ou imagens, extraia o ZIP inteiro e abra o index.html da pasta Sentia, mantendo css, js e assets ao lado dele. No VS Code, use Open with Live Server.</p></aside>
+  <header class="game-header"><a href="index.html#jardim" aria-label="Voltar ao site SENTIA">✦ <b>SENTIA</b><span> / JARDIM DOS ECOS</span></a><div><button id="inventory-button">Bolsa <kbd>I</kbd></button><button id="journal-button">Registro <kbd>J</kbd></button><button id="pause-button">Pausa <kbd>Esc</kbd></button></div></header>
+  <main id="game">
+    <div id="stage" class="stage">
+      <img id="background" class="background" alt=""><div class="vignette"></div>
+      <canvas id="arena" width="500" height="380" aria-label="Arena em primeira pessoa" hidden></canvas>
+      <img id="actor" class="actor" alt="" hidden><img id="actor-two" class="actor two" alt="" hidden>
+      <img id="effect" class="effect" alt="" hidden><img id="hands" class="hands" alt="" hidden>
+      <aside id="sanity-hud" class="sanity-hud" aria-label="Sanidade" hidden><label for="sanity-meter">Sanidade <output id="sanity-value">70</output></label><meter id="sanity-meter" min="0" max="100" low="25" high="60" optimum="90" value="70">70</meter><span id="sanity-trend"></span></aside><div id="room-notice" class="room-notice" role="status" hidden></div>
+      <div id="location" class="location"></div><div id="status" class="status" aria-live="polite"></div>
+      <div id="world-controls" class="world-controls"></div>
+      <div id="action-panel" class="action-panel" hidden></div>
+      <article id="dialogue" class="dialogue" hidden><div id="speaker" class="speaker"></div><div class="dialogue-body"><p id="speech" aria-live="polite"></p><div id="choices" class="choices"></div><button id="advance" class="advance">Continuar <span>↵</span></button></div></article>
+      <div id="prompt" class="prompt" hidden><p id="prompt-label"></p><div id="prompt-actions"></div><div class="timer-track"><div id="timer-fill"></div></div><p id="prompt-status"></p></div>
+      <div id="mobile-controls" class="mobile-controls" hidden></div>
+      <div id="fade" class="fade" hidden></div>
+    </div>
+    <div class="game-footer"><span id="objective">Jardim dos Ecos</span><span id="save-status" role="status">Seu progresso fica neste navegador.</span></div>
+  </main>
+  <dialog id="game-modal"><div id="modal-content"></div></dialog>
+  <noscript>Ative o JavaScript para jogar. O Jardim é uma experiência interativa.</noscript>
+</body>
+</html>
