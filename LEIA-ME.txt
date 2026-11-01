@@ -17,6 +17,7 @@ Perseguições: segure Shift no PC ou toque em Correr para ligar/desligar a corr
 Arena de Beerus: W/S avança e recua; A/D desloca; setas giram; clicar e arrastar também gira a câmera. No celular, arraste no cenário para olhar e use os botões para andar. F ataca; Espaço defende; Q usa a luz; E interage. O escudo consome fôlego. Depois da queda da espada, ela precisa ser recolhida no chão.
 QTEs: use o comando mostrado. E intercepta/atravessa; Espaço segura/protege; W/↑ empurra quando indicado. As esquivas exigem sua direção correspondente. E não substitui os outros comandos.
 Pausa: mudar PC/celular, modo assistido, movimentos reduzidos, música, volume e exportar o save. O modo assistido amplia os prazos e reduz a dificuldade da arena.
+Na Pausa, abra “Controles desta cena” para consultar os comandos atuais. O volume mostra a porcentagem. A preferência do aparelho por movimentos reduzidos é respeitada no primeiro acesso.
 Bolsa: equipar ou guardar itens. Registro: reler as descobertas.
 
 ÁUDIO

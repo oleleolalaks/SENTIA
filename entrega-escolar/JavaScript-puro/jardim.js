@@ -46,7 +46,7 @@ const G = (() => {
     settings = {
       device: 'pc',
       assist: false,
-      reduced: false
+      reduced: window.matchMedia('(prefers-reduced-motion: reduce)').matches
     },
     paused = false,
     mode = 'menu',
@@ -223,6 +223,7 @@ const G = (() => {
     }
   }
   function resetScene() {
+    writing = null;
     clearIdle();
     Arena.stop();
     window.Perseguicao?.stop();
@@ -313,8 +314,39 @@ const G = (() => {
     if (eco) actor(eco,dead(eco)?'morreu':'base');
     nextLine();
   }
+  let writing = null, voiceContext = null;
+  // Cada letra aparece junto do bipe. O primeiro clique só completa a frase.
+  function revealSpeech(text) {
+    const letters = Array.from(text || '');
+    writing = {letters, index:0, elapsed:0};
+    $('#speech').textContent = '';
+    $('#speech').setAttribute('aria-label', text || '');
+    $('#advance').setAttribute('aria-label', 'Mostrar frase inteira');
+  }
+  function voiceLetter(letter) {
+    const audio = window.AudioSentia?.state();
+    if (!/[^\s.,!?;:…—]/u.test(letter) || !audio?.unlocked || audio.muted || !audio.volume) return;
+    try {
+      voiceContext ||= new (window.AudioContext || window.webkitAudioContext)();
+      if (voiceContext.state !== 'running') { void voiceContext.resume(); return; }
+      const t=voiceContext.currentTime, oscillator=voiceContext.createOscillator(), gain=voiceContext.createGain();
+      const name=$('#speaker').textContent;
+      const hash=Array.from(name).reduce((sum,c)=>sum+c.charCodeAt(0),0);
+      oscillator.type='triangle'; oscillator.frequency.value=140+(hash%13)*27;
+      gain.gain.setValueAtTime(audio.volume*.10,t);
+      gain.gain.exponentialRampToValueAtTime(.001,t+.022);
+      oscillator.connect(gain); gain.connect(voiceContext.destination);
+      oscillator.start(t); oscillator.stop(t+.024);
+      oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};
+    } catch { /* A fala continua mesmo se o aparelho bloquear o áudio. */ }
+  }
   function nextLine() {
     if (paused) return;
+    if (writing) {
+      $('#speech').textContent = writing.letters.join(''); writing=null;
+      $('#advance').setAttribute('aria-label','Continuar');
+      return;
+    }
     $('.dialogue-body').scrollTop=0;
     timed = null;
     const line = queue.shift();
@@ -369,7 +401,7 @@ const G = (() => {
     const nomesAntigos = {"Felicidade":"Sunny","Orgulho":"Aurea","Determinação":"Friska","Medo":"Hunger","Culpa":"Lúmen","Ódio":"Beerus","Sanidade":"Cassidy","Insanidade":"Mizzery"};
     $('#speaker').textContent = nomesAntigos[line.who] || line.who || D.names[currentEco] || 'Jardim';
     $('#speaker').title=$('#speaker').textContent;
-    $('#speech').textContent = line.text;
+    revealSpeech(line.text);
     const ecoSpeaking=currentEco && (!line.who || (nomesAntigos[line.who]||line.who)===D.names[currentEco]);
     if (currentEco && (line.pose || ecoSpeaking) && !['Você','Protagonista'].includes(line.who)) {
       let pose = line.pose || 'base';
@@ -1906,7 +1938,17 @@ const G = (() => {
     Arena.pause(true);
     window.AudioSentia?.pause();
     $('#modal-content').replaceChildren(content);
-    $('#game-modal').showModal();
+    const heading = content.querySelector('h1,h2');
+    if (heading) {
+      heading.id = 'game-modal-title';
+      $('#game-modal').setAttribute('aria-labelledby', heading.id);
+      $('#game-modal').removeAttribute('aria-label');
+    } else {
+      $('#game-modal').removeAttribute('aria-labelledby');
+      $('#game-modal').setAttribute('aria-label', 'Jardim dos Ecos');
+    }
+    $('#game-modal').scrollTop = 0;
+    if (!$('#game-modal').open) $('#game-modal').showModal();
   }
   function closeModal() {
     if ($('#game-modal').open) $('#game-modal').close();
@@ -1941,10 +1983,25 @@ const G = (() => {
       settings.reduced = wrap.querySelector('#motion').checked;
       saveSettings();
     });
+    // A ajuda acompanha a cena, sem revelar o que vem depois na história.
+    const controls = document.createElement('details');
+    controls.className = 'scene-controls';
+    const summary = document.createElement('summary');
+    summary.textContent = 'Controles desta cena';
+    const help = document.createElement('p');
+    help.textContent = mode === 'arena'
+      ? 'W/S avança e recua; A/D desloca; setas ou arrastar no cenário giram a câmera. F ataca, Espaço defende, Q usa a luz e E interage. No celular, use os botões e arraste para olhar.'
+      : chase
+      ? 'Segure Shift ou toque em Correr para ligar ou desligar a corrida. B ou Olhar para trás muda a visão. Nas passagens, use as setas, W/A/S/D ou os botões da tela.'
+      : mode === 'prompt'
+      ? 'Responda ao comando mostrado na tela usando a tecla indicada ou o botão correspondente. O prazo fica congelado durante a pausa.'
+      : 'Converse com o morador antes de explorar. Use as setinhas e clique ou toque nos objetos. Enter avança as falas; Tab percorre os botões. I abre a bolsa, J abre o registro e Esc pausa.';
+    controls.append(summary, help);
+    wrap.append(controls);
     const audio=window.AudioSentia;
     if(audio){
       const sound=document.createElement('fieldset');const legend=document.createElement('legend');legend.textContent='Áudio';sound.append(legend);
-      const volumeLabel=document.createElement('label');volumeLabel.textContent='Volume da trilha';const volume=document.createElement('input');volume.type='range';volume.min='0';volume.max='100';volume.value=String(Math.round(audio.state().volume*100));volume.setAttribute('aria-label','Volume da trilha');volume.oninput=()=>audio.setVolume(Number(volume.value)/100);volumeLabel.append(volume);
+      const volumeLabel=document.createElement('label');volumeLabel.textContent='Volume da trilha ';const level=document.createElement('output');level.textContent=Math.round(audio.state().volume*100)+'%';const volume=document.createElement('input');volume.type='range';volume.min='0';volume.max='100';volume.value=String(Math.round(audio.state().volume*100));volume.setAttribute('aria-label','Volume da trilha');volume.oninput=()=>{audio.setVolume(Number(volume.value)/100);level.textContent=volume.value+'%';};volumeLabel.append(level,volume);
       const muteLabel=document.createElement('label');const mute=document.createElement('input');mute.type='checkbox';mute.checked=audio.state().muted;mute.onchange=()=>audio.setMuted(mute.checked);muteLabel.append(mute,' Silenciar músicas');
       const credits=document.createElement('details');const title=document.createElement('summary');title.textContent='Trilha e créditos';credits.append(title);
       for(const track of audio.state().tracks){const p=document.createElement('p');p.textContent=track.title+' — '+track.author+' · '+track.license;credits.append(p);}
@@ -2253,6 +2310,17 @@ const G = (() => {
     const dt = Math.max(0, Math.min(.1, (now - loopLast) / 1000));
     loopLast = now;
     if (!paused && S) {
+      if (writing && mode === 'dialogue') {
+        writing.elapsed += dt;
+        if (writing.elapsed >= .018) {
+          writing.elapsed = 0;
+          $('#speech').textContent += writing.letters[writing.index++];
+          voiceLetter(writing.letters[writing.index-1]);
+          if (writing.index >= writing.letters.length) {
+            writing=null; $('#advance').setAttribute('aria-label','Continuar');
+          }
+        }
+      }
       S.playSeconds += dt;
       rescueCooldown = Math.max(0, rescueCooldown - dt);
       if (timed) {

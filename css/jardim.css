@@ -994,3 +994,23 @@ body.reduced *,body.reduced *::before {
 .hands.exploration-hands.inspecting-hands { max-height:75%; }
 .hands.exploration-hands.gesture-hands { max-height:78%; }
 .guest-eco { left:50%;z-index:1; }.room-scene .scene-hotspot { z-index:2; }
+
+/* Pequenos cuidados para tocar nos menus e ler em telas estreitas. */
+.scene-controls { margin-top:18px; padding:12px; border:1px solid #788476; }
+#game-modal summary { cursor:pointer; min-height:32px; }
+#game-modal summary:focus-visible { outline:3px solid #f4cf7d; outline-offset:3px; }
+.scene-controls p { margin-bottom:0; }
+#game-modal { overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:#899a85 #142023; }
+#game-modal output { color:#f4cf7d; font-variant-numeric:tabular-nums; }
+.game-footer { overflow-wrap:anywhere; }
+@media(max-width:600px) {
+  .game-header { height:auto; min-height:60px; padding:8px max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left)); flex-wrap:wrap; }
+  .game-header>div { margin-left:auto; flex-wrap:wrap; justify-content:flex-end; }
+  .game-header button { min-height:44px; min-width:44px; }
+  .game-footer { padding-bottom:max(8px,env(safe-area-inset-bottom)); }
+  dialog { padding:22px 18px; }
+  .bag-item { flex-wrap:wrap; gap:10px; padding:8px 0; }
+  .bag-item>div { min-width:0; flex:1; }
+  .bag-item h3 { overflow-wrap:anywhere; }
+  .bag-item button { margin-left:auto; }
+}

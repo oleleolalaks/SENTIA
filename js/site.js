@@ -91,11 +91,34 @@ function alertBox(text) {
   $('#alerts').append(box);
   setTimeout(() => box.remove(), 7000);
 }
+let modalReturn = null;
 function openModal(content) {
+  const origin = document.activeElement;
+  modalReturn = {
+    element: origin,
+    emotion: origin?.dataset.emotionId,
+    task: origin?.dataset.taskEdit
+  };
   $('#modal-body').replaceChildren(content);
+  const heading = content.querySelector('h2,h1,h3');
+  $('#modal').removeAttribute('aria-label');
+  $('#modal').removeAttribute('aria-labelledby');
+  if (heading) {
+    heading.id = 'modal-title';
+    heading.tabIndex = -1;
+    $('#modal').setAttribute('aria-labelledby', heading.id);
+  } else $('#modal').setAttribute('aria-label', content.querySelector('label')?.textContent.trim() || 'SENTIA');
   $('#modal').showModal();
+  (content.querySelector('input,textarea,select') || heading)?.focus({preventScroll:true});
 }
 $('#modal .close').onclick = () => $('#modal').close();
+// Guardar e editar recriam os controles: o foco volta para o novo card, não para o início da página.
+$('#modal').addEventListener('close', () => {
+  if (!modalReturn) return;
+  const target = modalReturn.emotion ? document.querySelector('[data-emotion-id="' + CSS.escape(modalReturn.emotion) + '"]') : modalReturn.task ? document.querySelector('[data-task-edit="' + CSS.escape(modalReturn.task) + '"]') : modalReturn.element;
+  (target?.isConnected && target.getClientRects().length ? target : $('#conteudo')).focus({preventScroll:true});
+  modalReturn = null;
+});
 $('#modal').addEventListener('click', e => {
   if (e.target === $('#modal')) {
     const r = e.target.getBoundingClientRect();
@@ -108,6 +131,7 @@ function renderAtlas() {
   $('#emotion-grid').replaceChildren(...filtered.map(e => {
     const b = document.createElement('button');
     b.className = 'emotion-card';
+    b.dataset.emotionId = e[0];
     b.innerHTML = '<span class="small">' + (collection.has(e[0]) ? '✓ NA SUA COLEÇÃO' : 'SENTIR / ' + String(emotions.indexOf(e) + 1).padStart(2, '0')) + '</span><img alt="" src="' + sprite(e[0]) + '"><h3>' + e[1] + '</h3><p>' + e[2] + '</p>';
     b.onclick = () => {
       discover(0);
@@ -138,11 +162,18 @@ function renderAtlas() {
     };
     return b;
   }));
-  $('#search-count').textContent = filtered.length ? filtered.length + ' sentimentos encontrados.' : 'Nenhum resultado. Tente outra palavra.';
+  $('#search-count').textContent = filtered.length ? filtered.length + ' sentimentos encontrados.' : collectionOnly && !collection.size ? 'Sua coleção ainda está vazia. Abra um sentimento e guarde uma descoberta.' : 'Nenhum resultado. Tente outra palavra ou limpe os filtros.';
   $('#collection-filter').textContent = collectionOnly ? 'Mostrar todos os sentimentos' : 'Minha coleção (' + collection.size + ')';
   $('#collection-filter').setAttribute('aria-pressed', String(collectionOnly));
+  $('#clear-atlas-filters').hidden = !q && !collectionOnly;
 }
 $('#busca').oninput = renderAtlas;
+$('#clear-atlas-filters').onclick = () => {
+  $('#busca').value = '';
+  collectionOnly = false;
+  renderAtlas();
+  $('#busca').focus();
+};
 $('#collection-filter').onclick = () => {
   collectionOnly = !collectionOnly;
   renderAtlas();
@@ -194,6 +225,7 @@ function renderTasks() {
     span.textContent = t.text;
     const edit = document.createElement('button');
     edit.textContent = 'Editar';
+    edit.dataset.taskEdit = t.id;
     edit.onclick = () => {
       const form = document.createElement('form');
       const label = document.createElement('label');
@@ -307,7 +339,7 @@ $('#contact-form').onsubmit = e => {
 };
 $('#garden-entry').onclick = () => {
   if (!puzzle.solved) {
-    $('#portal-puzzle').scrollIntoView({behavior:$('#reduce-motion').checked ? 'instant' : 'smooth',block:'start'});
+    $('#portal-puzzle').scrollIntoView({behavior:reducedMotionEnabled() ? 'auto' : 'smooth',block:'start'});
     $('#puzzle-title').focus({preventScroll:true});
     return;
   }
@@ -335,6 +367,7 @@ function lanternSelect(label, value, onChange) {
 function puzzleStatus(text, good = false) {
   $('#puzzle-feedback').textContent = text;
   $('#puzzle-feedback').classList.toggle('success', good);
+  if (!good && location.hash === '#jardim') $('#puzzle-feedback').scrollIntoView({block:'nearest',behavior:reducedMotionEnabled() ? 'auto' : 'smooth'});
 }
 function orderRules(order) {
   const at = id => order.indexOf(id);
@@ -488,11 +521,21 @@ $('#tema').onclick = () => {
   theme();
 };
 $('#reduce-motion').checked = storage.get('sentia-reduced', false);
-document.body.classList.toggle('reduced', $('#reduce-motion').checked);
+const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+function reducedMotionEnabled() {
+  return $('#reduce-motion').checked || motionPreference.matches;
+}
+function applyMotionPreference() {
+  const reduced = reducedMotionEnabled();
+  document.body.classList.toggle('reduced', reduced);
+  document.documentElement.classList.toggle('reduced', reduced);
+}
+applyMotionPreference();
 $('#reduce-motion').onchange = () => {
   storage.set('sentia-reduced', $('#reduce-motion').checked);
-  document.body.classList.toggle('reduced', $('#reduce-motion').checked);
+  applyMotionPreference();
 };
+motionPreference.addEventListener?.('change', applyMotionPreference);
 function route() {
   const requested = location.hash.slice(1) || 'home';
   const id = document.getElementById(requested)?.classList.contains('page') ? requested : 'home';

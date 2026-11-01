@@ -1,17 +1,31 @@
 'use strict';
 // Perspectiva por recorte progressivo das artes aprovadas. Não cria cenários novos.
 window.Perseguicao = (() => {
-  let canvas,ctx,image,monster,time=0,lastSource='',lastMonster='',view={zoom:1};
+  let canvas,ctx,image,monster,time=0,lastSource='',lastMonster='',view={zoom:1},resizeObserver,lastState=null;
   function start(source,presence) {
     canvas=document.querySelector('#chase-canvas');ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
-    canvas.hidden=false;time=0;setImages(source,presence);
+    canvas.hidden=false;time=0;lastState=null;view={zoom:1};setImages(source,presence);
+    if(!resizeObserver&&typeof ResizeObserver!=='undefined'){resizeObserver=new ResizeObserver(resizeCanvas);resizeObserver.observe(canvas);}
+    resizeCanvas();
+    ctx.fillStyle='#080a0d';ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+  function resizeCanvas() {
+    if(!canvas||canvas.hidden)return;
+    const rect=canvas.getBoundingClientRect();if(rect.width<1||rect.height<1)return;
+    // A mesma proporção da tela, limitada a 640×480 para manter o custo e o pixel art.
+    const scale=Math.min(1,640/rect.width,480/rect.height);
+    const width=Math.max(1,Math.round(rect.width*scale)),height=Math.max(1,Math.round(rect.height*scale));
+    if(canvas.width===width&&canvas.height===height)return;
+    canvas.width=width;canvas.height=height;ctx.imageSmoothingEnabled=false;
+    // Redesenha a imagem parada na rotação do celular, sem adiantar o tempo da perseguição.
+    if(lastState)draw(0,lastState);
   }
   function setImages(source,presence) {
     if(source!==lastSource){image=new Image();image.src=source;lastSource=source;}
     if(presence!==lastMonster){monster=new Image();monster.src=presence;lastMonster=presence;}
   }
   function draw(dt,state) {
-    if(!ctx||canvas.hidden)return;time+=dt;
+    if(!ctx||canvas.hidden)return;lastState={...state};time+=dt;
     const w=canvas.width,h=canvas.height,run=state.running&&!state.waiting;
     const progress=Math.min(1,state.progress/state.distance),zoom=1+progress*1.9;view={zoom,progress,lookingBack:!!state.lookingBack,running:!!state.running};
     const shake=state.reduced?0:Math.sin(time*(run?15:5))*(run?2.2:.5);
@@ -35,5 +49,5 @@ window.Perseguicao = (() => {
     if(state.waiting){ctx.fillStyle='#05070a55';ctx.fillRect(0,0,w,h);}
   }
   function stop(){if(canvas)canvas.hidden=true;}
-  return {start,setImages,draw,stop,state:()=>({...view})};
+  return {start,setImages,draw,stop,state:()=>({...view,resolution:{width:canvas?.width||0,height:canvas?.height||0}})};
 })();

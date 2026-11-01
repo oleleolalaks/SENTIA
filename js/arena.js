@@ -142,7 +142,7 @@ window.Arena = (() => {
   function stop() {
     active = false;
     keys = {};
-    dragPointer = null;
+    cancelDrag();
     cancelAnimationFrame(frameId);
     if (canvas) canvas.hidden = true;
     if (document.pointerLockElement === canvas) document.exitPointerLock();
@@ -150,7 +150,7 @@ window.Arena = (() => {
   function setPause(value) {
     paused = value;
     keys = {};
-    dragPointer = null;
+    cancelDrag();
     last = performance.now();
   }
   function press(key, value) {
@@ -168,12 +168,20 @@ window.Arena = (() => {
     W=width;H=height;canvas.width=W;canvas.height=H;
     ctx.imageSmoothingEnabled=false;
   }
+  function cancelDrag() {
+    const pointer=dragPointer;
+    // Zera antes de liberar: lostpointercapture também passa pelo mesmo tratamento.
+    dragPointer=null;
+    if(!canvas)return;
+    canvas.style.cursor='grab';
+    if(pointer!==null&&canvas.hasPointerCapture?.(pointer))canvas.releasePointerCapture(pointer);
+  }
   function bindCamera() {
     if(canvas.dataset.arenaCamera)return;
     canvas.dataset.arenaCamera='drag';
     // Arrastar funciona sem depender de pointer lock nem de permissões do navegador.
     canvas.addEventListener('pointerdown',event=>{
-      if(!active||paused||(event.pointerType==='mouse'&&event.button!==0))return;
+      if(!active||paused||dragPointer!==null||(event.pointerType==='mouse'&&event.button!==0))return;
       event.preventDefault();dragPointer=event.pointerId;dragX=event.clientX;
       canvas.setPointerCapture?.(event.pointerId);canvas.style.cursor='grabbing';
     });
@@ -185,8 +193,7 @@ window.Arena = (() => {
     });
     const release=event=>{
       if(dragPointer!==event.pointerId)return;
-      dragPointer=null;canvas.style.cursor='grab';
-      if(canvas.hasPointerCapture?.(event.pointerId))canvas.releasePointerCapture(event.pointerId);
+      cancelDrag();
     };
     canvas.addEventListener('pointerup',release);
     canvas.addEventListener('pointercancel',release);
@@ -578,10 +585,11 @@ window.Arena = (() => {
   });
   document.addEventListener('visibilitychange', () => {
     keys = {};
+    cancelDrag();
   });
   window.addEventListener('blur', () => {
     keys = {};
-    dragPointer = null;
+    cancelDrag();
   });
   return {
     start,
