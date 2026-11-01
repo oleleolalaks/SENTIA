@@ -27,7 +27,7 @@
     const title = document.createElement('strong');
     title.textContent = 'Alguns arquivos do SENTIA não carregaram.';
     const instructions = document.createElement('p');
-    instructions.textContent = 'Extraia o ZIP inteiro antes de abrir. Use o index.html da pasta Sentia junto das pastas css, js e assets. Abra essa pasta no VS Code para editar; para executar com banco, inicie Apache e MySQL do XAMPP e acesse http://localhost/Sentia/. Não use o HTML-puro de avaliação para executar o site.';
+    instructions.textContent = 'Extraia o ZIP inteiro antes de abrir. Use o index.html da pasta Sentia junto das pastas css, js e assets. Abra essa pasta no VS Code para editar; o site e o Jardim funcionam diretamente. Só o modo compartilhado do registro precisa de Apache/MySQL em http://localhost/Sentia/. Não use o HTML-puro de avaliação para executar o site.';
     const detail = document.createElement('p');
     detail.textContent = 'Confira estes arquivos: ' + [...new Set(failures)].join(', ');
     notice.append(title, instructions, detail);

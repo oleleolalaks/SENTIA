@@ -1,0 +1,13 @@
+{
+  "result": "PASSOU",
+  "results": [
+    "Parte 1: tema preservado por localStorage",
+    "Parte 4: filtro em tempo real e coleção funcionam sem PHP",
+    "Partes 2 e 3: formulário validado, modal/CTA, reset e alertas criados/removidos",
+    "Parte 5: array/JSON/localStorage, inclusão, edição, conclusão e persistência",
+    "Parte 6: resultado assíncrono, espera, sorteio e botão reativado",
+    "Modo local e site inteiro funcionam por arquivo; SQL é solicitado só no modo compartilhado",
+    "Jardim independente: não importa registros nem faz requisições PHP/MySQL"
+  ],
+  "errors": []
+}

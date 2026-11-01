@@ -1,3 +1,3 @@
 @echo off
-rem Inicie Apache e MySQL no XAMPP e mantenha a pasta em htdocs\Sentia.
-start "" "http://localhost/Sentia/"
+rem Site educativo e Jardim sem dependencia de PHP ou MySQL.
+start "" "%~dp0index.html"

@@ -69,3 +69,7 @@ Importação iniciada em 2026-11-01T14:27:46.675136+00:00 (UTC).
 - Última data observada nos arquivos principais do ZIP, sem fuso: `2026-11-01T11:01:36`.
 - Arquivos importados do ZIP: 930.
 - Exclusões: nenhuma.
+
+## Revisão escolar atual
+
+A revisão atual acrescenta a conferência das seis apostilas somente no site educativo, plano pessoal com localStorage, modo MySQL separado, comentários por blocos e portfólio atualizado. O motor do Jardim foi preservado.

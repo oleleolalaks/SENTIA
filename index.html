@@ -1,26 +1,31 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <!-- Estrutura do documento: idioma, acentos, descrição e adaptação à largura da tela. -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#193e35">
   <meta name="description" content="SENTIA: um espaço para conhecer sentimentos, perceber encontros e cultivar pequenas pausas.">
   <title>SENTIA · um lugar para sentir</title>
+  <!-- HTML organiza o conteúdo; os arquivos externos cuidam da aparência e das interações. -->
   <link rel="stylesheet" href="css/site.css"><link rel="stylesheet" href="css/portal.css">
   <script src="js/carregamento.js" defer></script>
   <script src="js/assets.js" defer></script>
   <script src="js/registros.js" defer></script><script src="js/portal.js" defer></script><script src="js/site.js" defer></script>
 </head>
-<!-- GitHub público: preencher aqui com a URL real depois de publicar o repositório. -->
+<!-- GitHub público: https://github.com/oleleolalaks/SENTIA -->
 <body>
-  <aside id="loading-help" role="status"><strong>Preparando o SENTIA…</strong><p>Se a página continuar sem cores ou imagens, extraia o ZIP inteiro e abra o index.html da pasta Sentia, mantendo css, js e assets ao lado dele. Para executar com banco, use http://localhost/Sentia/ com Apache e MySQL do XAMPP iniciados.</p></aside>
+  <!-- A navegação semântica e o atalho de teclado dão acesso direto ao conteúdo principal. -->
+  <aside id="loading-help" role="status"><strong>Preparando o SENTIA…</strong><p>Se a página continuar sem cores ou imagens, extraia o ZIP inteiro e abra o index.html da pasta Sentia, mantendo css, js e assets ao lado dele. O site e o Jardim abrem normalmente. Só o registro compartilhado usa o endereço do XAMPP.</p></aside>
   <a class="skip" href="#conteudo">Pular para o conteúdo</a>
   <header class="site-header">
     <a class="brand" href="#home" aria-label="SENTIA, início"><span class="brand-icon">✦</span> SENTIA<span class="brand-period">.</span></a>
     <nav aria-label="Navegação principal"><a href="#atlas">Atlas emocional</a><a href="#convergencia">Convergência</a><a href="#praticas">Meu registro</a><a href="#jardim">O Jardim</a><a href="#sobre">Sobre</a></nav>
+    <!-- Parte 1: este botão alterna o tema; o JavaScript salva a preferência no navegador. -->
     <button id="tema" class="icon-button" aria-label="Ativar tema escuro">◐</button>
   </header>
   <main id="conteudo" tabindex="-1">
+    <!-- A página inicial apresenta o projeto; âncoras com # identificam cada seção do SENTIA. -->
     <section class="page" id="home">
       <div class="hero">
         <div class="hero-copy"><p class="eyebrow">UM PEQUENO UNIVERSO INTERIOR</p><h1>Todo sentimento<br>tem um lugar<span>.</span></h1><p class="intro">Até aquele que você ainda não sabe nomear. Explore, descubra e encontre um jeito seu de sentir.</p><div class="actions"><a class="button primary" href="#atlas">Explorar o Atlas <span>↗</span></a><a class="text-link" href="#sobre">Conheça o projeto →</a></div><p class="small hero-note"><span class="status-dot"></span> Um passo de cada vez. No seu ritmo.</p></div>
@@ -31,9 +36,41 @@
       <div class="path-grid"><a class="path-card mint" href="#atlas"><span class="card-number">01</span><span class="pixel-symbol">✳</span><h3>Dar nome ao que sente</h3><p>Conheça sentimentos, seus sinais e suas diferenças.</p><span class="card-link">Abrir o Atlas ↗</span></a><a class="path-card lavender" href="#convergencia"><span class="card-number">02</span><span class="pixel-symbol">◈</span><h3>Sentir mais de uma coisa</h3><p>Descubra o que acontece quando emoções se encontram.</p><span class="card-link">Ver conexões ↗</span></a><a class="path-card peach" href="#praticas"><span class="card-number">03</span><span class="pixel-symbol">☼</span><h3>Cuidar do seu tempo</h3><p>Guarde pequenas ações e encontre espaço para uma pausa.</p><span class="card-link">Criar meu registro ↗</span></a></div>
       <div class="quote-strip"><span>“</span><p>Você não precisa transformar<br>tudo o que sente em uma resposta.</p><a href="#jardim" class="text-link">Há mais para descobrir →</a></div>
     </section>
+    <!-- Parte 4: o evento input filtra o Atlas em tempo real; a região de status informa o resultado. -->
     <section class="page" id="atlas" hidden><div class="page-heading"><p class="eyebrow">01 / ATLAS EMOCIONAL</p><h1>Um nome pode ser<br>um começo<span>.</span></h1><p>Sentimentos têm funções e contextos. Nenhum deles resume quem você é.</p></div><label class="search-box"><span>⌕</span><input id="busca" type="search" placeholder="O que você quer entender hoje?" aria-label="Buscar um sentimento"></label><div class="atlas-toolbar"><p id="search-count" class="small" role="status"></p><button id="collection-filter" class="collection-filter" aria-pressed="false">Minha coleção (0)</button><button id="clear-atlas-filters" class="text-link" hidden>Limpar filtros</button></div><div id="emotion-grid" class="emotion-grid"></div><p class="footnote">Conteúdo introdutório para reflexão, sem testes ou diagnósticos.</p></section>
+    <!-- Os seletores nativos recebem as emoções do array e atualizam o artigo de conexão. -->
     <section class="page" id="convergencia" hidden><div class="page-heading"><p class="eyebrow">02 / CONVERGÊNCIA EMOCIONAL</p><h1>Cabe mais de uma<br>emoção aqui<span>.</span></h1><p>Escolha dois sentimentos e explore como podem aparecer juntos.</p></div><div class="convergence"><div class="selector-card"><label for="emocao-a">O que aparece primeiro?</label><select id="emocao-a"></select><div class="convergence-symbol">◈</div><label for="emocao-b">E o que vem junto?</label><select id="emocao-b"></select><button class="button primary" id="combinar">Encontrar uma conexão ↗</button></div><article id="connection" class="connection" aria-live="polite"><p class="eyebrow">NEM TUDO É UMA COISA SÓ</p><h2>Alegria com um<br>pouco de medo?</h2><p>Um começo pode animar e assustar ao mesmo tempo. Selecione uma combinação para continuar.</p></article></div></section>
-    <section class="page" id="praticas" hidden><div class="page-heading"><p class="eyebrow">03 / PRÁTICAS E REGISTRO</p><h1>Pequenas coisas.<br>Espaço para você<span>.</span></h1><p>Guarde pequenas ações no banco do SENTIA. O registro é compartilhado nesta instalação local; escreva ações simples, sem informações pessoais.</p></div><div class="practice-grid"><article class="paper"><h2>Um passo de cada vez</h2><div class="database-panel"><p id="database-status" role="status">Conectando os registros…</p><div class="record-actions"><button id="database-connect" type="button" class="text-link">Reconectar registros</button><button id="database-install" type="button" class="text-link" hidden>Preparar banco local</button></div></div><aside id="local-records" class="local-records" hidden><p id="local-record-count"></p><button id="import-old-records" type="button" class="text-link">Importar ações antigas deste navegador</button></aside><form id="task-form"><label for="task">Qual pequena ação você quer lembrar?</label><div class="input-row"><input id="task" maxlength="160" placeholder="Ex.: fazer uma pausa para beber água" required><button class="button primary" type="submit">Adicionar</button></div></form><p id="task-status" role="status" class="small"></p><ul id="tasks" class="tasks"></ul><div class="record-actions"><button id="download-tasks" class="text-link">Baixar meu registro ↓</button><button id="clear-tasks" class="text-link">Apagar meu registro</button></div></article><article class="paper reflection"><p class="eyebrow">UM CONVITE PARA PAUSAR</p><h2>Outra maneira<br>de olhar.</h2><p id="reflection-text" aria-live="polite">Uma pergunta pequena pode abrir espaço para uma ideia diferente.</p><button id="reflection" class="button secondary">Receber uma reflexão ✦</button><p class="small">Frases pré-escritas, escolhidas ao acaso. Não é um atendimento ou uma IA.</p><label for="reflect-choice">Hoje uma pausa pode ser…</label><select id="reflect-choice"><option value="">Escolha se quiser</option><option>Conversar com alguém</option><option>Ficar um pouco em silêncio</option><option>Fazer algo de que gosto</option></select></article></div></section>
+    <section class="page" id="praticas" hidden>
+      <div class="page-heading"><p class="eyebrow">03 / PRÁTICAS E REGISTRO</p><h1>Pequenas coisas.<br>Espaço para você<span>.</span></h1><p>Seu plano pessoal fica neste navegador. Se quiser, escolha o registro compartilhado da instalação local com XAMPP. Só essa opção usa o banco de dados; nela, escreva ações simples, sem informações pessoais.</p></div>
+      <div class="practice-grid">
+        <!-- Parte 5: formulário e lista são a estrutura; o JavaScript renderiza o array de ações. -->
+        <article class="paper">
+          <h2>Um passo de cada vez</h2>
+          <div class="database-panel">
+            <label for="record-storage">Onde guardar este registro?</label>
+            <select id="record-storage"><option value="local" selected>Plano pessoal · neste navegador</option><option value="mysql">Registro compartilhado · MySQL</option></select>
+            <p id="database-status" role="status">Seu plano pessoal fica neste navegador.</p>
+            <!-- Os controles do XAMPP aparecem somente ao escolher o registro compartilhado. -->
+            <div id="database-actions" class="record-actions" hidden><button id="database-connect" type="button" class="text-link">Reconectar registros</button><button id="database-install" type="button" class="text-link" hidden>Preparar banco local</button></div>
+          </div>
+          <aside id="local-records" class="local-records" hidden><p id="local-record-count"></p><button id="import-old-records" type="button" class="text-link">Importar ações antigas deste navegador</button></aside>
+          <form id="task-form"><label for="task">Qual pequena ação você quer lembrar?</label><div class="input-row"><input id="task" maxlength="160" placeholder="Ex.: fazer uma pausa para beber água" required><button class="button primary" type="submit">Adicionar</button></div></form>
+          <p id="task-status" role="status" class="small"></p>
+          <ul id="tasks" class="tasks"></ul>
+          <div class="record-actions"><button id="download-tasks" class="text-link">Baixar meu registro ↓</button><button id="clear-tasks" class="text-link">Apagar meu registro</button></div>
+        </article>
+        <!-- Parte 6: a reflexão simula uma espera com Promise; o resultado começa escondido. -->
+        <article class="paper reflection">
+          <p class="eyebrow">UM CONVITE PARA PAUSAR</p><h2>Outra maneira<br>de olhar.</h2>
+          <p>Uma pergunta pequena pode abrir espaço para uma ideia diferente.</p>
+          <div id="reflection-result" hidden><p id="reflection-text" aria-live="polite"></p></div>
+          <button id="reflection" class="button secondary">Receber uma reflexão ✦</button>
+          <p class="small">Frases pré-escritas, escolhidas ao acaso. Não é um atendimento ou uma IA.</p>
+          <label for="reflect-choice">Hoje uma pausa pode ser…</label><select id="reflect-choice"><option value="">Escolha se quiser</option><option>Conversar com alguém</option><option>Ficar um pouco em silêncio</option><option>Fazer algo de que gosto</option></select>
+        </article>
+      </div>
+    </section>
+    <!-- Este convite pertence ao SENTIA; o jogo Jardim dos Ecos tem arquivos e salvamento próprios. -->
     <section class="page" id="jardim" hidden><div class="garden-invitation"><img id="garden-image" alt="Entrada de um jardim em pixel art"><div><p class="eyebrow">NEM TODO CAMINHO ESTÁ NO MAPA</p><h1>Jardim<br>dos Ecos<span>.</span></h1><p>Algumas portas se abrem quando você passa a olhar de outro jeito.</p><p id="discovery-text" class="small"></p><div id="discoveries" class="discoveries"></div><button id="garden-entry" class="button primary">Observar o portal ✦</button></div></div><section id="portal-puzzle" class="portal-puzzle" aria-labelledby="puzzle-title">
   <div class="puzzle-heading"><div><p class="eyebrow">UMA PORTA, SEIS LANTERNAS</p><h2 id="puzzle-title" tabindex="-1">O caminho se abre<br>quando as pistas se encontram.</h2><p>Reúna os seis fragmentos no Atlas, organize as lanternas e interprete os vínculos da Convergência. Não há cronômetro: o desafio é perceber as relações.</p></div><span id="puzzle-attempts" class="small"></span></div>
   <ol id="puzzle-steps" class="puzzle-steps" aria-label="Etapas do enigma"></ol>
@@ -44,11 +81,15 @@
   <div id="portal-solved" class="portal-solved" hidden><span class="pixel-symbol" aria-hidden="true">✦</span><h3>Você encontrou o caminho.</h3><p>As lanternas não apagaram umas às outras. Suas diferenças fizeram a passagem aparecer.</p></div>
   <p id="puzzle-feedback" class="puzzle-feedback" role="status" aria-live="polite"></p><div class="puzzle-actions"><button id="puzzle-hint" class="text-link">Pedir uma pista de raciocínio</button><button id="puzzle-reset" class="text-link">Recomeçar apenas o enigma</button></div><p id="puzzle-hint-text" class="small"></p><button id="portal-solved-entry" class="button primary" hidden>Escolher controles e entrar no Jardim ↗</button>
 </section><p class="footnote">O enigma é ficcional. Todo o conteúdo educativo do SENTIA continua disponível sem precisar resolvê-lo.</p></section>
+    <!-- Parte 2: labels, limites e tipo email apoiam a validação; preventDefault evita o envio real. -->
     <section class="page" id="sobre" hidden><div class="page-heading"><p class="eyebrow">SOBRE O PROJETO</p><h1>Sentir também<br>é descobrir<span>.</span></h1><p>SENTIA é um projeto escolar de PW I sobre linguagem visual, interatividade e sentimentos.</p></div><div class="about-grid"><article class="paper"><h2>Feito de encontros</h2><p>O Atlas apresenta sentimentos. A Convergência explora combinações. O registro convida a pequenas ações. O Jardim guarda uma narrativa ficcional própria.</p><p>A identidade em pixel art conecta essas partes: cada detalhe tem seu espaço, como os sentimentos que fazem parte de uma experiência.</p><a href="#creditos" class="text-link">Créditos e acessibilidade →</a></article><article class="paper"><h2>Deixe uma ideia</h2><p>Este formulário é uma demonstração escolar. A mensagem é validada no navegador e não é enviada.</p><form id="contact-form" novalidate><label for="nome">Seu nome</label><input id="nome" autocomplete="name" maxlength="80" required><label for="email">E-mail</label><input id="email" type="email" autocomplete="email" maxlength="160" required><label for="mensagem">Uma sugestão para o projeto</label><textarea id="mensagem" rows="3" minlength="10" maxlength="1000" required></textarea><p id="form-status" role="status"></p><button class="button primary">Conferir mensagem ↗</button></form></article></div></section>
-    <section class="page" id="creditos" hidden><div class="page-heading"><p class="eyebrow">CRÉDITOS E ACESSIBILIDADE</p><h1>Um espaço<br>que cabe na sua tela<span>.</span></h1></div><article class="paper"><h2>Como navegar</h2><p>Use Tab para percorrer controles, Enter para ativar e Esc para fechar janelas. No celular, todas as ações têm botões de toque. O Jardim permite escolher PC ou celular antes de começar.</p><label class="check"><input id="reduce-motion" type="checkbox"> Reduzir movimentos e transições</label><h2>Sobre os materiais</h2><p>Concepção e direção criativa: projeto SENTIA. Artes aprovadas e desenvolvimento com assistência de IA. O código e seus comentários devem ser estudados e revisados pelo aluno antes da entrega.</p><p>O Jardim usa quatro músicas de Kevin MacLeod, sob licença CC BY 4.0. <a href="documentacao/CREDITOS-AUDIO.txt">Consultar créditos e fontes da trilha</a>. Os dados das atividades ficam no navegador e podem ser apagados no registro.</p><a class="text-link" href="documentacao/ROTEIRO-V4.txt">Consultar o planejamento (contém spoilers) ↗</a></article></section>
+    <!-- Créditos, preferência de movimento e localização dos dados ficam disponíveis ao visitante. -->
+    <section class="page" id="creditos" hidden><div class="page-heading"><p class="eyebrow">CRÉDITOS E ACESSIBILIDADE</p><h1>Um espaço<br>que cabe na sua tela<span>.</span></h1></div><article class="paper"><h2>Como navegar</h2><p>Use Tab para percorrer controles, Enter para ativar e Esc para fechar janelas. No celular, todas as ações têm botões de toque. O Jardim permite escolher PC ou celular antes de começar.</p><label class="check"><input id="reduce-motion" type="checkbox"> Reduzir movimentos e transições</label><h2>Sobre os materiais</h2><p>Concepção e direção criativa: projeto SENTIA. Artes aprovadas e desenvolvimento com assistência de IA. O código e seus comentários devem ser estudados e revisados pelo aluno antes da entrega.</p><p>O Jardim usa quatro músicas de Kevin MacLeod, sob licença CC BY 4.0. <a href="documentacao/CREDITOS-AUDIO.txt">Consultar créditos e fontes da trilha</a>.</p><p>O plano pessoal, as preferências e a coleção ficam neste navegador. Em Meu registro, a opção compartilhada guarda as ações no MySQL da instalação local com XAMPP. Você pode apagar as ações do modo selecionado. A partida do Jardim tem salvamento independente no navegador.</p><a class="text-link" href="documentacao/ROTEIRO-V4.txt">Consultar o planejamento (contém spoilers) ↗</a></article></section>
   </main>
   <footer><a class="brand" href="#home">✦ SENTIA.</a><p>Um lugar para sentir.<br><span class="small">Projeto escolar · PW I · 2026</span></p><div><a href="#praticas">Meu registro</a><a href="#creditos">Créditos e acessibilidade</a></div><span class="footer-mark">CULTIVE<br>O QUE SENTE ↗</span></footer>
+  <!-- Parte 3: o JavaScript cria e remove cada aviso dentro desta região de anúncio. -->
   <div id="alerts" class="alerts" aria-live="polite"></div>
+  <!-- Parte 2: dialog oferece janela modal nativa; o conteúdo e o foco são preparados pelo JavaScript. -->
   <dialog id="modal"><button class="close" aria-label="Fechar janela">×</button><div id="modal-body"></div></dialog>
 </body>
 </html>

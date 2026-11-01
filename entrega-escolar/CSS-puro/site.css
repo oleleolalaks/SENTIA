@@ -1,4 +1,4 @@
-/* A base aq organiza as cores. O tema escuro troca só as variáveis. */
+/* Parte 1 — cores compartilhadas: var() reutiliza a paleta; body.dark troca os valores do tema. */
 :root {
   --bg:#f7f7ee;
   --ink:#193e35;
@@ -12,6 +12,7 @@
   --shadow:4px 4px 0 #193e35;
    color-scheme:light
 }
+/* Base e acessibilidade: box-sizing inclui bordas no tamanho; controles herdam a fonte e mostram foco. */
 * {
   box-sizing:border-box
 }
@@ -63,6 +64,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 [hidden] {
   display:none!important
 }
+/* Tipografia: os títulos usam clamp() para crescer entre limites sem depender de uma única tela. */
 h1,h2,h3,p {
   margin:0
 }
@@ -94,6 +96,7 @@ h3 {
   font-size:13px;
   color:var(--muted)
 }
+/* Cabeçalho: Flexbox distribui marca, navegação e botão de tema; a classe active marca a seção atual. */
 .site-header {
   max-width:1376px;
   margin:auto;
@@ -144,6 +147,7 @@ nav a.active,nav a:hover {
   border-radius:50%;
   font-size:24px
 }
+/* Página inicial: Grid organiza texto e arte; os demais blocos reutilizam as mesmas margens. */
 .page {
   max-width:1280px;
   margin:auto;
@@ -168,6 +172,7 @@ nav a.active,nav a:hover {
   gap:25px;
   flex-wrap:wrap
 }
+/* CTAs: estados hover e transições dão retorno visual aos links e botões, sem alterar seu conteúdo. */
 .button {
   display:inline-flex;
   justify-content:center;
@@ -213,6 +218,7 @@ nav a.active,nav a:hover {
   background:#74985c;
   border-radius:50%
 }
+/* Arte e caminhos: posicionamento relativo/absoluto sobrepõe a legenda; as imagens preservam os pixels. */
 .hero-art {
   position:relative;
   border:1px solid var(--ink);
@@ -274,6 +280,7 @@ nav a.active,nav a:hover {
   font-size:13px;
   color:var(--muted)
 }
+/* Os cartões de entrada usam três colunas; as media queries reduzem essa quantidade em telas menores. */
 .path-grid {
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -333,6 +340,7 @@ nav a.active,nav a:hover {
   margin-right:auto;
   letter-spacing:-.7px
 }
+/* Parte 4 — Atlas: campo de busca e cartões mantêm o layout; o JavaScript decide quais dados aparecem. */
 .page-heading {
   padding:65px 0 40px;
   max-width:800px
@@ -399,6 +407,7 @@ nav a.active,nav a:hover {
   font-size:12px;
   color:var(--muted)
 }
+/* Conteúdo em duas colunas: Convergência, registro e apresentação compartilham o mesmo ritmo visual. */
 .convergence,.practice-grid,.about-grid {
   display:grid;
   grid-template-columns:1fr 1.1fr;
@@ -436,6 +445,7 @@ nav a.active,nav a:hover {
 .connection p:last-child {
   font-size:18px
 }
+/* Formulários: labels, campos e linhas de entrada recebem estilos comuns para manter leitura e toque. */
 .paper h2 {
   margin-bottom:20px
 }
@@ -470,6 +480,7 @@ form>input,form>textarea {
   flex:1;
   min-width:150px
 }
+/* Parte 5 — registro: cada item é criado pelo JavaScript; a classe done representa a ação concluída. */
 .tasks {
   list-style:none;
   margin:24px 0;
@@ -499,12 +510,16 @@ form>input,form>textarea {
   width:20px;
   height:20px
 }
+/* Parte 6 — reflexão: o gradiente com paradas firmes cria uma textura discreta na grade de pixels. */
 .reflection {
-  background:var(--mint)
+  background-color:var(--mint);
+  background-image:linear-gradient(135deg,rgba(255,254,248,.20) 0 25%,transparent 25% 75%,rgba(25,62,53,.035) 75% 100%);
+  background-size:24px 24px
 }
 .reflection .small {
   margin-top:18px
 }
+/* Convite do SENTIA: estes estilos apresentam a entrada; o jogo possui sua própria folha de estilos. */
 .garden-invitation {
   position:relative;
   min-height:600px;
@@ -552,6 +567,7 @@ form>input,form>textarea {
 .discoveries i.found {
   background:#d7e9cb
 }
+/* Rodapé: os atalhos continuam disponíveis após o conteúdo de cada seção. */
 footer {
   border-top:1px solid var(--line);
   padding:40px max(32px,calc((100vw - 1184px)/2));
@@ -573,6 +589,7 @@ footer>div {
   font:11px/1.5 monospace;
   letter-spacing:1px
 }
+/* Parte 2 — modal: dialog limita a janela, ::backdrop escurece o fundo e [open] anima sua entrada. */
 dialog {
   width:min(600px,calc(100% - 32px));
   max-height:85dvh;
@@ -582,8 +599,11 @@ dialog {
   padding:40px;
   box-shadow:8px 8px 0 #0003
 }
+dialog[open] {
+  animation:sentia-modal-in .18s steps(4,end)
+}
 dialog::backdrop {
-  background:#142c26bb;
+  background:rgba(20,44,38,.73);
   backdrop-filter:blur(4px)
 }
 dialog h2 {
@@ -609,6 +629,7 @@ dialog p {
   float:right;
   image-rendering:pixelated
 }
+/* Parte 3 — avisos dinâmicos: o container é fixo; cada novo aviso recebe a animação declarada abaixo. */
 .alerts {
   position:fixed;
   right:20px;
@@ -626,7 +647,8 @@ dialog p {
   display:flex;
   gap:25px;
   align-items:center;
-  font-size:14px
+  font-size:14px;
+  animation:sentia-alert-in .18s steps(3,end)
 }
 .alert button {
   background:none;
@@ -634,6 +656,16 @@ dialog p {
   border:0;
   font-size:22px
 }
+/* Keyframes descrevem início e fim; steps() mantém uma entrada curta com ritmo de pixel art. */
+@keyframes sentia-alert-in {
+  from { opacity:0;transform:translateY(6px); }
+  to { opacity:1;transform:translateY(0); }
+}
+@keyframes sentia-modal-in {
+  from { opacity:0;transform:translateY(8px); }
+  to { opacity:1;transform:translateY(0); }
+}
+/* Acessibilidade: o atalho aparece ao receber foco; reduzir movimento desliga todas as animações. */
 .skip {
   position:fixed;
   top:-100px;
@@ -660,6 +692,7 @@ body.reduced *,body.reduced *::before,body.reduced *::after {
   animation:none!important;
   transition:none!important
 }
+/* Responsividade: as colunas, espaçamentos e cabeçalho se adaptam sem alterar a ordem do HTML. */
 @media(max-width:900px) {
   .site-header {
     padding:20px 24px;
@@ -801,6 +834,7 @@ body.reduced *,body.reduced *::before,body.reduced *::after {
     width:100px
   }
 }
+/* A preferência do sistema também prevalece sobre as animações do modal e dos avisos. */
 @media(prefers-reduced-motion:reduce) {
   *,*::before,*::after {
     animation:none!important;
@@ -845,7 +879,10 @@ body.reduced *,body.reduced *::before,body.reduced *::after {
 html.reduced { scroll-behavior:auto; }
 body.reduced *,body.reduced *::before,body.reduced *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
 #clear-atlas-filters { min-height:44px; }
+/* Parte 5 — persistência: o seletor escolhe o plano local ou o registro compartilhado, sem mudar a lista. */
 .database-panel,.local-records { margin:18px 0;padding:14px;border:1px solid var(--line);background:var(--bg);font-size:13px;line-height:1.6; }
+.database-panel label { margin:0 0 7px; }
+#record-storage { display:block;width:100%;margin-bottom:12px;font-size:13px; }
 .database-panel p,.local-records p { margin:0 0 8px;overflow-wrap:anywhere; }
 .database-panel .record-actions { margin:0;gap:14px; }
 #database-status.error { color:var(--ink); }

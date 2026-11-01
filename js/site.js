@@ -1,7 +1,10 @@
 'use strict';
 
 // As atividades da escola ficam só no SENTIA. O Jardim usa outro arquivo e outro save.
+// const guarda referências que não serão trocadas; let guarda estados que mudam.
+// var é a forma antiga do glossário: seu escopo é de função, então prefiro let/const neste projeto.
 const $ = selector => document.querySelector(selector);
+const activeAlerts = [];
 const storage = {
   get(key, fallback) {
     try {
@@ -62,6 +65,7 @@ if(!puzzle.solved) {
 }
 storage.set('sentia-portal-puzzle-v2',puzzle);
 let collectionOnly = false;
+// O enigma é um recurso do site: JSON preserva as pistas sem tocar no save do jogo.
 function savePuzzle() {
   storage.set('sentia-portal-puzzle-v2', puzzle);
   renderDiscoveries();
@@ -74,7 +78,10 @@ function discover(id) {
   renderDiscoveries();
 }
 function renderDiscoveries() {
-  $('#discoveries').replaceChildren(...lanternIds.map(id => {
+  // O for percorre a fila numerada e cria um indicador por fragmento.
+  const dots=[];
+  for(let i=0;i<lanternIds.length;i++){
+    const id=lanternIds[i];
     const dot = document.createElement('i');
     const found = puzzle.clues.includes(id);
     const label = emotions.find(e => e[0] === id)[1];
@@ -82,25 +89,27 @@ function renderDiscoveries() {
     dot.title = 'Pista de ' + label;
     dot.setAttribute('role', 'img');
     dot.setAttribute('aria-label', 'Pista de ' + label + (found ? ': encontrada' : ': por descobrir'));
-    return dot;
-  }));
+    dots.push(dot);
+  }
+  $('#discoveries').replaceChildren(...dots);
   $('#discovery-text').textContent = puzzle.solved ? 'O enigma foi resolvido. O caminho continua aberto neste navegador.' : puzzle.clues.length + ' de 6 pistas no caderno · ' + (puzzle.stage - 1) + ' de 3 etapas resolvidas. Visitar páginas não abre esta porta: as pistas precisam se conectar.';
   $('#garden-entry').textContent = puzzle.solved ? 'Entrar no Jardim ↗' : 'Resolver o enigma das lanternas ↓';
 }
+// Parte 3: cria um aviso com nós do DOM e permite dispensar pelo botão ou pelo relógio.
 function alertBox(text) {
-  const box = document.createElement('div');
-  box.className = 'alert';
-  const message = document.createElement('span');
-  message.textContent = text;
-  const close = document.createElement('button');
-  close.textContent = '×';
-  close.setAttribute('aria-label', 'Dispensar aviso');
-  close.onclick = () => box.remove();
-  box.append(message, close);
-  $('#alerts').append(box);
-  setTimeout(() => box.remove(), 7000);
+  const box=document.createElement('div');box.className='alert';
+  const message=document.createElement('span');message.textContent=text;
+  const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','Dispensar aviso');
+  const dismiss=()=>{box.remove();const index=activeAlerts.indexOf(box);if(index>=0)activeAlerts.splice(index,1);};
+  close.addEventListener('click',dismiss);
+  box.appendChild(message);box.appendChild(close);
+  // O mais recente entra antes dos demais. A pilha mantém no máximo três avisos.
+  document.getElementById('alerts').prepend(box);activeAlerts.unshift(box);
+  while(activeAlerts.length>3){const oldest=activeAlerts.pop();oldest.remove();}
+  setTimeout(dismiss,7000);
 }
 let modalReturn = null;
+// Parte 2: abre a janela, dá um nome acessível e move o foco para seu primeiro campo.
 function openModal(content) {
   const origin = document.activeElement;
   modalReturn = {
@@ -134,6 +143,7 @@ $('#modal').addEventListener('click', e => {
     if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) e.target.close();
   }
 });
+// Parte 4: o filtro usa o texto buscado e a coleção para reconstruir os cartões visíveis.
 function renderAtlas() {
   const q = $('#busca').value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   const filtered = emotions.filter(e => (!collectionOnly || collection.has(e[0])) && e.join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes(q));
@@ -217,16 +227,20 @@ $('#combinar').onclick = () => {
     renderPuzzle();
   }
 };
-// A lista escolar usa a API PHP e o MySQL do XAMPP. O save do Jardim permanece separado.
+// Parte 5: plano pessoal com array/localStorage; MySQL só no registro compartilhado.
+// Ambos ficam na parte escolar, sem alterar os dados do Jardim.
 RegistrosSentia.init({openModal,onDiscover:()=>discover(4)});
 $('#reflect-choice').onchange = () => {
   if ($('#reflect-choice').value) discover(5);
 };
+// Parte 6: esta é uma simulação local. Promise e setTimeout fazem a espera; não há IA externa.
 const reflections = ['Você pode reconhecer um esforço sem esperar um resultado perfeito.', 'Qual coisa pequena pode esperar até amanhã?', 'Um limite também pode ser uma forma de cuidado.', 'É possível pedir companhia sem ter uma explicação pronta.', 'Você não precisa resolver todo o dia de uma vez.'];
 $('#reflection').onclick = async () => {
   const b = $('#reflection');
   b.disabled = true;
   b.textContent = 'Preparando uma pausa…';
+  $('#reflection-result').hidden=false;
+  $('#reflection-text').textContent='Procurando uma pequena reflexão…';
   try {
     const text = await new Promise(resolve => setTimeout(() => resolve(reflections[Math.floor(Math.random() * reflections.length)]), 700));
     $('#reflection-text').textContent = text;
@@ -258,7 +272,12 @@ $('#contact-form').onsubmit = e => {
     return;
   }
   $('#form-status').textContent = 'Tudo certo com os campos. Esta demonstração não envia nem armazena a mensagem.';
-  alertBox('Campos conferidos. Nenhuma mensagem foi enviada.');
+  const summary=document.createElement('div'),heading=document.createElement('h2'),description=document.createElement('p');
+  heading.textContent='Sua ideia está conferida';
+  description.textContent=`${name.value.trim()}, os campos estão válidos. Esta demonstração não envia nem guarda seu nome, e-mail ou mensagem.`;
+  const finish=document.createElement('button');finish.className='button primary';finish.textContent='Concluir conferência';
+  finish.addEventListener('click',()=>{$('#contact-form').reset();$('#modal').close();alertBox('Campos conferidos. Nenhuma mensagem foi enviada.');});
+  summary.append(heading,description,finish);openModal(summary);
 };
 $('#garden-entry').onclick = () => {
   if (!puzzle.solved) {
@@ -443,7 +462,8 @@ $('#puzzle-reset').onclick = () => {
 $('#portal-solved-entry').onclick = () => $('#garden-entry').click();
 function theme() {
   const dark = storage.get('sentia-dark', false);
-  document.body.classList.toggle('dark', dark);
+  // Parte 1: a classe ativa as variáveis CSS do tema; a preferência fica no localStorage.
+  if(dark)document.body.classList.add('dark');else document.body.classList.remove('dark');
   $('#tema').setAttribute('aria-label', dark ? 'Ativar tema claro' : 'Ativar tema escuro');
 }
 $('#tema').onclick = () => {
@@ -466,6 +486,7 @@ $('#reduce-motion').onchange = () => {
   applyMotionPreference();
 };
 motionPreference.addEventListener?.('change', applyMotionPreference);
+// As âncoras mostram uma seção por vez; o foco e o título acompanham a navegação.
 function route() {
   const requested = location.hash.slice(1) || 'home';
   const id = document.getElementById(requested)?.classList.contains('page') ? requested : 'home';
@@ -474,15 +495,18 @@ function route() {
     a.classList.toggle('active', a.hash === '#' + id);
     if (a.hash === '#' + id) a.setAttribute('aria-current', 'page');else a.removeAttribute('aria-current');
   });
-  document.title = 'SENTIA · ' + {
-    home: 'um lugar para sentir',
-    atlas: 'Atlas emocional',
-    convergencia: 'Convergência',
-    praticas: 'Práticas e registro',
-    jardim: 'Jardim dos Ecos',
-    sobre: 'Sobre',
-    creditos: 'Créditos'
-  }[id];
+  // switch escolhe um título para cada seção; break impede cair no próximo caso.
+  let title;
+  switch(id){
+    case 'atlas':title='Atlas emocional';break;
+    case 'convergencia':title='Convergência';break;
+    case 'praticas':title='Práticas e registro';break;
+    case 'jardim':title='Jardim dos Ecos';break;
+    case 'sobre':title='Sobre';break;
+    case 'creditos':title='Créditos';break;
+    default:title='um lugar para sentir';
+  }
+  document.title=`SENTIA · ${title}`;
   if (id === 'sobre') discover(3);
   window.scrollTo(0, 0);
   $('#conteudo').focus({

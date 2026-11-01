@@ -1,19 +1,21 @@
 SENTIA — PROJETO COMPLETO PARA VISUAL STUDIO CODE
 
-COMO ABRIR NO XAMPP
-1. Use Extrair Tudo no ZIP e espere terminar. Não abra o HTML dentro do ZIP.
-2. Coloque a pasta completa Sentia dentro de htdocs do XAMPP (normalmente C:\xampp\htdocs\Sentia).
-3. No painel do XAMPP, inicie Apache e MySQL.
-4. Abra http://localhost/Sentia/ no navegador. Abra essa mesma pasta no VS Code para editar.
-5. Na página Meu registro, clique em Preparar banco local se essa opção aparecer. Alternativamente, importe banco/schema.sql pelo phpMyAdmin.
-6. Se houver outra porta/senha, veja documentacao/BANCO-XAMPP.txt e api/config.local.example.php.
-O front-end continua em HTML, CSS e JavaScript puros. A API PHP conecta o site ao MySQL; Live Server e abrir por file:// não executam PHP.
+COMO ABRIR O SITE E O JARDIM
+1. Use Extrair Tudo no ZIP e mantenha css, js e assets ao lado dos HTMLs.
+2. Abra a pasta Sentia no VS Code. Para o site normal e o Jardim, pode abrir index.html diretamente ou usar Live Server.
+3. O plano pessoal, modo escuro, filtros, modais, alertas e simulador de reflexão funcionam sem XAMPP.
+4. O Jardim continua em HTML/CSS/JavaScript e usa seu próprio save no navegador. Não depende de PHP nem do banco.
+
+SOMENTE O REGISTRO COMPARTILHADO USA XAMPP
+Para selecionar “Registro compartilhado · MySQL” em Meu registro: coloque a pasta Sentia em htdocs, inicie Apache e MySQL e acesse http://localhost/Sentia/.
+Na área Meu registro, escolha o modo compartilhado e clique em Preparar banco local, se necessário. Outra opção é importar banco/schema.sql no phpMyAdmin.
+Configuração e instruções do banco: documentacao/BANCO-XAMPP.txt.
 
 SITE E JARDIM
 O index.html é o site educativo. A opção O Jardim contém um enigma em três etapas. As pistas ficam no Atlas e na Convergência: a liberação agora exige resolver as relações, não apenas visitar páginas.
 Após resolver, escolha PC ou celular para entrar no jardim.html. Um clarão único cobre a passagem e se desfaz na chegada; há uma versão suave para movimentos reduzidos. O cabeçalho do Jardim retorna ao site. São duas páginas conectadas do mesmo projeto.
 As falas do Jardim aparecem letra por letra com bipes individuais. Um clique na fala ou em Continuar revela tudo; o seguinte avança. Descobertas já lidas não são repetidas automaticamente: use Reler ou o Registro. Assuntos já conversados ficam em Relembrar conversas anteriores.
-A coleção do Atlas e o enigma ficam neste navegador. As ações de Meu registro usam o banco MySQL desta instalação: podem ser criadas, consultadas, editadas, concluídas e apagadas. O registro pode ser exportado como TXT. Como não há login, a lista é compartilhada nesta instalação. Ações antigas do navegador podem ser importadas explicitamente; não são apagadas pela importação.
+A coleção do Atlas e o enigma ficam neste navegador. Meu registro começa no modo Plano pessoal, com array e JSON/localStorage, conforme a apostila de tarefas. Somente ao selecionar o modo compartilhado a lista usa PHP/MySQL. Cada modo permite criar, consultar, editar, concluir e apagar ações. O registro pode ser exportado como TXT. Como não há login, a lista é compartilhada nesta instalação. Ações antigas do navegador podem ser importadas explicitamente; não são apagadas pela importação.
 
 CONTROLES DO JARDIM
 Quartos: converse primeiro com o morador; depois use as setas da tela e os pontos dos objetos. Os moradores podem visitar outros quartos e conversar juntos. As novas pistas liberam assuntos.
@@ -37,7 +39,7 @@ entrega-escolar/PHP-servidor e SQL: cópias dos códigos do servidor e do banco.
 Os ZIPs dentro de entrega-escolar agrupam cada linguagem para avaliação; não incluem imagens. Para executar, use o index.html da raiz.
 portfolio: capturas PC/celular e arquivo Excalidraw com as capturas incorporadas e títulos editáveis.
 Os comentários explicam os blocos principais. O aluno deve estudar e revisar o material; houve assistência de IA.
-O endereço público nos comentários HTML ainda precisa ser preenchido com a URL real após publicar no GitHub. Nenhuma publicação foi feita automaticamente. A cobertura das apostilas deve ser conferida com os itens exigidos pelo professor.
+Repositório público indicado nos comentários HTML: https://github.com/oleleolalaks/SENTIA. Consulte o histórico e as tags no repositório para verificar as versões publicadas. A correspondência das seis apostilas e do glossário está em documentacao/CONFERENCIA-PWI.md, usando somente arquivos do site educativo como evidência.
 
 PROGRESSO E VERIFICAÇÃO
 O progresso anterior pode continuar. Para ver todos os novos encontros desde o começo, exporte a partida na Pausa e escolha Começar outra partida. O puzzle novo do portal tem um estado próprio e não apaga os registros do site ou o save do Jardim.

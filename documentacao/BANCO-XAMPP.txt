@@ -1,9 +1,10 @@
 SENTIA · PHP + MYSQL NO XAMPP
 
 O QUE USA O BANCO
-Os registros educativos de "Meu registro", no site principal, podem ser salvos,
+Somente o modo "Registro compartilhado · MySQL", em Meu registro no site principal, pode salvar,
 consultados, editados, marcados como concluídos e apagados no MySQL.
-O Jardim dos Ecos mantém seu save local. Ele não usa esta tabela.
+O modo padrão Plano pessoal usa localStorage e funciona sem XAMPP. Escolher o modo compartilhado é explícito.
+O Jardim dos Ecos mantém seu save local. Ele não usa esta tabela nem depende do XAMPP.
 HTML, CSS e JavaScript continuam em arquivos separados. O PHP fica somente em api/.
 O site deve ser aberto pelo Apache para executar PHP; file:// e Live Server não
 executam essa API. O site continua explicando a indisponibilidade se o PHP/MySQL
@@ -16,7 +17,7 @@ COMO ABRIR
    Mantenha api, banco, assets, css e js junto dos HTMLs.
 3. Acesse http://localhost/Sentia/ no navegador.
    Se o Apache usa outra porta, inclua essa porta, por exemplo :8080.
-4. No site, use "Preparar banco" quando essa opção aparecer. O botão faz um
+4. No site, abra Meu registro, selecione "Registro compartilhado · MySQL" e use "Preparar banco local" quando essa opção aparecer. O botão faz um
    POST explícito para api/instalar.php. Só esse pedido cria banco e tabela.
    Abrir status.php ou instalar.php pelo endereço não altera o MySQL.
 5. Alternativa sem o botão: abra http://localhost/phpmyadmin, vá em Importar,
