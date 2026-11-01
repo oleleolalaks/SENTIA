@@ -25,6 +25,8 @@ Modo escuro persistente, modal com CTA e validação, alertas dinâmicos, filtro
 
 A correspondência das apostilas e do glossário está em [CONFERENCIA-PWI.md](documentacao/CONFERENCIA-PWI.md). Nenhum conceito do jogo é usado para completar essa matriz.
 
+O acesso ao Jardim exige três etapas: cruzar as pistas das lanternas, reconhecer os vínculos e decifrar suas marcas. As dicas acompanham a etapa atual; não há cronômetro nem perda de progresso ao errar. Quem já abriu o portal mantém o acesso e pode usar **Recomeçar apenas o enigma** para experimentar a revisão, preservando a partida do Jardim.
+
 ## Entrega e histórico
 
 - `portfolio/`: telas de PC/celular e portfólio Excalidraw com capturas incorporadas.

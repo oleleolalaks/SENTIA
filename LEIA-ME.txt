@@ -12,7 +12,7 @@ Na área Meu registro, escolha o modo compartilhado e clique em Preparar banco l
 Configuração e instruções do banco: documentacao/BANCO-XAMPP.txt.
 
 SITE E JARDIM
-O index.html é o site educativo. A opção O Jardim contém um enigma em três etapas. As pistas ficam no Atlas e na Convergência: a liberação agora exige resolver as relações, não apenas visitar páginas.
+O index.html é o site educativo. A opção O Jardim contém um enigma em três etapas. As pistas ficam no Atlas e na Convergência: é preciso cruzar relações, reconhecer os vínculos e decifrar as marcas, sem apenas copiar a fila. As dicas mudam conforme a etapa. Se o portal já estiver aberto, “Recomeçar apenas o enigma” permite testar a revisão sem apagar a partida do Jardim.
 Após resolver, escolha PC ou celular para entrar no jardim.html. Um clarão único cobre a passagem e se desfaz na chegada; há uma versão suave para movimentos reduzidos. O cabeçalho do Jardim retorna ao site. São duas páginas conectadas do mesmo projeto.
 As falas do Jardim aparecem letra por letra com bipes individuais. Um clique na fala ou em Continuar revela tudo; o seguinte avança. Descobertas já lidas não são repetidas automaticamente: use Reler ou o Registro. Assuntos já conversados ficam em Relembrar conversas anteriores.
 A coleção do Atlas e o enigma ficam neste navegador. Meu registro começa no modo Plano pessoal, com array e JSON/localStorage, conforme a apostila de tarefas. Somente ao selecionar o modo compartilhado a lista usa PHP/MySQL. Cada modo permite criar, consultar, editar, concluir e apagar ações. O registro pode ser exportado como TXT. Como não há login, a lista é compartilhada nesta instalação. Ações antigas do navegador podem ser importadas explicitamente; não são apagadas pela importação.

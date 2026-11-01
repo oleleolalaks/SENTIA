@@ -28,12 +28,12 @@ const storedDiscoveries = storage.get('sentia-discoveries', []);
 let discoveries = new Set((Array.isArray(storedDiscoveries) ? storedDiscoveries : []).filter(x => Number.isInteger(x) && x >= 0 && x < 7));
 const lanternIds = ['medo', 'calma', 'orgulho', 'amor', 'tristeza', 'determinacao'];
 const lanternClues = {
-  medo: ['E', 'Na fila numerada de 1 a 6, Medo vem imediatamente antes de Calma, sem outra lanterna entre os dois.'],
-  calma: ['S', 'Calma não ocupa nenhuma ponta da fila: sua posição fica entre 2 e 5.'],
-  orgulho: ['C', 'Orgulho vem depois de Calma e antes de Amor. Essas posições não precisam ser vizinhas.'],
+  medo: ['E', 'Na fila numerada de 1 a 6, Medo fica antes de Calma. Não precisam ser vizinhos.'],
+  calma: ['S', 'Calma ocupa uma posição de número par: 2, 4 ou 6.'],
+  orgulho: ['T', 'Orgulho fica antes de Amor. Não precisam ser vizinhos.'],
   amor: ['U', 'Amor vem exatamente duas posições antes de Determinação: há uma lanterna entre os dois.'],
-  tristeza: ['T', 'Tristeza vem imediatamente antes de Determinação, sem outra lanterna entre os dois.'],
-  determinacao: ['A', 'Use cada sentimento uma única vez. Leia as marcas pela numeração: posição 1, depois 2, até 6, mesmo se os cartões aparecerem em várias linhas.']
+  tristeza: ['C', 'Orgulho fica entre Medo e Tristeza, à mesma distância dos dois. Conte as posições da fila.'],
+  determinacao: ['A', 'Use cada sentimento uma única vez. Para a palavra, siga os selos de 1 a 3: em cada par, leia primeiro a marca da lanterna em posição ímpar e depois a da posição par. A ordem dos campos do selo não muda essa leitura.']
 };
 const sealPairs = ['calma+medo', 'amor+tristeza', 'determinacao+orgulho'];
 const sealVerses = ['O aviso encontra espaço para respirar.', 'A falta ainda guarda um vínculo.', 'Reconhecer o caminho e dar o próximo passo.'];
@@ -313,7 +313,13 @@ function puzzleStatus(text, good = false) {
 }
 function orderRules(order) {
   const at = id => order.indexOf(id);
-  return [at('calma') === at('medo') + 1, at('calma') > 0 && at('calma') < 5, at('orgulho') > at('calma') && at('orgulho') < at('amor'), at('determinacao') === at('amor') + 2, at('determinacao') === at('tristeza') + 1];
+  // O índice começa em zero; a posição que aparece no cartão começa em um.
+  // As cinco relações juntas têm uma única solução, sem entregar os vizinhos prontos.
+  return [at('medo') < at('calma'), (at('calma') + 1) % 2 === 0, at('orgulho') < at('amor'), at('determinacao') === at('amor') + 2, 2 * at('orgulho') === at('medo') + at('tristeza')];
+}
+function portalWord() {
+  // Os selos determinam os pares; a posição na fila determina qual marca vem primeiro.
+  return puzzle.seals.map(pair => [...pair].sort((a, b) => (puzzle.order.indexOf(b) + 1) % 2 - (puzzle.order.indexOf(a) + 1) % 2).map(id => lanternClues[id][0]).join('')).join('');
 }
 function renderPuzzle() {
   $('#lantern-form > p:not(.eyebrow)').textContent='As posições formam uma única fila, de 1 a 6. No celular, siga a numeração e continue na próxima linha. “Antes” e “depois” se referem aos números, não à linha da tela. Use cada sentimento uma vez e respeite todas as pistas do caderno.';
@@ -377,7 +383,9 @@ function renderPuzzle() {
   }));
   $('#lantern-submit').hidden = puzzle.stage > 1;
   $('#seal-step').hidden = puzzle.stage < 2;
-  $('#seal-form').hidden = puzzle.stage > 2;
+  // Depois de conferir, os pares continuam à vista para resolver a leitura das marcas.
+  $('#seal-form').hidden = puzzle.stage < 2;
+  $('#seal-form button').hidden = puzzle.stage > 2;
   $('#seal-solved').hidden = puzzle.stage < 3;
   $('#word-step').hidden = puzzle.stage < 3 || puzzle.solved;
   $('#portal-solved').hidden = !puzzle.solved;
@@ -387,17 +395,35 @@ function renderPuzzle() {
     const legend = document.createElement('legend');
     legend.textContent = 'Selo ' + (i + 1) + ' · ' + sealVerses[i];
     row.append(legend);
-    pair.forEach((id,j) => row.append(lanternSelect('Selo ' + (i + 1) + ', sentimento ' + (j + 1), id, value => {
-      puzzle.seals[i][j] = value;
-      savePuzzle();
-    })));
+    pair.forEach((id,j) => {
+      const select = lanternSelect('Selo ' + (i + 1) + ', sentimento ' + (j + 1), id, value => {
+        puzzle.seals[i][j] = value;
+        savePuzzle();
+      });
+      select.disabled = puzzle.stage > 2;
+      row.append(select);
+    });
     return row;
   }));
-  $('#puzzle-hint-text').textContent = puzzle.hints ? [
-    'Siga as posições de 1 a 6, mesmo no celular. Comece pelos vizinhos obrigatórios e monte blocos antes de preencher a fila.',
-    'Um bloco tem Medo seguido de Calma. Outro tem Amor, Tristeza e Determinação em posições consecutivas, nessa ordem.',
-    'Orgulho precisa ficar depois do primeiro bloco e antes do segundo. Confira se nenhuma lanterna se repete.'
-  ][puzzle.hints - 1] : '';
+  const hints = {
+    1: [
+      'Cruze as pistas: Orgulho precisa vir antes de Amor, e Determinação fica duas posições depois de Amor. Reserve espaço também dos dois lados de Orgulho.',
+      'Experimente Amor em 3: Determinação iria para 5 e Orgulho precisaria ficar em 2. O equilíbrio de Orgulho exigiria Medo ou Tristeza em 3, já ocupada. Essa hipótese não funciona.',
+      'Amor fica em 4 e Determinação em 6. Se Orgulho estivesse em 2, não sobraria posição par para Calma. Teste Orgulho em 3 e complete usando as outras pistas.'
+    ],
+    2: [
+      'Cada verso junta duas ideias presentes nos textos do Atlas. Procure quais sentimentos representam essas duas ideias, sem repetir nenhum nos outros selos.',
+      'No primeiro verso, pense em quem avisa sobre um risco e em quem oferece um intervalo. Na Convergência, compare o verso encontrado com o selo.',
+      'Para os outros versos, relacione vínculo com falta; depois, reconhecer o esforço com continuar. O caderno guarda as conexões já encontradas.'
+    ],
+    3: [
+      'A fila não é a ordem de leitura da palavra. Os três selos juntam as marcas em pares: consulte o fragmento de Determinação.',
+      'Siga os selos de 1 a 3. Em cada par, leia primeiro a marca em posição ímpar (1, 3 ou 5), depois a de posição par (2, 4 ou 6).',
+      'No selo 2, a lanterna da posição 5 deve ser lida antes da posição 4. Use o mesmo critério nos outros dois selos e junte os três pares de letras.'
+    ]
+  };
+  $('#puzzle-hint-text').textContent = puzzle.hints && hints[puzzle.stage] ? hints[puzzle.stage][puzzle.hints - 1] : '';
+  $('#puzzle-hint').hidden = puzzle.solved;
   $('#puzzle-hint').textContent = puzzle.hints < 3 ? 'Pedir uma pista de raciocínio (' + (puzzle.hints + 1) + '/3)' : 'Rever a última pista';
 }
 $('#lantern-form').onsubmit = e => {
@@ -416,29 +442,34 @@ $('#lantern-form').onsubmit = e => {
   const rules = orderRules(puzzle.order);
   if (rules.every(Boolean)) {
     puzzle.stage = 2;
+    puzzle.hints = 0;
     savePuzzle();
     renderPuzzle();
     puzzleStatus('As seis marcas acenderam. Agora associe os vínculos aos três selos.', true);
     $('#seal-title').focus();
   } else {
-    const feedback = ['Medo precisa ocupar a posição imediatamente anterior à de Calma.', 'Calma precisa ficar em uma das posições de 2 a 5.', 'Confira a ordem numérica: primeiro Calma, depois Orgulho, depois Amor.', 'A posição de Determinação precisa ser o número da posição de Amor mais 2.', 'A posição de Determinação precisa ser o número da posição de Tristeza mais 1.'];
     savePuzzle();renderPuzzle();
-    puzzleStatus(rules.filter(Boolean).length + ' de 5 relações estão coerentes. ' + feedback[rules.indexOf(false)]);
+    puzzleStatus('A disposição ainda contradiz as pistas. Cruze as relações do caderno: uma posição precisa funcionar para todas elas ao mesmo tempo. Se precisar, peça uma pista de raciocínio.');
   }
 };
 $('#seal-form').onsubmit = e => {
   e.preventDefault();
   if (puzzle.stage !== 2) return;
   puzzle.attempts++;
+  const chosen = puzzle.seals.flat();
+  if (chosen.some(id => !id) || new Set(chosen).size !== 6) {
+    savePuzzle();renderPuzzle();
+    return puzzleStatus('Preencha os três selos usando cada sentimento uma única vez, sem repetir. A ordem dos dois campos de um selo não importa.');
+  }
   const correct = puzzle.seals.map((pair,i) => pair[0] && pair[1] && pair[0] !== pair[1] && [...pair].sort().join('+') === sealPairs[i]);
   savePuzzle();renderPuzzle();
-  if (!correct.every(Boolean)) return puzzleStatus('Confira o selo '+(correct.indexOf(false)+1)+': cada verso pede seu próprio par. A ordem dos dois sentimentos dentro do mesmo selo não importa. Teste os pares na Convergência e compare o verso encontrado com o título do selo.');
+  if (!correct.every(Boolean)) return puzzleStatus('Os vínculos ainda não correspondem aos versos. Teste suas hipóteses na Convergência e compare os versos encontrados com os títulos dos selos. A ordem dos dois campos de um selo não importa.');
   if (puzzle.combinations.length < 3) {
     $('.puzzle-notebook').open=true;
-    return puzzleStatus('Os pares dos selos estão corretos. Falta registrar na Convergência: '+sealPairs.filter(pair=>!puzzle.combinations.includes(pair)).map(pair=>pair.split('+').map(emotionName).join(' + ')).join('; ')+'. Combine esses pares e volte para conferir os vínculos; suas escolhas continuam salvas.');
+    return puzzleStatus('Os pares dos selos estão corretos. Ainda falta registrar '+(3-puzzle.combinations.length)+' conexão(ões) na Convergência. Suas escolhas continuam salvas; confira no caderno quais versos faltam encontrar.');
   }
-  puzzle.stage = 3;savePuzzle();renderPuzzle();
-  puzzleStatus('Os três vínculos se fecharam. Leia as marcas das lanternas na ordem encontrada.', true);
+  puzzle.stage = 3;puzzle.hints = 0;savePuzzle();renderPuzzle();
+  puzzleStatus('Os três vínculos se fecharam. Siga os selos de 1 a 3: em cada par, leia a marca da posição ímpar antes da posição par.', true);
   $('#portal-word').focus();
 };
 $('#word-form').onsubmit = e => {
@@ -446,7 +477,7 @@ $('#word-form').onsubmit = e => {
   if (puzzle.stage !== 3) return;
   puzzle.attempts++;
   const word = $('#portal-word').value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleUpperCase('pt-BR');
-  if (word !== 'ESCUTA') {savePuzzle();renderPuzzle();return puzzleStatus('A palavra vem das marcas, lidas da esquerda para a direita. Não é uma senha externa.');}
+  if (word !== portalWord()) {savePuzzle();renderPuzzle();return puzzleStatus('Releia os selos de 1 a 3: em cada par, a marca da posição ímpar vem antes da posição par. Junte esses três pares, em vez de copiar a fila inteira.');}
   puzzle.solved = true;puzzle.stage = 4;savePuzzle();discover(6);renderPuzzle();
   puzzleStatus('O caminho está aberto. Você pode escolher os controles antes de entrar.', true);
   $('#portal-solved-entry').focus();
