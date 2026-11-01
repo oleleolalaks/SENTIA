@@ -33,3 +33,12 @@ Importação iniciada em 2026-11-01T14:27:46.675136+00:00 (UTC).
 - Última data observada nos arquivos principais do ZIP, sem fuso: `2026-11-01T00:12:30`.
 - Arquivos importados do ZIP: 890.
 - Exclusões: nenhuma.
+
+### arquivo-20261101-polido
+
+- Origem: `SENTIA-COMPLETO-POLIDO.zip`.
+- Tamanho do ZIP: 501315812 bytes.
+- SHA-256 do ZIP: `86e89285a5cb2e6f2610069213a565a6eac37b35eb64c3c416e7adacbda4d02f`.
+- Última data observada nos arquivos principais do ZIP, sem fuso: `2026-11-01T01:21:10`.
+- Arquivos importados do ZIP: 899.
+- Exclusões: nenhuma.

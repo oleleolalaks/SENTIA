@@ -21,10 +21,42 @@ const storage = {
 const emotions = [['felicidade', 'Felicidade', 'Perceber e compartilhar o que faz bem.', 'A felicidade pode aparecer em uma conquista, em companhia ou em um detalhe cotidiano. Ela não exige estar animado o tempo inteiro.', 'Que pequena coisa mereceu sua atenção hoje?'], ['amor', 'Amor', 'Cuidado, vínculo e presença.', 'O amor aparece em diferentes relações e gestos de cuidado. Cuidar também envolve ouvir limites e reconhecer os próprios.', 'Como você demonstra que se importa?'], ['tristeza', 'Tristeza', 'Um espaço para reconhecer perdas.', 'A tristeza pode acompanhar perdas, mudanças e frustrações. Não precisa ser escondida ou resolvida imediatamente. Companhia e tempo podem ajudar a acolhê-la.', 'O que você gostaria que alguém escutasse?'], ['orgulho', 'Orgulho', 'Reconhecer o valor do seu caminho.', 'Orgulho pode ser reconhecer esforço e conquistas. Ele convive com admitir erros e aprender, sem precisar diminuir ninguém.', 'De qual esforço seu você se lembra com carinho?'], ['determinacao', 'Determinação', 'Persistir com espaço para ajustar.', 'Determinação é uma disposição para continuar em direção a algo importante. Mudar de estratégia ou descansar não apaga o que foi construído.', 'Qual próximo passo cabe no seu dia?'], ['calma', 'Calma', 'Encontrar um intervalo no movimento.', 'Calma não significa ausência de problemas. Pode ser um momento em que há espaço para observar e decidir sem agir imediatamente.', 'Onde você encontra um pequeno intervalo?'], ['ansiedade', 'Ansiedade', 'Antecipar o que ainda não aconteceu.', 'A ansiedade pode acompanhar incertezas e expectativas. Reconhecer o que está acontecendo agora ajuda a separar uma possibilidade de um fato.', 'O que está ao seu alcance neste momento?'], ['medo', 'Medo', 'Perceber riscos e buscar proteção.', 'O medo chama atenção para ameaças percebidas. O contexto importa: nem todo alerta significa perigo imediato, e pedir apoio pode ajudar a avaliar uma situação.', 'O que faria você se sentir acompanhado?'], ['culpa', 'Culpa', 'Revisitar ações e responsabilidades.', 'A culpa pode convidar a reconhecer um erro e reparar o que for possível. Ser responsável por uma ação não significa ser responsável por tudo.', 'Existe um reparo possível, pequeno e concreto?'], ['odio', 'Ódio', 'Reconhecer uma hostilidade intensa.', 'O ódio pode reunir hostilidade, dor e rejeição intensas. Sentir algo não torna qualquer ação inevitável: é possível buscar distância, cuidado e formas seguras de lidar com o conflito.', 'Qual limite precisa ser respeitado sem ferir ninguém?']];
 const findAsset = part => ASSETS.find(p => p.includes(part));
 const sprite = id => findAsset('/02-No-Cenario-64/' + id + '/00-base.png');
-let discoveries = new Set(storage.get('sentia-discoveries', []));
+const storedDiscoveries = storage.get('sentia-discoveries', []);
+let discoveries = new Set((Array.isArray(storedDiscoveries) ? storedDiscoveries : []).filter(x => Number.isInteger(x) && x >= 0 && x < 7));
 let tasks = storage.get('sentia-tasks', []);
 if (!Array.isArray(tasks)) tasks = [];
-const labels = ['Conhecer um sentimento', 'Abrir uma descoberta', 'Combinar sentimentos', 'Conhecer o projeto', 'Registrar uma pequena ação', 'Escolher uma pausa', 'Observar o portal'];
+const lanternIds = ['medo', 'calma', 'orgulho', 'amor', 'tristeza', 'determinacao'];
+const lanternClues = {
+  medo: ['E', 'A lanterna de Medo fica imediatamente à esquerda da lanterna de Calma.'],
+  calma: ['S', 'Calma tem uma vizinha de cada lado: não ocupa nenhuma das pontas.'],
+  orgulho: ['C', 'Orgulho fica à direita de Calma e à esquerda de Amor.'],
+  amor: ['U', 'Amor fica duas posições à esquerda de Determinação.'],
+  tristeza: ['T', 'Tristeza fica imediatamente à esquerda de Determinação.'],
+  determinacao: ['A', 'Cada lanterna ocupa uma posição diferente. Leia as marcas da esquerda para a direita.']
+};
+const sealPairs = ['calma+medo', 'amor+tristeza', 'determinacao+orgulho'];
+const sealVerses = ['O aviso encontra espaço para respirar.', 'A falta ainda guarda um vínculo.', 'Reconhecer o caminho e dar o próximo passo.'];
+const storedPuzzle = storage.get('sentia-portal-puzzle-v2', {}) || {};
+const puzzle = {
+  version: 2,
+  stage: [1, 2, 3, 4].includes(storedPuzzle.stage) ? storedPuzzle.stage : 1,
+  clues: Array.isArray(storedPuzzle.clues) ? storedPuzzle.clues.filter(x => lanternIds.includes(x)) : [],
+  combinations: Array.isArray(storedPuzzle.combinations) ? storedPuzzle.combinations.filter(x => sealPairs.includes(x)) : [],
+  order: Array.isArray(storedPuzzle.order) && storedPuzzle.order.length === 6 ? storedPuzzle.order.map(x => lanternIds.includes(x) ? x : '') : Array(6).fill(''),
+  seals: Array.isArray(storedPuzzle.seals) && storedPuzzle.seals.length === 3 ? storedPuzzle.seals.map(pair => Array.isArray(pair) && pair.length === 2 ? pair.map(x => lanternIds.includes(x) ? x : '') : ['', '']) : Array.from({length:3}, () => ['', '']),
+  attempts: Number.isInteger(storedPuzzle.attempts) && storedPuzzle.attempts >= 0 ? storedPuzzle.attempts : 0,
+  hints: Number.isInteger(storedPuzzle.hints) ? Math.max(0, Math.min(3, storedPuzzle.hints)) : 0,
+  solved: storedPuzzle.solved === true
+};
+if (puzzle.solved) puzzle.stage = 4;
+else if (puzzle.stage === 4) puzzle.stage = 1;
+const storedCollection = storage.get('sentia-collection', []);
+let collection = new Set((Array.isArray(storedCollection) ? storedCollection : []).filter(x => emotions.some(e => e[0] === x)));
+let collectionOnly = false;
+function savePuzzle() {
+  storage.set('sentia-portal-puzzle-v2', puzzle);
+  renderDiscoveries();
+}
 function discover(id) {
   if (!discoveries.has(id)) {
     discoveries.add(id);
@@ -33,15 +65,18 @@ function discover(id) {
   renderDiscoveries();
 }
 function renderDiscoveries() {
-  $('#discoveries').replaceChildren(...labels.map((label, i) => {
+  $('#discoveries').replaceChildren(...lanternIds.map(id => {
     const dot = document.createElement('i');
-    dot.classList.toggle('found', discoveries.has(i));
-    dot.title = label;
-    dot.setAttribute('aria-label', label + (discoveries.has(i) ? ': encontrada' : ': por descobrir'));
+    const found = puzzle.clues.includes(id);
+    const label = emotions.find(e => e[0] === id)[1];
+    dot.classList.toggle('found', found);
+    dot.title = 'Pista de ' + label;
+    dot.setAttribute('role', 'img');
+    dot.setAttribute('aria-label', 'Pista de ' + label + (found ? ': encontrada' : ': por descobrir'));
     return dot;
   }));
-  $('#discovery-text').textContent = discoveries.size + ' de 7 descobertas. ' + (discoveries.size >= 6 ? 'O portal parece ter percebido você.' : 'Explore o Atlas, as conexões, o projeto e seu registro.');
-  $('#garden-entry').textContent = discoveries.size === 7 ? 'Entrar no Jardim ↗' : 'Observar o portal ✦';
+  $('#discovery-text').textContent = puzzle.solved ? 'O enigma foi resolvido. O caminho continua aberto neste navegador.' : puzzle.clues.length + ' de 6 pistas no caderno · ' + (puzzle.stage - 1) + ' de 3 etapas resolvidas. Visitar páginas não abre esta porta: as pistas precisam se conectar.';
+  $('#garden-entry').textContent = puzzle.solved ? 'Entrar no Jardim ↗' : 'Resolver o enigma das lanternas ↓';
 }
 function alertBox(text) {
   const box = document.createElement('div');
@@ -69,27 +104,49 @@ $('#modal').addEventListener('click', e => {
 });
 function renderAtlas() {
   const q = $('#busca').value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  const filtered = emotions.filter(e => e.join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes(q));
+  const filtered = emotions.filter(e => (!collectionOnly || collection.has(e[0])) && e.join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes(q));
   $('#emotion-grid').replaceChildren(...filtered.map(e => {
     const b = document.createElement('button');
     b.className = 'emotion-card';
-    b.innerHTML = '<span class="small">SENTIR / ' + String(emotions.indexOf(e) + 1).padStart(2, '0') + '</span><img alt="" src="' + sprite(e[0]) + '"><h3>' + e[1] + '</h3><p>' + e[2] + '</p>';
+    b.innerHTML = '<span class="small">' + (collection.has(e[0]) ? '✓ NA SUA COLEÇÃO' : 'SENTIR / ' + String(emotions.indexOf(e) + 1).padStart(2, '0')) + '</span><img alt="" src="' + sprite(e[0]) + '"><h3>' + e[1] + '</h3><p>' + e[2] + '</p>';
     b.onclick = () => {
       discover(0);
       const article = document.createElement('article');
       article.innerHTML = '<img class="modal-sprite" alt="Representação de ' + e[1] + '" src="' + sprite(e[0]) + '"><p class="eyebrow">ATLAS EMOCIONAL</p><h2>' + e[1] + '</h2><p>' + e[3] + '</p><h3>Uma pergunta para levar</h3><p>' + e[4] + '</p><button class="button primary">Guardar esta descoberta ✦</button>';
+      if (lanternClues[e[0]]) {
+        const clue = document.createElement('aside');
+        clue.className = 'atlas-clue';
+        const title = document.createElement('strong');
+        title.textContent = 'Fragmento das lanternas' + (puzzle.stage > 1 ? ' · marca ' + lanternClues[e[0]][0] : '');
+        const text = document.createElement('p');
+        text.textContent = lanternClues[e[0]][1];
+        clue.append(title, text);
+        article.querySelector('button').before(clue);
+      }
       article.querySelector('button').onclick = () => {
+        collection.add(e[0]);
+        storage.set('sentia-collection', [...collection]);
+        if (lanternClues[e[0]] && !puzzle.clues.includes(e[0])) puzzle.clues.push(e[0]);
+        savePuzzle();
         discover(1);
         $('#modal').close();
-        alertBox('Uma descoberta guardada. Continue no seu ritmo.');
+        renderAtlas();
+        renderPuzzle();
+        alertBox(lanternClues[e[0]] ? 'Descoberta guardada. A pista foi copiada para o caderno das lanternas.' : 'Descoberta guardada na sua coleção.');
       };
       openModal(article);
     };
     return b;
   }));
   $('#search-count').textContent = filtered.length ? filtered.length + ' sentimentos encontrados.' : 'Nenhum resultado. Tente outra palavra.';
+  $('#collection-filter').textContent = collectionOnly ? 'Mostrar todos os sentimentos' : 'Minha coleção (' + collection.size + ')';
+  $('#collection-filter').setAttribute('aria-pressed', String(collectionOnly));
 }
 $('#busca').oninput = renderAtlas;
+$('#collection-filter').onclick = () => {
+  collectionOnly = !collectionOnly;
+  renderAtlas();
+};
 ['#emocao-a', '#emocao-b'].forEach(s => emotions.forEach(e => $(s).add(new Option(e[1], e[0]))));
 $('#emocao-b').value = 'medo';
 $('#combinar').onclick = () => {
@@ -105,10 +162,20 @@ $('#combinar').onclick = () => {
     'amor+tristeza': 'Sentir falta pode mostrar o valor de um vínculo. O carinho não elimina a tristeza; pode oferecer companhia enquanto ela existe.',
     'ansiedade+determinacao': 'Querer seguir em frente e se preocupar com o resultado podem acontecer juntos. Separar o próximo passo de todas as possibilidades ajuda a tornar a ação concreta.',
     'culpa+orgulho': 'É possível reconhecer uma conquista e também perceber um erro. Um sentimento não precisa apagar a responsabilidade ou o esforço que o outro revela.',
-    'calma+medo': 'O alerta do medo pode coexistir com um intervalo de calma. Ter apoio e informação pode abrir espaço para escolher como agir.'
+    'calma+medo': 'O alerta do medo pode coexistir com um intervalo de calma. Ter apoio e informação pode abrir espaço para escolher como agir.',
+    'determinacao+orgulho': 'Reconhecer o esforço que já fez pode acompanhar a vontade de continuar. Orgulho dá nome ao caminho percorrido; determinação ajuda a escolher o próximo passo, inclusive quando ele precisa ser menor.'
   };
   $('#connection').innerHTML = '<p class="eyebrow">DOIS SENTIMENTOS, UM ENCONTRO</p><h2>' + a[1] + '<br>+ ' + b[1] + '</h2><p>' + (texts[pair] || a[1] + ' e ' + b[1] + ' podem aparecer na mesma experiência. Um lado pode dizer “' + a[2].toLowerCase() + '” e o outro pedir atenção a algo diferente. Observe o contexto e o que cada um destaca, sem precisar escolher um único sentimento.') + '</p>';
   discover(2);
+  if (sealPairs.includes(pair)) {
+    if (!puzzle.combinations.includes(pair)) puzzle.combinations.push(pair);
+    savePuzzle();
+    const clue = document.createElement('aside');
+    clue.className = 'connection-clue';
+    clue.textContent = 'Verso encontrado para os selos: “' + sealVerses[sealPairs.indexOf(pair)] + '”';
+    $('#connection').append(clue);
+    renderPuzzle();
+  }
 };
 // Aq a lista lê, cria, edita e apaga ações. O texto digitado entra como texto, nunca como HTML.
 function renderTasks() {
@@ -160,6 +227,7 @@ function renderTasks() {
     return li;
   }));
   $('#task-status').textContent = tasks.length ? tasks.reduce((total, t) => total + (t.done ? 1 : 0), 0) + ' de ' + tasks.length + ' ações concluídas.' : 'Seu registro ainda está vazio.';
+  $('#download-tasks').disabled = !tasks.length;
 }
 function saveTasks() {
   storage.set('sentia-tasks', tasks);
@@ -186,6 +254,15 @@ $('#clear-tasks').onclick = () => {
     tasks = [];
     saveTasks();
   }
+};
+$('#download-tasks').onclick = () => {
+  const text = 'MEU REGISTRO · SENTIA\n\n' + tasks.map(t => (t.done ? '[x] ' : '[ ] ') + t.text).join('\n');
+  const url = URL.createObjectURL(new Blob([text], {type:'text/plain;charset=utf-8'}));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'meu-registro-sentia.txt';
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 $('#reflect-choice').onchange = () => {
   if ($('#reflect-choice').value) discover(5);
@@ -229,8 +306,9 @@ $('#contact-form').onsubmit = e => {
   alertBox('Campos conferidos. Nenhuma mensagem foi enviada.');
 };
 $('#garden-entry').onclick = () => {
-  if (discoveries.size < 6) {
-    alertBox('Ainda há caminhos para explorar: Atlas, Convergência, Sobre e Registro.');
+  if (!puzzle.solved) {
+    $('#portal-puzzle').scrollIntoView({behavior:$('#reduce-motion').checked ? 'instant' : 'smooth',block:'start'});
+    $('#puzzle-title').focus({preventScroll:true});
     return;
   }
   discover(6);
@@ -242,6 +320,164 @@ $('#garden-entry').onclick = () => {
   });
   openModal(wrap);
 };
+
+// O portal tem um enigma de lógica. Pistas lidas ajudam, mas só a solução abre o Jardim.
+function emotionName(id) { return emotions.find(e => e[0] === id)?.[1] || ''; }
+function lanternSelect(label, value, onChange) {
+  const select = document.createElement('select');
+  select.setAttribute('aria-label', label);
+  select.add(new Option('Escolha…', ''));
+  lanternIds.forEach(id => select.add(new Option(emotionName(id), id)));
+  select.value = value;
+  select.onchange = () => onChange(select.value);
+  return select;
+}
+function puzzleStatus(text, good = false) {
+  $('#puzzle-feedback').textContent = text;
+  $('#puzzle-feedback').classList.toggle('success', good);
+}
+function orderRules(order) {
+  const at = id => order.indexOf(id);
+  return [at('calma') === at('medo') + 1, at('calma') > 0 && at('calma') < 5, at('orgulho') > at('calma') && at('orgulho') < at('amor'), at('determinacao') === at('amor') + 2, at('determinacao') === at('tristeza') + 1];
+}
+function renderPuzzle() {
+  $('#puzzle-notebook-title').textContent = 'Meu caderno de pistas · ' + puzzle.clues.length + '/6 fragmentos';
+  $('#puzzle-attempts').textContent = puzzle.attempts ? puzzle.attempts + (puzzle.attempts === 1 ? ' verificação feita' : ' verificações feitas') : 'Sem limite de tentativas';
+  $('#puzzle-steps').replaceChildren(...['As lanternas', 'Os vínculos', 'A palavra'].map((text, i) => {
+    const item = document.createElement('li');
+    item.textContent = (puzzle.stage > i + 1 ? '✓ ' : (i + 1) + ' · ') + text;
+    item.classList.toggle('complete', puzzle.stage > i + 1);
+    if (puzzle.stage === i + 1) item.setAttribute('aria-current', 'step');
+    return item;
+  }));
+  $('#clue-notebook').replaceChildren(...lanternIds.map(id => {
+    const item = document.createElement('li');
+    const name = document.createElement('strong');
+    name.textContent = emotionName(id) + (puzzle.clues.includes(id) ? puzzle.stage > 1 ? ' · ' + lanternClues[id][0] : ' · pista guardada' : ' · falta encontrar');
+    const text = document.createElement('p');
+    text.textContent = puzzle.clues.includes(id) ? lanternClues[id][1] : 'Abra este sentimento no Atlas e guarde a descoberta para copiar a pista.';
+    const link = document.createElement('button');
+    link.className = 'text-link';
+    link.textContent = 'Consultar ' + emotionName(id) + ' no Atlas →';
+    link.onclick = () => {
+      collectionOnly = false;
+      $('#busca').value = emotionName(id);
+      renderAtlas();
+      location.hash = 'atlas';
+    };
+    item.append(name, text, link);
+    return item;
+  }));
+  $('#seal-notebook').replaceChildren(...sealPairs.map((pair,i) => {
+    const li = document.createElement('li');
+    li.textContent = puzzle.combinations.includes(pair) ? pair.split('+').map(emotionName).join(' + ') + ': “' + sealVerses[i] + '”' : 'Conexão ' + (i + 1) + ': procure pares na Convergência para descobrir este verso.';
+    return li;
+  }));
+  const field = $('#lantern-slots');
+  field.replaceChildren(...puzzle.order.map((id, i) => {
+    const card = document.createElement('div');
+    card.className = 'lantern-slot';
+    const label = document.createElement('label');
+    label.textContent = 'Posição ' + (i + 1);
+    const portrait = document.createElement('img');
+    portrait.alt = '';
+    portrait.hidden = !id;
+    if (id) portrait.src = sprite(id);
+    const rune = document.createElement('span');
+    rune.className = 'lantern-rune';
+    rune.textContent = id && puzzle.clues.includes(id) ? puzzle.stage > 1 ? lanternClues[id][0] : '✦' : '·';
+    const select = lanternSelect('Lanterna da posição ' + (i + 1), id, value => {
+      puzzle.order[i] = value;
+      savePuzzle();
+      portrait.hidden = !value;
+      if (value) portrait.src = sprite(value);
+      rune.textContent = value && puzzle.clues.includes(value) ? puzzle.stage > 1 ? lanternClues[value][0] : '✦' : '·';
+    });
+    select.id = 'lantern-' + i;
+    select.disabled = puzzle.stage > 1;
+    label.htmlFor = select.id;
+    card.append(label, portrait, rune, select);
+    return card;
+  }));
+  $('#lantern-submit').hidden = puzzle.stage > 1;
+  $('#seal-step').hidden = puzzle.stage < 2;
+  $('#seal-form').hidden = puzzle.stage > 2;
+  $('#seal-solved').hidden = puzzle.stage < 3;
+  $('#word-step').hidden = puzzle.stage < 3 || puzzle.solved;
+  $('#portal-solved').hidden = !puzzle.solved;
+  $('#portal-solved-entry').hidden = !puzzle.solved;
+  $('#seal-slots').replaceChildren(...puzzle.seals.map((pair,i) => {
+    const row = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = 'Selo ' + (i + 1) + ' · ' + sealVerses[i];
+    row.append(legend);
+    pair.forEach((id,j) => row.append(lanternSelect('Selo ' + (i + 1) + ', sentimento ' + (j + 1), id, value => {
+      puzzle.seals[i][j] = value;
+      savePuzzle();
+    })));
+    return row;
+  }));
+  $('#puzzle-hint-text').textContent = puzzle.hints ? [
+    'Comece pelas relações de vizinhança. Monte pequenos blocos antes de preencher as seis posições.',
+    'Um bloco tem Medo seguido de Calma. Outro tem Amor, Tristeza e Determinação, nessa ordem.',
+    'Orgulho precisa ficar depois do primeiro bloco e antes do segundo. Confira se nenhuma lanterna se repete.'
+  ][puzzle.hints - 1] : '';
+  $('#puzzle-hint').textContent = puzzle.hints < 3 ? 'Pedir uma pista de raciocínio (' + (puzzle.hints + 1) + '/3)' : 'Rever a última pista';
+}
+$('#lantern-form').onsubmit = e => {
+  e.preventDefault();
+  if (puzzle.stage > 1) return;
+  if (puzzle.clues.length < 6) return puzzleStatus('O caderno ainda tem ' + (6 - puzzle.clues.length) + ' marcas por encontrar. Elas estão no Atlas; os links do caderno ajudam a localizá-las.');
+  puzzle.attempts++;
+  if (puzzle.order.some(x => !x) || new Set(puzzle.order).size !== 6) {
+    savePuzzle();
+    renderPuzzle();
+    return puzzleStatus('Use as seis lanternas, sem repetir nenhum sentimento.');
+  }
+  const rules = orderRules(puzzle.order);
+  if (rules.every(Boolean)) {
+    puzzle.stage = 2;
+    savePuzzle();
+    renderPuzzle();
+    puzzleStatus('As seis marcas acenderam. Agora associe os vínculos aos três selos.', true);
+    $('#seal-title').focus();
+  } else {
+    const feedback = ['Confira quem precisa ficar imediatamente antes de Calma.', 'Calma não ocupa uma ponta.', 'Releia a relação entre Calma, Orgulho e Amor.', 'Conte a distância entre Amor e Determinação.', 'Confira a vizinha imediatamente antes de Determinação.'];
+    savePuzzle();renderPuzzle();
+    puzzleStatus(rules.filter(Boolean).length + ' de 5 relações estão coerentes. ' + feedback[rules.indexOf(false)]);
+  }
+};
+$('#seal-form').onsubmit = e => {
+  e.preventDefault();
+  if (puzzle.stage !== 2) return;
+  puzzle.attempts++;
+  const correct = puzzle.seals.map((pair,i) => pair[0] && pair[1] && pair[0] !== pair[1] && [...pair].sort().join('+') === sealPairs[i]);
+  savePuzzle();renderPuzzle();
+  if (!correct.every(Boolean)) return puzzleStatus('Os selos ainda não se alinharam. Pense no significado de cada verso e experimente os pares na Convergência.');
+  if (puzzle.combinations.length < 3) return puzzleStatus('As escolhas fazem sentido. Falta registrar ' + (3 - puzzle.combinations.length) + ' vínculo(s) na Convergência: combine os pares escolhidos para conferir seus versos.');
+  puzzle.stage = 3;savePuzzle();renderPuzzle();
+  puzzleStatus('Os três vínculos se fecharam. Leia as marcas das lanternas na ordem encontrada.', true);
+  $('#portal-word').focus();
+};
+$('#word-form').onsubmit = e => {
+  e.preventDefault();
+  if (puzzle.stage !== 3) return;
+  puzzle.attempts++;
+  const word = $('#portal-word').value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleUpperCase('pt-BR');
+  if (word !== 'ESCUTA') {savePuzzle();renderPuzzle();return puzzleStatus('A palavra vem das marcas, lidas da esquerda para a direita. Não é uma senha externa.');}
+  puzzle.solved = true;puzzle.stage = 4;savePuzzle();discover(6);renderPuzzle();
+  puzzleStatus('O caminho está aberto. Você pode escolher os controles antes de entrar.', true);
+  $('#portal-solved-entry').focus();
+};
+$('#puzzle-hint').onclick = () => {
+  puzzle.hints = Math.min(3, puzzle.hints + 1);savePuzzle();renderPuzzle();
+};
+$('#puzzle-reset').onclick = () => {
+  if (!confirm('Recomeçar apenas o enigma? Suas pistas, tarefas e a partida do Jardim serão preservadas.')) return;
+  Object.assign(puzzle,{stage:1,order:Array(6).fill(''),seals:Array.from({length:3},()=>['','']),solved:false,hints:0});
+  savePuzzle();renderPuzzle();puzzleStatus('As lanternas voltaram às posições vazias. As pistas continuam no caderno.');
+};
+$('#portal-solved-entry').onclick = () => $('#garden-entry').click();
 function theme() {
   const dark = storage.get('sentia-dark', false);
   document.body.classList.toggle('dark', dark);
@@ -286,5 +522,6 @@ window.addEventListener('hashchange', route);
 theme();
 renderAtlas();
 renderTasks();
+renderPuzzle();
 renderDiscoveries();
 route();

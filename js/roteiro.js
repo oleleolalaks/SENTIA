@@ -1,4 +1,4 @@
-// Nomes e cenas; os identificadores dos sprites permanecem iguais.
+// Roteiro, pistas e sequências de ação. Os estados de morte são separados da vulnerabilidade.
 window.ROTEIRO = {
   "names": {
     "felicidade": "Sunny",
@@ -1431,7 +1431,8 @@ window.ROTEIRO = {
       "moves": [
         "left",
         "guard",
-        "down"
+        "down",
+        "right"
       ]
     },
     {
@@ -1450,7 +1451,8 @@ window.ROTEIRO = {
       "moves": [
         "left",
         "right",
-        "guard"
+        "guard",
+        "down"
       ]
     },
     {
@@ -1473,7 +1475,9 @@ window.ROTEIRO = {
       "moves": [
         "guard",
         "down",
-        "left"
+        "left",
+        "right",
+        "guard"
       ]
     },
     {
@@ -1492,7 +1496,9 @@ window.ROTEIRO = {
       "moves": [
         "right",
         "guard",
-        "left"
+        "left",
+        "down",
+        "right"
       ]
     },
     {
@@ -1512,7 +1518,9 @@ window.ROTEIRO = {
         "down",
         "left",
         "right",
-        "guard"
+        "guard",
+        "down",
+        "left"
       ]
     },
     {
@@ -1531,7 +1539,10 @@ window.ROTEIRO = {
       "moves": [
         "guard",
         "right",
-        "guard"
+        "guard",
+        "left",
+        "down",
+        "right"
       ]
     }
   ],

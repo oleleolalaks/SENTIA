@@ -3,9 +3,8 @@
 // Esse código aq desenha a arena em primeira pessoa. As paredes têm colisão;
 // o Ódio e os objetos continuam sendo sprites, como num jogo antigo.
 window.Arena = (() => {
-  const W = 500,
-    H = 380,
-    fov = Math.PI / 3;
+  let W = 500, H = 380;
+  const fov = Math.PI / 3;
   const map = Array.from({
     length: 20
   }, (_, y) => Array.from({
@@ -36,7 +35,13 @@ window.Arena = (() => {
     collected = false,
     triggered = false,
     floorPixels = null,
-    hurtInv = 0;
+    hurtInv = 0,
+    guardBroken = 0,
+    staminaDelay = 0,
+    dragPointer = null,
+    dragX = 0,
+    resizeObserver = null,
+    renderedHand = null;
   const find = part => ASSETS.find(p => p.includes(part));
   function image(id, part) {
     const i = new Image();
@@ -74,6 +79,7 @@ window.Arena = (() => {
     image('beam', '/03-Efeitos/01-raio-frontal.png');
     for (let n = 1; n <= 4; n++) image('swing' + n, '/espada/0' + n + '-' + ['preparacao', 'cruzar', 'varrer', 'finalizar'][n - 1] + '.png');
     image('shield', '/escudo/02-defesa-verso.png');
+    image('shieldRest', '/escudo/01-pronto-verso.png');
     image('knife', '/faca/01-pronta.png');
     image('light', '/luz/01-segurar.png');
     ASSETS.filter(p=>p.includes('/01-Sprites-128/01-Odio/')&&p.endsWith('.png')).forEach((p,i)=>image('odio'+(i+1),p));
@@ -91,19 +97,25 @@ window.Arena = (() => {
     ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
     canvas.hidden = false;
+    canvas.style.touchAction = 'none';
+    canvas.style.cursor = 'grab';
+    canvas.title = 'Clique e arraste, ou arraste com o dedo, para olhar em volta. Setas também giram.';
+    bindCamera();
     loadImages();
     player = {
       x: 10.5,
       y: 15.5,
       a: -Math.PI / 2,
-      hp: 100
+      hp: 100,
+      stamina: 100
     };
     enemy = {
       x: 10.5,
       y: 4.5,
-      hp: 240,
+      hp: options.assist ? 340 : 480,
+      maxHp: options.assist ? 340 : 480,
       phase: 'approach',
-      timer: 4,
+      timer: 2.2,
       pattern: 0
     };
     freeMode = !!options.free;
@@ -117,14 +129,20 @@ window.Arena = (() => {
     elapsed = 0;
     lightCooldown = 0;
     warning = '';
+    hurtInv = 0;
+    guardBroken = 0;
+    staminaDelay = 0;
+    dragPointer = null;
     active = true;
     paused = false;
+    resizeCanvas();
     last = performance.now();
     frameId = requestAnimationFrame(loop);
   }
   function stop() {
     active = false;
     keys = {};
+    dragPointer = null;
     cancelAnimationFrame(frameId);
     if (canvas) canvas.hidden = true;
     if (document.pointerLockElement === canvas) document.exitPointerLock();
@@ -132,10 +150,48 @@ window.Arena = (() => {
   function setPause(value) {
     paused = value;
     keys = {};
+    dragPointer = null;
     last = performance.now();
   }
   function press(key, value) {
     keys[key] = value;
+  }
+  function resizeCanvas() {
+    if(!canvas || canvas.hidden || !active) return;
+    const rect=canvas.getBoundingClientRect();
+    if(rect.width<1 || rect.height<1)return;
+    // A resolução acompanha a tela. Isso evita esticar as mãos e o cenário no celular.
+    const ratio=rect.width/rect.height;
+    const width=Math.max(160,Math.min(800,Math.round(320*ratio)));
+    const height=Math.max(120,Math.round((width/ratio)/2)*2);
+    if(width===W&&height===H&&canvas.width===W&&canvas.height===H)return;
+    W=width;H=height;canvas.width=W;canvas.height=H;
+    ctx.imageSmoothingEnabled=false;
+  }
+  function bindCamera() {
+    if(canvas.dataset.arenaCamera)return;
+    canvas.dataset.arenaCamera='drag';
+    // Arrastar funciona sem depender de pointer lock nem de permissões do navegador.
+    canvas.addEventListener('pointerdown',event=>{
+      if(!active||paused||(event.pointerType==='mouse'&&event.button!==0))return;
+      event.preventDefault();dragPointer=event.pointerId;dragX=event.clientX;
+      canvas.setPointerCapture?.(event.pointerId);canvas.style.cursor='grabbing';
+    });
+    canvas.addEventListener('pointermove',event=>{
+      if(!active||paused||dragPointer!==event.pointerId)return;
+      const dx=event.clientX-dragX;dragX=event.clientX;
+      player.a=Math.atan2(Math.sin(player.a+dx*.006),Math.cos(player.a+dx*.006));
+      event.preventDefault();
+    });
+    const release=event=>{
+      if(dragPointer!==event.pointerId)return;
+      dragPointer=null;canvas.style.cursor='grab';
+      if(canvas.hasPointerCapture?.(event.pointerId))canvas.releasePointerCapture(event.pointerId);
+    };
+    canvas.addEventListener('pointerup',release);
+    canvas.addEventListener('pointercancel',release);
+    canvas.addEventListener('lostpointercapture',release);
+    if(typeof ResizeObserver!=='undefined'){resizeObserver=new ResizeObserver(resizeCanvas);resizeObserver.observe(canvas);}
   }
   function action(type) {
     if (!active || paused) return;
@@ -152,23 +208,32 @@ window.Arena = (() => {
       return;
     }
     if (freeMode || attackCooldown > 0) return;
+    if (type === 'attack' && config.equipped === 'luz') type = 'light';
     const distance = Math.hypot(player.x - enemy.x, player.y - enemy.y),
       angle = Math.atan2(enemy.y - player.y, enemy.x - player.x);
     const diff = Math.atan2(Math.sin(angle - player.a), Math.cos(angle - player.a));
     if (type === 'light' && config.items.includes('luz') && lightCooldown <= 0) {
       if (Math.abs(diff) < .3 && lineClear(enemy.x, enemy.y)) {
-        enemy.hp -= 22;
+        enemy.hp -= enemy.phase === 'prepare' ? 9 : 16;
         enemy.hitUntil=elapsed+.35;
         hit = .08;
       }
-      lightCooldown = 1.5;
+      lightCooldown = 1.8;
       attackCooldown = .3;
       attackAge = 0;
     } else if (type === 'attack') {
+      if (player.stamina < 9) {
+        warning = 'Sem fôlego para atacar. Solte a defesa e recue.';
+        return;
+      }
+      player.stamina -= 9;
+      staminaDelay = .65;
       attackAge = 0;
-      attackCooldown = .65;
+      attackCooldown = config.equipped === 'faca' ? .52 : .72;
       if (distance < 2.7 && Math.abs(diff) < .8 && lineClear(enemy.x, enemy.y)) {
-        enemy.hp -= config.equipped==='faca'&&config.items.includes('faca') ? 26 : config.items.includes('espada') ? 32 : 23;
+        const damage = config.equipped==='faca'&&config.items.includes('faca') ? 20 : config.items.includes('espada') ? 27 : 13;
+        // Golpear durante o preparo encontra resistência. O recuo dele é a abertura mais segura.
+        enemy.hp -= damage * (enemy.phase === 'prepare' ? .45 : 1);
         enemy.hitUntil=elapsed+.35;
         walk(enemy, Math.cos(player.a) * .3, Math.sin(player.a) * .3);
       }
@@ -180,9 +245,16 @@ window.Arena = (() => {
   }
   function damage(n) {
     if (hurtInv > 0) return;
-    hurtInv = .45;
-    const guarding = keys.guard;
-    player.hp -= guarding ? n * (config.items.includes('escudo') ? .2 : .55) : n;
+    hurtInv = .42;
+    const angle = Math.atan2(enemy.y-player.y, enemy.x-player.x)-player.a;
+    const facing = Math.abs(Math.atan2(Math.sin(angle),Math.cos(angle))) < 1.05;
+    const guarding = keys.guard && guardBroken <= 0 && player.stamina > 8 && (facing || config.assist);
+    if(guarding) {
+      player.stamina = Math.max(0,player.stamina-n*.9);
+      staminaDelay = .9;
+      if(player.stamina < 8) guardBroken = 1.2;
+    }
+    player.hp -= guarding ? n * (config.items.includes('escudo') ? .32 : .72) : n;
     hit = .3;
     if (player.hp <= 0) {
       active = false;
@@ -196,12 +268,21 @@ window.Arena = (() => {
     attackAge += dt;
     attackCooldown = Math.max(0, attackCooldown - dt);
     lightCooldown = Math.max(0, lightCooldown - dt);
+    guardBroken = Math.max(0,guardBroken-dt);
+    staminaDelay = Math.max(0,staminaDelay-dt);
+    const guarding = !freeMode && keys.guard && guardBroken<=0;
+    const sprinting = keys.run && player.stamina>8;
+    if(!freeMode && (guarding || sprinting)) {
+      player.stamina=Math.max(0,player.stamina-dt*(guarding?25:14));
+      staminaDelay=.35;
+      if(guarding && player.stamina<=0)guardBroken=1.2;
+    } else if(staminaDelay<=0) player.stamina=Math.min(100,player.stamina+dt*22);
     let turn = (keys.turnRight ? 1 : 0) - (keys.turnLeft ? 1 : 0);
-    player.a += turn * dt * 1.9;
+    player.a = Math.atan2(Math.sin(player.a+turn*dt*2.15),Math.cos(player.a+turn*dt*2.15));
     const forward = (keys.up ? 1 : 0) - (keys.down ? 1 : 0),
       side = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     const norm = Math.hypot(forward, side) || 1;
-    const speed = (keys.run ? 3.4 : 2.4) * dt;
+    const speed = (sprinting ? 3.6 : guarding ? 1.85 : 2.55) * dt;
     walk(player, (Math.cos(player.a) * forward - Math.sin(player.a) * side) * speed / norm, (Math.sin(player.a) * forward + Math.cos(player.a) * side) * speed / norm);
     if (freeMode) {
       const nearSword = Math.hypot(player.x - 10.5, player.y - 4.5) < 1.3,
@@ -211,19 +292,23 @@ window.Arena = (() => {
         hp: player.hp,
         enemy: 0,
         warning,
+        stamina:Math.round(player.stamina),
+        guardBroken:false,
         free: true
       });
       return;
     }
     enemy.timer -= dt;
+    const enraged=enemy.hp<enemy.maxHp*.5;
     const d = Math.hypot(player.x - enemy.x, player.y - enemy.y),
       a = Math.atan2(player.y - enemy.y, player.x - enemy.x);
     if (enemy.phase === 'approach') {
       warning = 'Mantenha distância. Aproxime-se para atacar e recue.';
-      if (d > 1.7) walk(enemy, Math.cos(a) * dt * 1.05, Math.sin(a) * dt * 1.05);
+      if (d > 1.65) walk(enemy, Math.cos(a) * dt * (enraged?2.0:1.5), Math.sin(a) * dt * (enraged?2.0:1.5));
+      if (d < .85) damage(14);
       if (enemy.timer <= 0) {
         enemy.phase = 'prepare';
-        enemy.timer = 1.4;
+        enemy.timer = config.assist ? 1.4 : enraged ? .8 : 1.05;
         enemy.pattern = (enemy.pattern + 1) % 7;
         enemy.aim = a;
       }
@@ -231,19 +316,19 @@ window.Arena = (() => {
       warning = ['GARRA · recue ou proteja-se', 'DISPARO · saia da linha de fogo', 'INVESTIDA · esquive para o lado', 'MORDIDA · mantenha distância', 'VARREDURA · proteja-se ou saia da linha', 'GRITO · afaste-se', 'AGARRE · recue antes que alcance'][enemy.pattern];
       if (enemy.timer <= 0) {
         enemy.phase = 'attack';
-        enemy.timer = .65;
-        if (enemy.pattern === 0 && d < 2.8) damage(24);
-        if (enemy.pattern === 3 && d < 2.1) damage(28);
-        if (enemy.pattern === 5 && d < 4) damage(16);
-        if (enemy.pattern === 6 && d < 2.5) damage(26);
+        enemy.timer = enemy.pattern===2?1:.72;
+        if (enemy.pattern === 0 && d < 2.8) damage(28);
+        if (enemy.pattern === 3 && d < 2.15) damage(34);
+        if (enemy.pattern === 5 && d < 4) damage(22);
+        if (enemy.pattern === 6 && d < 2.55) damage(32);
         if (enemy.pattern === 1 || enemy.pattern === 4) {
           for (let offset = enemy.pattern === 4 ? -3 : -1; offset <= (enemy.pattern === 4 ? 3 : 1); offset++) {
             let angle = a + offset * .18;
             bullets.push({
               x: enemy.x,
               y: enemy.y,
-              vx: Math.cos(angle) * 4,
-              vy: Math.sin(angle) * 4,
+              vx: Math.cos(angle) * (enraged?5.8:4.8),
+              vy: Math.sin(angle) * (enraged?5.8:4.8),
               life: 5
             });
           }
@@ -253,20 +338,20 @@ window.Arena = (() => {
       if (enemy.pattern === 2) {
         walk(enemy, Math.cos(enemy.aim) * dt * 6, Math.sin(enemy.aim) * dt * 6);
         if (d < 1.2) {
-          damage(30);
+          damage(36);
           enemy.phase = 'recover';
-          enemy.timer = 1.5;
+          enemy.timer = config.assist ? 1.6 : 1.25;
         }
       }
       if (enemy.timer <= 0) {
         enemy.phase = 'recover';
-        enemy.timer = 1.8;
+        enemy.timer = config.assist ? 1.8 : enraged ? .95 : 1.3;
       }
     } else {
       warning = 'Ele está se recuperando. Essa é uma abertura.';
       if (enemy.timer <= 0) {
         enemy.phase = 'approach';
-        enemy.timer = 3;
+        enemy.timer = config.assist ? 3 : enraged ? 1.6 : 2.2;
       }
     }
     bullets = bullets.filter(b => {
@@ -274,7 +359,7 @@ window.Arena = (() => {
       b.y += b.vy * dt;
       b.life -= dt;
       if (Math.hypot(b.x - player.x, b.y - player.y) < .45) {
-        damage(18);
+        damage(22);
         return false;
       }
       return b.life > 0 && !solid(b.x, b.y);
@@ -282,7 +367,9 @@ window.Arena = (() => {
     config.onHud?.({
       hp: Math.max(0, Math.ceil(player.hp)),
       enemy: Math.max(0, Math.ceil(enemy.hp)),
-      warning,
+      warning:guardBroken>0?'DEFESA ROMPIDA · solte o escudo e recue':(enraged?'FÚRIA · ':'')+warning,
+      stamina:Math.round(player.stamina),
+      guardBroken:guardBroken>0,
       free: false
     });
   }
@@ -297,6 +384,17 @@ window.Arena = (() => {
     else if(Math.hypot(player.x-enemy.x,player.y-enemy.y)>6) index=alternate?4:5;
     else if(Math.hypot(player.x-enemy.x,player.y-enemy.y)>1.7) index=alternate?2:3;
     return images['odio'+index]||images.enemy;
+  }
+  function handImage() {
+    // A espada pertence ao chão desta cena até E recolher. Ter o item no histórico não a põe na mão.
+    if(freeMode&&!collected)return config.items.includes('escudo')?images.shieldRest:images.fist;
+    const knife=config.equipped==='faca'&&config.items.includes('faca');
+    if(keys.guard&&guardBroken<=0&&config.items.includes('escudo'))return hit>0?images.shieldHit:images.shield;
+    if(knife)return images['knife'+(keys.guard?4:attackAge<.12?2:attackAge<.3?3:1)];
+    if(lightCooldown>1.15)return images.lightCast;
+    if(config.equipped==='luz')return images.light;
+    if(config.items.includes('espada')||collected)return attackAge<.48?images['swing'+Math.min(4,Math.floor(attackAge/.12)+1)]:config.items.includes('escudo')?images.paired:images.swing1;
+    return attackAge<.3?images.punch:images.fist;
   }
   function draw() {
     ctx.fillStyle = '#24151c';
@@ -432,13 +530,18 @@ window.Arena = (() => {
     ctx.lineTo(W / 2, H / 2 + 4);
     ctx.stroke();
     const knife=config.equipped==='faca' && config.items.includes('faca');
-    const hand = keys.guard && config.items.includes('escudo') ? (hit>0?images.shieldHit:images.shield) : knife ? images['knife'+(keys.guard?4:attackAge<.12?2:attackAge<.3?3:1)] : lightCooldown>1.15 ? images.lightCast : config.equipped==='luz' ? images.light : (config.items.includes('espada') || collected) ? (attackAge<.48?images['swing'+Math.min(4,Math.floor(attackAge/.12)+1)]:config.items.includes('escudo')?images.paired:images.swing1) : attackAge<.3?images.punch:images.fist;
+    const hand = handImage();
+    renderedHand=hand?.src||null;
     if (hand?.complete && hand.naturalWidth) {
-      const h = H * .57;
-      ctx.drawImage(hand, W * .24, H - h + Math.sin(elapsed * 3) * (keys.up ? 3 : 0), W * .65, h);
+      // O PNG mantém a proporção: a borda inferior prende os punhos à câmera.
+      const scale=Math.min(W*.96/hand.naturalWidth,H*.64/hand.naturalHeight);
+      const width=hand.naturalWidth*scale,height=hand.naturalHeight*scale;
+      const moving=keys.up||keys.down||keys.left||keys.right;
+      const bob=moving?Math.sin(elapsed*(keys.run?11:7))*H*.006:0;
+      ctx.drawImage(hand,(W-width)/2,H-height+H*.015+bob,width,height);
     }
     const cut=images[(knife?'faca':'espada')+'Cut'+Math.min(2,Math.floor(attackAge/.1))];
-    if (attackAge < .3 && cut?.complete && cut.naturalWidth && (knife||config.items.includes('espada'))) {
+    if (!freeMode && attackAge < .3 && cut?.complete && cut.naturalWidth && (knife||config.items.includes('espada'))) {
       ctx.globalAlpha = 1 - attackAge / .3;
       ctx.drawImage(cut, W * .2, H * .2, W * .6, H * .5);
       ctx.globalAlpha = 1;
@@ -465,11 +568,20 @@ window.Arena = (() => {
   document.addEventListener('mousemove', e => {
     if (active && !paused && document.pointerLockElement === canvas) player.a += e.movementX * .003;
   });
+  document.addEventListener('keydown',event=>{
+    if(!active||paused||!['ArrowLeft','ArrowRight'].includes(event.key))return;
+    keys[event.key==='ArrowLeft'?'turnLeft':'turnRight']=true;
+    event.preventDefault();
+  });
+  document.addEventListener('keyup',event=>{
+    if(event.key==='ArrowLeft'||event.key==='ArrowRight')keys[event.key==='ArrowLeft'?'turnLeft':'turnRight']=false;
+  });
   document.addEventListener('visibilitychange', () => {
     keys = {};
   });
   window.addEventListener('blur', () => {
     keys = {};
+    dragPointer = null;
   });
   return {
     start,
@@ -479,7 +591,7 @@ window.Arena = (() => {
     action,
     equip(id) { if(config) config.equipped=id; },
     look(dx) {
-      if (active && !paused) player.a += dx * .006;
+      if (active && !paused) player.a=Math.atan2(Math.sin(player.a+dx*.006),Math.cos(player.a+dx*.006));
     },
     isActive: () => active,
     state: () => ({
@@ -489,7 +601,11 @@ window.Arena = (() => {
       collected,
       paused,
       enemySprite:enemy&&player?enemyImage()?.src:null,
-      equipped:config?.equipped
+      equipped:config?.equipped,
+      handSprite:renderedHand,
+      guardBroken:guardBroken>0,
+      dragging:dragPointer!==null,
+      resolution:{width:W,height:H}
     }),
     getMap: () => map
   };

@@ -138,6 +138,7 @@ const G = (() => {
     S.phase = phase;
     S.checkpoint = checkpoint;
     save();
+    window.AudioSentia?.setScene(phase);
   }
   function note(title, text) {
     if (!S.log.some(n => n.title === title && n.text === text)) S.log.push({
@@ -166,6 +167,7 @@ const G = (() => {
   }
   // Procura a pose aprovada. Choro vulnerável não confirma morte.
   function baseSprite(id, pose = 'base') {
+    if(id==='insanidade'&&S?.flags.maskRemoved&&pose!=='forma-chave') return asset('/insanidade/11-rosto-4-desprendido.png');
     let part = id === 'neutralidade' ? '/04-Neutralidade/neutralidade.png' : ['sanidade', 'insanidade'].includes(id) ? '/03-Generais/' + id + '/' : '/01-Ecos/' + id + '/01-Dialogo/';
     if (id === 'neutralidade') return asset(part);
     const matches = list(part);
@@ -188,6 +190,8 @@ const G = (() => {
   function actor(id, pose = 'base', extra = '') {
     clearIdle();
     const el = $('#actor');
+    if(id==='tristeza'&&S?.phase==='ninfa'&&!S.flags.ninfaDefeated) extra=(extra+' combat').trim();
+    if(id==='insanidade'&&S?.phase==='revelation') extra=(extra+' closeup').trim();
     if (!id) {
       el.hidden = true;
       return;
@@ -221,6 +225,7 @@ const G = (() => {
   function resetScene() {
     clearIdle();
     Arena.stop();
+    window.Perseguicao?.stop();
     mode = 'scene';
     timed = null;
     clockTask = null;
@@ -246,7 +251,8 @@ const G = (() => {
     $('#action-panel').className = 'action-panel';
     $('#background').style.opacity = '1';
     $('#stage').classList.remove('light');
-    $('#stage').classList.remove('exploring');
+    $('#stage').classList.remove('exploring','chasing','impact','cinematic-closeup','shared-scene');
+    $('#prompt').className='prompt';
     $('#sanity-hud').hidden = true;
     showRoomNotice();
     updateGestureControl();
@@ -302,8 +308,9 @@ const G = (() => {
     $('#prompt').hidden = true;
     $('#world-controls').replaceChildren();
     $('#dialogue').hidden = false;
-    $('#stage').classList.remove('exploring');
-    if (eco) actor(eco);
+    $('#stage').classList.remove('exploring','chasing');
+    window.Perseguicao?.stop();
+    if (eco) actor(eco,dead(eco)?'morreu':'base');
     nextLine();
   }
   function nextLine() {
@@ -335,7 +342,7 @@ const G = (() => {
         });
         if (c.effect) c.effect();
         if (c.reply) queue.unshift({
-          who: D.names[currentEco] || 'Jardim',
+          who: c.who || (dead(currentEco)?'Jardim':D.names[currentEco] || 'Jardim'),
           text: c.reply,
           pose: c.pose
         });
@@ -349,6 +356,7 @@ const G = (() => {
         left: line.seconds,
         total: line.seconds,
         done: () => {
+          line.onTimeout?.();
           queue.unshift({
             who: D.names[currentEco],
             text: line.silence || '…'
@@ -370,13 +378,14 @@ const G = (() => {
         else if(/não consigo|medo|esque|perdi|sozinh|não sei|difícil|demais/i.test(line.text)) pose='abalado';
         else if(/obrigad|pode ficar|comigo|ajud|gost|junto|companhia/i.test(line.text)) pose='gostou';
       }
-      actor(currentEco, pose);
+      actor(currentEco,dead(currentEco)?'morreu':pose);
     }
     if (line.image) {
       $('#effect').src = line.image;
       $('#effect').hidden = false;
     } else $('#effect').hidden = true;
     if (line.effect) line.effect();
+    if($('#stage').classList.contains('shared-scene')&&!$('#actor-two').hidden)$('#actor').classList.add('paired');
   }
   $('#advance').onclick = nextLine;
   function roomBg(id, view = 0) {
@@ -534,8 +543,10 @@ const G = (() => {
     if(id==='amor' && S.view===0 && !S.flags.gestureL) {
       const point=btn('',openQuietInteraction,'quiet-interaction');
       point.setAttribute('aria-label','Interagir');
+      const scrap=document.createElement('img');scrap.src=asset('/03-Objetos-Extras-64/fragmento-papel.png');scrap.alt='';point.append(scrap);
       scene.append(point);
     }
+    renderGuest(scene,id);
     alignRoomScene();
     const nav = document.createElement('div');
     nav.className = 'room-nav';
@@ -558,6 +569,26 @@ const G = (() => {
     const control=$('#gesture-l-button');
     control.hidden=!S?.flags.gestureL;
     control.disabled=paused || mode!=='explore' || !S?.room || S.view!==0 || dead(S.room);
+  }
+  const visits = [
+    {key:'acolhimento',hosts:['calma','felicidade'],people:['calma','felicidade'],requires:['P1','F1'],lines:[['Sunny','Eu achei que ia só deixar a fita e sair.'],['Pax','Você não precisa inventar uma entrega para sentar.'],['Você','Vocês fazem isso sempre?'],['Sunny','Ele deixa o lugar livre até quando eu não tenho assunto.'],['Pax','Ninfa também aparece. Cada um sabe que pode ir embora e voltar.'],{choices:[{label:'Ficar e escutar os dois',reply:'A conversa continua sem pedir que você justifique a visita.',pose:'acolhido'},{label:'Perguntar se Pax se sente responsável por todos',reply:'Receber alguém não me dá o controle do que essa pessoa escolhe.',pose:'abalado'}]},['Sunny','Era só isso que eu queria que você visse.']]},
+    {key:'melodia',hosts:['tristeza','ansiedade'],people:['tristeza','ansiedade'],requires:['N1','H1'],lines:[['Ninfa','Trouxe a caixa para você ouvir. Não para calcular.'],['Hermes','Eu calculei o intervalo em que ela parava. Depois parei de contar.'],['Você','Você guardou uma coisa sem utilidade?'],['Hermes','Sem uma utilidade que eu pudesse nomear. São afirmações diferentes.'],['Ninfa','As coisas que contamos aqui não precisam virar uma maneira de nos medir.'],{choices:[{label:'Pedir para ouvir a música',reply:'Por um momento, os dois deixam a conversa parar nas notas.',pose:'acolhido'},{label:'Perguntar o que Hermes não consegue prever',reply:'Uma intenção omitida continua fora da conta. Inclusive a sua.',pose:'nao-gostou'}]},['Ninfa','Você pode voltar e perguntar. Só não finja que não sabe de onde veio o que ouviu.']]},
+    {key:'protecao',hosts:['amor','orgulho'],people:['amor','orgulho'],requires:['A1','O1'],lines:[['Sugar','O apoio está machucando o braço dele.'],['Aurea','Então ajustamos o apoio. Uma oferta não termina quando sai da mão.'],['Você','Vocês ainda estão conferindo isso?'],['Sugar','Sim. Cuidado também é voltar para perguntar.'],['Aurea','Escute o que ela está dizendo antes de chamar isso de fraqueza.'],{choices:[{label:'Deixar que ajustem a proteção',reply:'A alça fica firme sem apertar. Ninguém pede uma promessa em troca.',pose:'gostou'},{label:'Dizer que não precisa de ninguém',reply:'Você pode escolher seguir. Só não reescreva quem esteve aqui para tornar isso mais fácil.',pose:'nao-gostou'}]},['Sugar','Se o caminho mudar, eu tento encontrar você.']]},
+    {key:'bilhete',hosts:['medo'],people:['medo','culpa'],requires:['M1'],lines:[['Lúmen','Eu só vim ver se você tinha recebido a mensagem.'],['Hunger','Recebi. Você não precisava atravessar tudo sozinho.'],['Você','Vocês já estavam se procurando antes de eu chegar?'],['Lúmen','As visitas não começaram com você. Eu queria que ele soubesse que podia voltar.'],['Hunger','Não vá atrás de outra pessoa para usar uma resposta contra ela.'],{choices:[{label:'Perguntar pela passagem adiante',reply:'O observatório fica depois deste quarto. Eu continuo de olho nesse caminho.',pose:'nao-gostou'},{label:'Ouvir a preocupação de Lúmen',reply:'Eu queria conseguir perguntar uma coisa sem ensaiar todas as respostas antes.',pose:'abalado'}]},['Lúmen','Eu vou deixar vocês conversarem. Depois eu passo outra vez.']]}
+  ];
+  function guestFor(host) {
+    return visits.find(v=>v.hosts.includes(host)&&!S.flags['visit-'+v.key]&&v.requires.every(x=>S.talks[x])&&v.people.every(x=>!dead(x)));
+  }
+  function renderGuest(scene,host) {
+    const visit=guestFor(host);if(!visit||S.view!==1)return;
+    const guest=visit.people.find(x=>x!==host);
+    const target=btn('',()=>sharedVisit(visit),'guest-eco');target.setAttribute('aria-label','Conversar com '+D.names[guest]+' em visita');
+    const image=document.createElement('img');image.src=worldSprite(guest,2);image.alt='';const label=document.createElement('span');label.textContent=D.names[guest]+' está em visita';target.append(image,label);scene.append(target);
+  }
+  function sharedVisit(visit,done=renderRoom) {
+    const host=S.room,guest=visit.people.find(x=>x!==host);resetScene();background(roomBg(host,1));$('#stage').classList.add('shared-scene');
+    const lines=structuredClone(visit.lines);lines.forEach(l=>l.choices?.forEach(c=>c.who='Jardim'));lines[0]=Array.isArray(lines[0])?{who:lines[0][0],text:lines[0][1],effect:()=>actorTwo(guest)}:lines[0];
+    say(host,lines,()=>{S.flags['visit-'+visit.key]=true;if(guest==='culpa'&&!S.talks.C1)finishConversation('C1','culpa');note('Encontro: '+visit.people.map(x=>D.names[x]).join(' e '),'Você ouviu os dois juntos. Novos assuntos podem ser retomados em seus quartos.');significant();done();});
   }
   function openQuietInteraction() {
     if(mode!=='explore' || S.room!=='amor' || S.view!==0) return;
@@ -618,6 +649,7 @@ const G = (() => {
   // As pistas podem ser relidas. Depois da morte, aparece a observação de ausência.
   function inspectPoint(p) {
     if(!S.talks[first[p.eco]] && !dead(p.eco)) return talk(p.eco);
+    const visit=guestFor(p.eco);if(visit&&S.view===1&&!S.flags['visit-'+visit.key])return sharedVisit(visit,()=>{renderRoom();inspectPoint(p);});
     explorationHands(/bilhete|carta|diário|anotações|desenhos/i.test(p.name)?'04-segurar-papel':'01-alcancar');
     const wasSeen = S.seen[p.id];
     S.seen[p.id] = true;
@@ -741,7 +773,7 @@ const G = (() => {
     const n = D.points.filter(p => p.eco === id && S.seen[p.id]).length;
     if (id === 'determinacao') {
       if (!S.flags.knifeKnown) return {label:'Perguntar sobre a faca emoldurada', go:knifeIntroduction};
-      if (n >= 2) return {label:'Tentar tomar a faca', go:determination};
+      if (n >= 4) return {label:'Tentar tomar a faca', go:determination};
       return null;
     }
     if (id === 'odio' && S.dead.length > 0 && S.dead.length < 8 && !S.flags.odioWarning) return {label:'Ouvir o que Beerus percebeu',go:()=>conversation('ODG1',()=>{S.flags.odioWarning=true;save();talkMenu(id);})};
@@ -756,9 +788,10 @@ const G = (() => {
       if (S.talks.N2 && !S.talks.N3 && S.dead.length) return {label:'Ouvir a preocupação de Ninfa',go:()=>conversation('N3',()=>talkMenu(id))};
       if (S.talks.N3 && sevenClosed()) return {label:'Responder à acusação de Ninfa',go:()=>conversation('N4',()=>{setPhase('ninfa');ninfaStart(0,true);})};
     }
+    if (id==='medo'&&S.talks.M2&&!S.flags['visit-bilhete']) {const visit=guestFor(id);if(visit)return {label:'Ouvir Lúmen no corredor',go:()=>sharedVisit(visit)};}
     if (id === 'medo' && S.talks.M2) return {label:'Seguir Hunger até o observatório',go:watchIntro};
     if (id === 'odio' && S.dead.length === 8 && S.talks.A4) return {label:'Atravessar a passagem de Beerus',go:odioIntro};
-    if (minor[id] && S.talks[sec] && n >= 2) return {label:S.flags[id+'Confront']?'Retomar a conversa que ficou ferida':'Falar sobre o que aconteceu entre nós',go:()=>S.flags[id+'Confront']?minorEnd(id):minorConfront(id)};
+    if (minor[id] && S.talks[sec] && n >= 4) return {label:S.flags[id+'Confront']?'Retomar a conversa que ficou ferida':'Falar sobre o que aconteceu entre nós',go:()=>S.flags[id+'Confront']?minorEnd(id):minorConfront(id)};
     return null;
   }
   function availableTopics(id) {
@@ -777,6 +810,7 @@ const G = (() => {
     const options = [], main=storyAction(id);
     if(main) options.push({label:main.label,go:main.go});
     const topics=availableTopics(id);
+    const visitor=guestFor(id);if(visitor)options.push({label:'Conversar com '+D.names[visitor.people.find(x=>x!==id)]+' em visita',go:()=>sharedVisit(visitor)});
     if(topics.length) options.push({label:'Falar das descobertas ('+topics.length+')',go:()=>say(id,[{text:'O que você queria perguntar?',choices:[...topics.map(t=>({label:(S.flags['topic-'+t.id]?'Relembrar: ':'')+t.label,go:()=>say(id,t.lines,()=>{S.flags['topic-'+t.id]=true;note('Conversa com '+D.names[id],t.label);significant();talkMenu(id);})})),{label:'Voltar aos assuntos',go:()=>talkMenu(id)}]}],renderRoom)});
     if(id==='orgulho' && (!S.items.includes('espada')||!S.items.includes('escudo'))) options.push({label:'Pedir a espada e o escudo oferecidos',go:aureaGifts});
     if(id==='amor' && !S.items.includes('luz')) options.push({label:'Aceitar a luz que você ofereceu',go:()=>say('amor',[{text:'Pode aceitar agora. Não é uma dívida.',pose:'segurar-luz'},{text:'Segure com cuidado.',pose:'entregar-luz',effect:()=>addItem('luz')}],()=>talkMenu(id))});
@@ -833,7 +867,7 @@ const G = (() => {
   function determination() {
     if(!S.talks.D1) return talk('determinacao');
     if(!S.flags.knifeKnown) return knifeIntroduction();
-    if(D.points.filter(p=>p.eco==='determinacao'&&S.seen[p.id]).length<2) return say('determinacao',[{text:'Você mal olhou o que eu estou fazendo. Já quer tirar a única coisa que eu disse para não tocar?',pose:'nao-gostou'},['Jardim','Há outras peças e anotações neste quarto.']],renderRoom);
+    if(D.points.filter(p=>p.eco==='determinacao'&&S.seen[p.id]).length<4) return say('determinacao',[{text:'Você mal olhou o que eu estou fazendo. Já quer tirar a única coisa que eu disse para não tocar?',pose:'nao-gostou'},['Jardim','Há outras peças e anotações neste quarto.']],renderRoom);
     resetScene();
     background(roomBg('determinacao'));
     say('determinacao', [['Jardim', 'Sua mão vai até a moldura. Ela se coloca entre você e a faca.'], ['Determinação', 'Eu já respondi.'], ['Você', 'Eu não vou demorar.'], ['Determinação', 'Não é o tempo.']], () => {
@@ -847,23 +881,13 @@ const G = (() => {
   function determinationCut() {
     resetScene();
     background(roomBg('determinacao'));
-    say('determinacao', [['Jardim', 'A caixa de batalha desaparece antes do primeiro turno.'], {
-      who:'Friska',text:'Espera. Você não ia só…',pose:'quebrando'
-    }, {who:'Friska',text:'A gente nem começou.',pose:'quebrou'}, {
-      who:'Jardim',text:'Um corte atravessa a visão. A mão do protagonista já retirou a faca da moldura.',image:asset('/cortes/faca/02-corte.png'),
-      effect:()=>{ $('#hands').src=asset('/02-Equipamentos/faca/03-atacar.png');$('#hands').hidden=false; }
-    }, ['Jardim', 'O protagonista a esfaqueou. A escolha veio depois da ação.'], {
-      who: 'Determinação',
-      text: 'Mas… a gente nem começou.',
-      pose: 'quebrou'
+    say('determinacao', [{
+      who:'Jardim',text:'Um corte atravessa a visão antes do primeiro turno.',image:asset('/cortes/faca/02-corte.png'),pose:'morreu',
+      effect:()=>{ $('#hands').src=asset('/02-Equipamentos/faca/03-atacar.png');$('#hands').hidden=false;kill('determinacao','O protagonista tomou a faca e a esfaqueou antes do primeiro turno.');addItem('faca'); }
     }, {
       who: 'Jardim',
-      text: 'Os olhos perdem a luz. Ela não responde.',
-      pose: 'morreu',
-      effect: () => {
-        kill('determinacao', 'O protagonista a esfaqueou ao tomar a faca. A falsa batalha não chegou a ter um turno.');
-        addItem('faca');
-      }
+      text: 'A moldura está vazia. Friska já não se move nem responde. A escolha veio depois da ação.',
+      pose: 'morreu'
     }, {
       choices: [{
         label: 'POUPAR',
@@ -1070,8 +1094,8 @@ const G = (() => {
       guard: 'Espaço',
       down: '↓ / S',
       intercept: 'E',
-      hold: 'E',
-      push: 'E',
+      hold: 'Espaço',
+      push: 'W / ↑',
       back: '↓ / S',
       cross: 'E'
     };
@@ -1086,7 +1110,10 @@ const G = (() => {
     const all = [action, ...decoy].sort((a, b) => a.id.localeCompare(b.id));
     $('#prompt-status').textContent = 'Siga o comando indicado. Teclado ou toque.';
     qte.expected = move;
-    prompt(labels[move], all, settings.assist ? 4 : 1.8, result => {
+    const pressure=qte.eco==='tristeza'?(S.flags.ninfaPressure||0):0;
+    const seconds=settings.assist?3.2:Math.max(.72,1.22-(qte.eco==='tristeza'?S.checkpoint*.055:0)-pressure*.12);
+    if(qte.eco==='tristeza')$('#prompt-status').textContent='Fôlego '+S.flags.ninfaVitality+' / 100 · Erros '+ninfaErrors+' · Responda antes da onda';
+    prompt(labels[move], all, seconds, result => {
       const ok = result === move;
       const current = qte;
       if (!current) return;
@@ -1097,7 +1124,7 @@ const G = (() => {
           return;
         }
       } else if (current.eco === 'tristeza') ninfaConsecutive = 0;
-      defer(.25, nextQTE);
+      defer(settings.assist ? .3 : .16, nextQTE);
     });
   }
   function deathScreen(text, restart, kind = 'insanidade') {
@@ -1241,12 +1268,12 @@ const G = (() => {
   function fearChaseIntro() {
     resetScene();
     say('medo', ['Você conseguiu olhar todos eles. Conseguiu entender algum?'], () => {
-      const p = panel('A visão falhou', 'Corra pelos corredores. Segure Shift ou Correr para avançar. Em cada saída, siga a indicação visível. Um erro faz você perder distância.');
+      const p = panel('A visão falhou', 'Corra pelos corredores. Segure Shift no PC ou toque em Correr para ligar e desligar a corrida. Em cada saída, siga a indicação visível. Um erro faz você perder distância.');
       p.append(btn('Sair do observatório', () => chaseStart('medo')));
     });
   }
   // Cada chase usa seus próprios corredores, separados do labirinto comum.
-  function chaseStart(kind, index = 0) {
+  function chaseStart(kind, index = 0, runLatched = false) {
     resetScene();
     explorationHands('02-punhos-fechados');
     mode = 'chase';
@@ -1255,7 +1282,9 @@ const G = (() => {
       kind,
       index,
       progress: 0,
-      danger: 0,
+      danger: 2.5,
+      runLatched,
+      lookingBack: false,
       length: n,
       waiting: false
     };
@@ -1263,81 +1292,48 @@ const G = (() => {
     drawChase();
   }
   function drawChase() {
-    const c = chase;
-    if (!c) return;
-    const backgrounds = c.kind === 'medo' ? list('/02-Medo-Chase/') : list('/04-Labirinto-Comum/190000-pixels/');
-    background(backgrounds[c.kind === 'medo' ? fearOrder[c.index] : c.index % 8]);
-    $('#location').textContent = c.kind === 'medo' ? 'Corredores do Medo' : 'Além da saída';
-    objective('Corra. Procure o sinal da próxima passagem.');
-    if(c.kind==='medo') {
-      actor('medo','base','combat');
-      const poses=['01-perseguir-normal-a','02-perseguir-normal-b','03-virar-esquina-normal','05-terror-correr-a','06-terror-correr-b','07-terror-rastejar-a','08-terror-rastejar-b','10-terror-emboscada'];
-      $('#actor').src=asset('/02-Medo/'+poses[c.index%8]+'.png');
-      $('#actor').classList.add('chase-presence');
-    } else {actor('insanidade','presenca-invasiva','combat');$('#actor').classList.add('chase-presence');}
+    const c=chase;if(!c)return;
+    const backgrounds=c.kind==='medo'?list('/02-Medo-Chase/'):list('/04-Labirinto-Comum/190000-pixels/');
+    const source=backgrounds[c.kind==='medo'?fearOrder[c.index]:c.index%8];
+    background(source);$('#actor').hidden=true;clearIdle();
+    $('#stage').classList.add('chasing');
+    const monster=c.kind==='medo'?asset('/02-Medo/10-terror-emboscada.png'):baseSprite('insanidade','presenca-invasiva');
+    Perseguicao.start(source,monster);
+    $('#location').textContent=c.kind==='medo'?'Corredores de Hunger':'Além da saída';
+    objective('Corra e escolha a passagem antes de a presença alcançar você.');
     $('#world-controls').replaceChildren();
-    const nav = document.createElement('div');
-    nav.className = 'room-nav';
-    const run = btn('Segure para correr · Shift', () => {});
-    bindHold(run, 'run');
-    nav.append(run);
-    $('#world-controls').append(nav);
+    const nav=document.createElement('div');nav.className='room-nav chase-nav';
+    const toggleRun=()=>{c.runLatched=!c.runLatched;run.setAttribute('aria-pressed',String(c.runLatched));};
+    const run=btn('Correr · Shift',e=>{if(!e||e.detail===0)toggleRun();});
+    run.onpointerdown=e=>{if(e.button!==0)return;e.preventDefault();toggleRun();};
+    run.id='chase-run';run.setAttribute('aria-pressed',String(!!c.runLatched));
+    const back=btn('Olhar para trás · B',()=>{c.lookingBack=!c.lookingBack;back.setAttribute('aria-pressed',String(c.lookingBack));});
+    back.id='chase-back';back.setAttribute('aria-pressed','false');nav.append(run,back);$('#world-controls').append(nav);
   }
   function tickChase(dt) {
-    if (chase.waiting) return;
-    const c = chase;
-    c.progress += dt * (keysHeld.run ? 1 : .22);
-    c.danger += dt * (keysHeld.run ? -.4 : .4);
-    c.danger = Math.max(0, c.danger);
-    $('#status').textContent = 'Trecho ' + (c.index + 1) + ' / ' + c.length + ' · ' + (keysHeld.run ? 'Correndo' : 'A presença está se aproximando');
-    if (c.danger > 8) return deathScreen('Você perdeu distância.', () => chaseStart(c.kind), c.kind);
-    if (c.progress >= (c.kind === 'medo' ? 4 : 9)) {
-      c.waiting = true;
-      const dir = c.kind === 'medo' ? fearDirs[c.index] : ['up', 'left', 'right', 'up', 'right', 'up'][c.index];
-      const labels = {
-        up: 'Seguir em frente',
-        left: 'Virar à esquerda',
-        right: 'Virar à direita',
-        down: 'Passar abaixado'
-      };
-      prompt('A passagem segura: ' + labels[dir], [{
-        id: 'left',
-        label: '← Esquerda'
-      }, {
-        id: 'up',
-        label: '↑ Frente'
-      }, {
-        id: 'right',
-        label: 'Direita →'
-      }, {
-        id: 'down',
-        label: '↓ Abaixar'
-      }], settings.assist ? 6 : 3, r => {
-        if (r !== dir) {
-          c.danger += 3;
-          c.progress = 2;
-          c.waiting = false;
-          mode = 'chase';
-          if (c.danger >= 8) return deathScreen('O caminho se fechou.', () => chaseStart(c.kind), c.kind);
-          return;
-        }
+    const c=chase;if(!c)return;
+    const running=!!(keysHeld.run||c.runLatched),distance=c.kind==='medo'?2.6:2.9;
+    if(!c.waiting){
+      c.progress+=dt*(running&&!c.lookingBack?1:.12);
+      c.danger=Math.max(0,c.danger+dt*(running&&!c.lookingBack?-.18:1.8));
+    }
+    Perseguicao.draw(dt,{...c,running,distance,reduced:settings.reduced});
+    $('#status').textContent='Passagem '+(c.index+1)+' / '+c.length+' · '+(running?'Correndo':'Ative Correr ou segure Shift')+' · Distância '+Math.max(0,Math.round((8-c.danger)*12))+'%';
+    $('#chase-run')?.setAttribute('aria-pressed',String(running));
+    if(c.waiting)return;
+    if(c.danger>=8)return deathScreen('A presença alcançou você. Continue correndo para manter distância.',()=>chaseStart(c.kind,Math.max(0,c.index-1)),c.kind);
+    if(c.progress>=distance){
+      c.waiting=true;
+      const dir=c.kind==='medo'?fearDirs[c.index]:['up','left','right','up','right','up'][c.index];
+      const labels={up:'Seguir em frente',left:'Virar à esquerda',right:'Virar à direita',down:'Passar abaixado'};
+      prompt('A passagem segura: '+labels[dir],[{id:'left',label:'← Esquerda'},{id:'up',label:'↑ Frente'},{id:'right',label:'Direita →'},{id:'down',label:'↓ Abaixar'}],settings.assist?3:1.25,r=>{
+        if(r!==dir){c.danger+=3.2;c.progress=distance*.45;c.waiting=false;mode='chase';$('#stage').classList.add('impact');setTimeout(()=>$('#stage').classList.remove('impact'),350);if(c.danger>=8)return deathScreen('A curva errada fechou sua distância.',()=>chaseStart(c.kind,Math.max(0,c.index-1)),c.kind);return;}
         c.index++;
-        if (c.kind === 'medo' && c.index === 4 && !dead('culpa')) return culpaCut(c);
-        if (c.index >= c.length) {
-          if (c.kind === 'medo') {
-            setPhase('fearRoom');
-            fearRoom();
-          } else {
-            setPhase('interrogation');
-            interrogation();
-          }
-          return;
-        }
-        c.progress = 0;
-        c.waiting = false;
-        mode = 'chase';
-        drawChase();
+        if(c.kind==='medo'&&c.index===4&&!dead('culpa'))return culpaCut(c);
+        if(c.index>=c.length){if(c.kind==='medo'){setPhase('fearRoom');fearRoom();}else{setPhase('interrogation');interrogation();}return;}
+        c.progress=0;c.waiting=false;c.lookingBack=false;mode='chase';setPhase(c.kind==='medo'?'fearChase':'insaneChase',c.index);drawChase();
       });
+      $('#prompt').classList.add('chase-prompt');
     }
   }
   function culpaCut(saved) {
@@ -1349,7 +1345,7 @@ const G = (() => {
       text: 'Ela não termina a frase.',
       pose: 'morreu',
       effect: () => kill('culpa', 'Medo a matou intencionalmente durante a perseguição. A razão específica não foi esclarecida.')
-    }], () => chaseStart('medo', saved.index));
+    }], () => chaseStart('medo', saved.index, saved.runLatched));
   }
   function fearRoom() {
     resetScene();
@@ -1398,6 +1394,8 @@ const G = (() => {
     resetScene();
     explorationHands('09-pare');
     setPhase('ninfa', index);
+    S.flags.ninfaDefeated=false;
+    if(intro||!Number.isFinite(S.flags.ninfaVitality))S.flags.ninfaVitality=100;
     background(list('/03-Abismo-Tristeza/02-Base/')[index % 5]);
     actor('tristeza', 'base', 'combat');
     $('#actor').src = asset('/04-Tristeza/01-prontidao.png') || baseSprite('tristeza');
@@ -1406,7 +1404,7 @@ const G = (() => {
     if (intro) {
       ninfaErrors = 0;
       ninfaConsecutive = 0;
-      const p = panel('A água sobe', 'Respostas têm 5 segundos. Nos movimentos, siga a direção indicada. Dois erros seguidos ou três no total encerram a tentativa. Cada fala de Ninfa é um checkpoint.');
+      const p = panel('A água sobe', 'Ninfa ataca de longe. Respostas têm 4 segundos; hesitar aumenta a pressão da próxima onda. As sequências aceleram a cada etapa. Cada erro custa fôlego; dois erros seguidos ou três no total encerram a tentativa. Cada fala é um checkpoint. O modo assistido amplia os prazos.');
       p.append(btn('Continuar', () => ninfaStart(index)));
       return;
     }
@@ -1415,11 +1413,13 @@ const G = (() => {
       text: c.text,
       pose: ['aura-emocional','esferas-suspensas','lancar-esfera','aura-emocional','esferas-suspensas','lancar-esfera'][index]
     }, {
-      seconds: 5,
+      seconds: settings.assist?7:4,
+      onTimeout:()=>{S.flags.ninfaPressure=1;S.flags.ninfaVitality=Math.max(1,S.flags.ninfaVitality-12);},
       silence: c.silence,
-      choices: c.answers.map(a => ({
+      choices: c.answers.map((a,i) => ({
         label: a[0],
-        reply: a[1]
+        reply: a[1],
+        effect:()=>{S.flags.ninfaPressure=i===c.answers.length-1?1:0;}
       }))
     }], () => {
       actor('tristeza', 'base', 'combat');
@@ -1431,11 +1431,14 @@ const G = (() => {
       }, () => {
         ninfaErrors++;
         ninfaConsecutive++;
-        $('#prompt-status').textContent = 'Erros: ' + ninfaErrors + ' · seguidos: ' + ninfaConsecutive;
-        if (ninfaErrors >= 3 || ninfaConsecutive >= 2) {
+        S.flags.ninfaVitality=Math.max(0,S.flags.ninfaVitality-(settings.assist?20:34));
+        $('#stage').classList.add('impact');setTimeout(()=>$('#stage').classList.remove('impact'),350);
+        $('#prompt-status').textContent = 'Impacto! Fôlego '+S.flags.ninfaVitality+' / 100 · Erros: ' + ninfaErrors + ' · seguidos: ' + ninfaConsecutive;
+        if (ninfaErrors >= 3 || ninfaConsecutive >= 2 || S.flags.ninfaVitality<=0) {
           deathScreen('A água fechou a passagem. Retome a fala de Ninfa.', () => {
             ninfaErrors = 0;
             ninfaConsecutive = 0;
+            S.flags.ninfaVitality=100;
             ninfaStart(index);
           }, 'tristeza');
           return false;
@@ -1446,6 +1449,7 @@ const G = (() => {
   }
   function ninfaEnd() {
     resetScene();
+    S.flags.ninfaDefeated=true;
     background(list('/03-Abismo-Tristeza/02-Base/')[0]);
     say('tristeza', [{
       text: 'Então não chama o que aconteceu de não sentir nada.',
@@ -1465,7 +1469,7 @@ const G = (() => {
     resetScene();
     background(asset('/01-Arena-Odio/01-frente.png'));
     say('odio', [{text:'Não usa a voz deles para passar por mim.',pose:'chase'}, ['Você', 'Você não deixou outra passagem.'], {text:'Você faz a mesma pergunta até ouvir o que pode usar.',pose:'agarre'}, {text:'Sugar não vai entender isso como você.',pose:'grito'}], () => {
-      const p = panel('A arena', 'Aqui você se move livremente. PC: W/S avança e recua, A/D desloca, setas giram, F ataca, Espaço protege, E interage e Q lança a luz recebida. No celular, use o direcional e os botões. Aproxime-se para atingir, recue durante o preparo dos ataques.');
+      const p = panel('A arena', 'Clique e arraste para olhar, ou use as setas. No celular, arraste o dedo para girar e use os controles para andar. PC: W/S avança e recua, A/D desloca, setas giram, F ataca, Espaço protege, E interage e Q lança a luz recebida. No celular, use o direcional e os botões. Aproxime-se para atingir, recue durante o preparo dos ataques.');
       p.append(btn('Entrar', () => {
         setPhase('odio');
         startArena(false);
@@ -1483,15 +1487,16 @@ const G = (() => {
     $('#world-controls').append(hud);
     const help = document.createElement('div');
     help.className = 'battle-help';
-    help.textContent = 'WASD mover · ← → girar · F atacar · Espaço guardar · Q luz · E interagir';
+    help.textContent = 'Arraste para olhar · WASD mover · ← → girar · F atacar · Espaço defender · Q luz · E interagir';
     $('#world-controls').append(help);
     Arena.start({
       free,
+      assist:settings.assist,
       collected: S.flags.swordPicked,
       items: S.items,
       equipped:S.flags.equipped,
       onHud: h => {
-        hud.textContent = h.free ? h.warning : 'Vida ' + h.hp + ' · Ódio ' + h.enemy + ' — ' + h.warning;
+        hud.textContent = h.free ? h.warning : 'Vida ' + h.hp + ' · Beerus ' + h.enemy + ' · Fôlego '+(h.stamina??100)+(h.guardBroken?' · DEFESA ROMPIDA':'')+' — ' + h.warning;
       },
       onDeath: () => deathScreen('Ódio interrompeu sua passagem.', () => startArena(false), 'odio'),
       onFinish: () => odioSurto(),
@@ -1697,7 +1702,7 @@ const G = (() => {
     resetScene();
     background(asset('/190000-pixels/08-saida.png'));
     say('insanidade', [{text:'Você escolheu as saídas certas.',pose:'escutar'}, {text:'E continuou entrando.',pose:'divertido'},{text:'Agora olhe para onde elas te trouxeram.',pose:'revelar'}], () => {
-      const p = panel('Ainda não terminou', 'Agora é uma perseguição. Segure Correr ou Shift e acompanhe as saídas sinalizadas. O labirinto concluído está salvo.');
+      const p = panel('Ainda não terminou', 'Agora é uma perseguição. Toque em Correr ou segure Shift e acompanhe as saídas sinalizadas. O labirinto concluído está salvo.');
       p.append(btn('Correr para a saída', () => chaseStart('insanidade')));
     });
   }
@@ -1727,12 +1732,14 @@ const G = (() => {
   function revelation(frame = 0) {
     resetScene();
     setPhase('revelation');
+    if(frame===0)S.flags.maskRemoved=false;
     background(asset('/190000-pixels/08-saida.png'));
     const frames = list('/03-Generais/insanidade/').filter(p => /rosto-[1-4]/.test(p));
     function next(i) {
       actor('insanidade');
       $('#actor').className = 'actor closeup';
       $('#actor').src = frames[i];
+      if(i===3){S.flags.maskRemoved=true;save();}
       if (i < 3) return defer(settings.reduced ? 1.4 : 1, next.bind(null, i + 1));
       defer(1, () => {
         S.sanity = 0;
@@ -1897,6 +1904,7 @@ const G = (() => {
     paused = true;
     keysHeld = {};
     Arena.pause(true);
+    window.AudioSentia?.pause();
     $('#modal-content').replaceChildren(content);
     $('#game-modal').showModal();
   }
@@ -1904,6 +1912,7 @@ const G = (() => {
     if ($('#game-modal').open) $('#game-modal').close();
     paused = false;
     Arena.pause(false);
+    window.AudioSentia?.resume();
     loopLast = performance.now();
     updateGestureControl();
   }
@@ -1932,6 +1941,15 @@ const G = (() => {
       settings.reduced = wrap.querySelector('#motion').checked;
       saveSettings();
     });
+    const audio=window.AudioSentia;
+    if(audio){
+      const sound=document.createElement('fieldset');const legend=document.createElement('legend');legend.textContent='Áudio';sound.append(legend);
+      const volumeLabel=document.createElement('label');volumeLabel.textContent='Volume da trilha';const volume=document.createElement('input');volume.type='range';volume.min='0';volume.max='100';volume.value=String(Math.round(audio.state().volume*100));volume.setAttribute('aria-label','Volume da trilha');volume.oninput=()=>audio.setVolume(Number(volume.value)/100);volumeLabel.append(volume);
+      const muteLabel=document.createElement('label');const mute=document.createElement('input');mute.type='checkbox';mute.checked=audio.state().muted;mute.onchange=()=>audio.setMuted(mute.checked);muteLabel.append(mute,' Silenciar músicas');
+      const credits=document.createElement('details');const title=document.createElement('summary');title.textContent='Trilha e créditos';credits.append(title);
+      for(const track of audio.state().tracks){const p=document.createElement('p');p.textContent=track.title+' — '+track.author+' · '+track.license;credits.append(p);}
+      const link=document.createElement('a');link.href='documentacao/CREDITOS-AUDIO.txt';link.target='_blank';link.rel='noopener';link.textContent='Fontes e licença das quatro faixas';credits.append(link);sound.append(volumeLabel,muteLabel,credits);wrap.append(sound);
+    }
     wrap.append(btn('Continuar', closeModal), btn('Exportar partida', () => {
       save();
       const a = document.createElement('a');
@@ -1987,7 +2005,7 @@ const G = (() => {
       }));
       bag.append(item);
     });
-    wrap.append(bag, btn('Guardar equipamento',()=>{delete S.flags.equipped;save();if(mode==='explore') explorationHands();closeModal();}),btn('Voltar', closeModal));
+    wrap.append(bag, btn('Guardar equipamento',()=>{delete S.flags.equipped;save();if(mode==='explore') explorationHands();if(mode==='arena')Arena.equip(null);closeModal();}),btn('Voltar', closeModal));
     modal(wrap);
   }
   function journal() {
@@ -2018,6 +2036,7 @@ const G = (() => {
     if (mode !== 'menu') closeModal();
   });
   function resume() {
+    window.AudioSentia?.setScene(S.phase);
     closeModal();
     const table = {
       explore: () => S.room ? renderRoom() : hub(),
@@ -2110,6 +2129,8 @@ const G = (() => {
     });
   }
   function keyAction(key) {
+    if(qte?.expected==='hold'&&key===' ')return 'hold';
+    if(qte?.expected==='push'&&['w','ArrowUp'].includes(key))return 'push';
     if (qte?.expected === 'back' && ['ArrowDown', 's'].includes(key)) return 'back';
     if (chase?.waiting && ['ArrowUp', 'w'].includes(key)) return 'up';
     const map = {
@@ -2122,7 +2143,7 @@ const G = (() => {
       ArrowUp: 'center',
       w: 'center',
       ' ': 'guard',
-      e: qte?.expected || 'cross'
+      e: ['intercept','cross'].includes(qte?.expected)?qte.expected:'cross'
     };
     return map[key];
   }
@@ -2164,6 +2185,7 @@ const G = (() => {
       if (key === 'e') Arena.action('interact');
       return;
     }
+    if ((mode === 'chase'||chase?.waiting) && key === 'b') {chase.lookingBack=!chase.lookingBack;return;}
     if (mode === 'chase' && key === 'Shift') {
       keysHeld.run = true;
       return;
@@ -2252,7 +2274,7 @@ const G = (() => {
         }
       }
       if (mode === 'watch' && watch) tickWatch(dt);
-      if (mode === 'chase' && chase) tickChase(dt);
+      if ((mode === 'chase' || (mode==='prompt'&&chase?.waiting)) && chase) tickChase(dt);
       if (mode === 'explore' && S.room && !dead(S.room)) {
         S.sanity = Math.max(0, Math.min(100, S.sanity + dt * (['tristeza', 'odio', 'medo', 'ansiedade', 'culpa'].includes(S.room) ? -1 : 2)));
         if (S.sanity === 0 && S.talks.A1 && !dead('amor') && rescueCooldown === 0) rescue(renderRoom);

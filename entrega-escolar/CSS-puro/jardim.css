@@ -971,3 +971,26 @@ body.reduced *,body.reduced *::before {
 .sprite-control::before { content:''; display:inline-block; width:20px; height:20px; margin-right:7px; vertical-align:middle; background:var(--control-normal) center/contain no-repeat; image-rendering:pixelated; pointer-events:none; }
 .sprite-control:active::before { background-image:var(--control-pressed); }.sprite-control:disabled::before { background-image:var(--control-disabled); }.bag-icon { width:52px;height:52px;object-fit:contain;image-rendering:pixelated; }
 @media(max-width:600px) { .sprite-control::before { width:16px;height:16px;margin-right:4px; }.game-header .sprite-control::before { display:none; } }
+/* Polimento: cada camada cabe na câmera; corrida usa perspectiva e ações rápidas. */
+.chase-canvas { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated;z-index:0;pointer-events:none; }
+.chasing .background { opacity:0; }.chasing .actor { display:none; }
+.chase-nav { bottom:16px; justify-content:center; }.chase-nav button { min-width:140px;min-height:48px;touch-action:manipulation; }.chase-nav button[aria-pressed="true"] { border-color:#ffe497;background:#695528; }
+.prompt.chase-prompt { left:18%;right:18%;top:auto;bottom:95px;transform:none;max-width:none;padding:12px;background:#080b10eb; }.chase-prompt>p:first-child { font-size:18px; }.chase-prompt #prompt-actions { flex-wrap:wrap; }
+.hands,.hands.exploration-hands { left:50%;transform:translateX(-50%);bottom:0;width:min(100%,800px);height:auto;max-height:none;object-fit:contain;object-position:center bottom; }
+.hands.exploration-hands.inspecting-hands { left:50%;bottom:16%;width:min(96%,760px);height:auto; }
+.hands.exploration-hands.gesture-hands { left:50%;bottom:14%;width:min(100%,680px);height:auto; }
+.actor.combat { left:50%;bottom:37%;width:34%;height:34%;object-fit:contain;object-position:center; }
+.actor.closeup { left:50%;bottom:18%;width:min(88%,820px);height:74%;object-fit:contain;object-position:center; }
+.shared-scene .actor:not(.two),.shared-scene .idle-layer { left:28%;width:43%;height:68%;bottom:20%; }
+.shared-scene .actor.two { left:73%;width:43%;height:68%;bottom:20%;object-fit:contain; }
+.guest-eco { position:absolute;left:24%;top:72%;width:20%;height:35%;min-width:60px;min-height:76px;transform:translate(-50%,-100%);border:0;background:transparent;padding:0; }
+.guest-eco img { width:100%;height:100%;object-fit:contain;image-rendering:pixelated; }.guest-eco span { display:block;background:#101b19dc;color:#f7edce;font-size:11px;white-space:nowrap;padding:3px; }
+.quiet-interaction { opacity:1;bottom:10%;right:0; }.quiet-interaction img { position:absolute;right:3px;bottom:3px;width:14px;height:14px;object-fit:contain;image-rendering:pixelated;opacity:.32; }.quiet-interaction:hover img,.quiet-interaction:focus-visible img { opacity:.85; }
+.impact { animation:impact-shake .3s linear; }@keyframes impact-shake { 0%,100%{filter:none;}25%{filter:brightness(.6) saturate(1.5);transform:translateX(-3px);}70%{transform:translateX(3px);} }
+#modal-content fieldset { margin:18px 0;padding:12px;border:1px solid #788476; }#modal-content input[type="range"] { display:block;width:100%; }#modal-content details p { font-size:12px; }
+@media(max-width:600px) { .hands.exploration-hands.inspecting-hands { bottom:20%;width:100%;height:auto; }.hands.exploration-hands.gesture-hands { bottom:26%;width:100%;height:auto; }.actor.combat { width:43%;height:28%;bottom:44%; }.actor.closeup { width:92%;height:70%;bottom:23%; }.prompt.chase-prompt { left:4%;right:4%;bottom:90px; }.chase-nav { left:8px;right:8px;gap:6px; }.chase-nav button { min-width:0;flex:1;font-size:11px; }.guest-eco span { font-size:9px;white-space:normal; } }
+@media(orientation:landscape) and (max-height:550px) { .actor.closeup { height:80%;bottom:12%; }.actor.combat { height:43%;bottom:35%; }.hands.exploration-hands { width:min(72%,520px); }.prompt.chase-prompt { bottom:65px;padding:7px; }.chase-prompt>p:first-child { font-size:14px; }.chase-nav { bottom:6px; }.chase-nav button { min-height:38px; }.chase-prompt #prompt-actions button { min-height:34px;padding:6px; } }
+.hands,.hands.exploration-hands { max-height:90%; }
+.hands.exploration-hands.inspecting-hands { max-height:75%; }
+.hands.exploration-hands.gesture-hands { max-height:78%; }
+.guest-eco { left:50%;z-index:1; }.room-scene .scene-hotspot { z-index:2; }

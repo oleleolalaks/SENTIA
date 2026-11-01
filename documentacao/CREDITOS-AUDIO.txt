@@ -1,0 +1,37 @@
+TRILHA SONORA — JARDIM DOS ECOS
+
+As quatro gravações são de Kevin MacLeod (incompetech.com).
+Licença: Creative Commons Attribution 4.0 International (CC BY 4.0).
+Licença completa: https://creativecommons.org/licenses/by/4.0/legalcode
+Resumo da licença: https://creativecommons.org/licenses/by/4.0/
+
+1. "Dreams Become Real" — Kevin MacLeod (incompetech.com)
+   Arquivo: assets/audio/dreams-become-real.mp3
+   Uso: exploração, conversas e encerramento.
+   Fonte e licença: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500027
+   Download original: https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dreams%20Become%20Real.mp3
+
+2. "Zombie Chase" — Kevin MacLeod (incompetech.com)
+   Arquivo: assets/audio/zombie-chase.mp3
+   Uso: perseguição de Hunger.
+   Fonte e licença: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100005
+   Download original: https://incompetech.com/music/royalty-free/mp3-royaltyfree/Zombie%20Chase.mp3
+
+3. "Feral Chase" — Kevin MacLeod (incompetech.com)
+   Arquivo: assets/audio/feral-chase.mp3
+   Uso: perseguição de Mizzery e confronto de Ninfa.
+   Fonte e licença: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100229
+   Download original: https://incompetech.com/music/royalty-free/mp3-royaltyfree/Feral%20Chase.mp3
+
+4. "Chase Pulse" — Kevin MacLeod (incompetech.com)
+   Arquivo: assets/audio/chase-pulse.mp3
+   Uso: observatório, tensão do labirinto e confronto com Beerus.
+   Fonte e licença: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100383
+   Download original: https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chase%20Pulse.mp3
+
+Os arquivos MP3 foram baixados do domínio oficial em 1 de novembro de 2026.
+Os nomes dos arquivos foram adaptados para o projeto. As gravações não foram cortadas nem editadas.
+O programa ajusta o volume, repete as faixas e faz transições durante a execução.
+
+A atribuição deve acompanhar a distribuição do jogo e permanecer acessível nos créditos.
+Não são músicas retiradas de jogos comerciais. Não se trata de composições originais do SENTIA.
