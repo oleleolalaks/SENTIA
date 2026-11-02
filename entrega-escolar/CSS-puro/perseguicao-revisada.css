@@ -1,0 +1,13 @@
+/* A saída segura faz parte do corredor; a lanterna revela a placa da xícara. */
+.chase-refuge {position:absolute;right:9%;top:35%;width:24%;max-width:270px;min-height:76px;padding:12px;border:2px solid #d7efb9;background:#15271de8;color:#efffd9;box-shadow:0 0 25px #c7eda655;font:700 clamp(11px,1.3vw,17px)/1.5 monospace;touch-action:manipulation;}
+#chase-lamp[aria-pressed="false"] {border-color:#f5c778;color:#ffe4a0;background:#372614;}
+.stage.lamp-out > #hands {filter:brightness(.09) saturate(.25);}
+#prompt[data-input="keyboard"] #prompt-actions button {cursor:default;border-style:dashed;}
+#prompt[data-input="keyboard"] #prompt-actions button:hover {transform:none;background:inherit;}
+@media(max-width:600px){.chase-refuge{right:7%;top:36%;width:40%;min-height:70px;padding:7px;}.chase-nav button{font-size:10px;padding:6px;}}
+@media(orientation:landscape) and (max-height:550px){.chase-refuge{top:25%;min-height:60px;}}
+/* No celular, o nome do corredor e o alerta ocupam linhas diferentes. */
+@media(max-width:600px){
+  .stage.chasing #location{top:12px;left:12px;max-width:calc(100% - 24px);font-size:9px;}
+  .stage.chasing #status{top:44px;left:12px;right:12px;text-align:left;white-space:normal;font-size:9px;line-height:1.5;}
+}

@@ -27,6 +27,7 @@ window.AudioSentia = (() => {
   let pageHidden = document.visibilityState === 'hidden', room = null, roomTimer = null, roomGeneration = 0;
   let ambientPlayed = 0, lastAmbient = '', spatialPlayed = 0;
   let lastVoice = -Infinity, voicePlayed = 0, effectsPlayed = 0, lastVoiceProfile = null, stepSide = false;
+  let lastJumpscare = null, jumpscaresPlayed = 0;
   let tension = null, tensionLevel = 0, legacyPulse = false, pulseGeneration = 0, pulseStarts = 0;
   let pulseLastTime = 0, nextBeat = 0, nextBreath = 0, nextDrone = 0, restUntil = 0, windupPending = false;
   let pulsePlayed = 0, tensionBreaths = 0, tensionDrones = 0, tensionWindups = 0, tensionPauses = 0, tensionPhase = 'silent';
@@ -579,9 +580,11 @@ window.AudioSentia = (() => {
     const intensity = Number.isFinite(Number(options.intensity)) ? Math.max(0,Math.min(1,Number(options.intensity))) : 1;
     if (!intensity) return false;
     const stepInterval = options.pace === 'run' ? .12 : options.pace === 'sneak' ? .3 : .18;
-    const intervals = {step:stepInterval,turn:.12,hit:.08,attack:.1,guard:.1,alert:.25,discovery:.5,death:.8,jumpscare:.9,cut:.09,knife:.09,block:.12,charge:.4,projectile:.13,nearMiss:.25,approach:.55,wave:.3,grab:.22};
-    if (!(key in intervals) || now - (lastEffect.get(key) ?? -Infinity) < intervals[key]) return false;
-    lastEffect.set(key, now);
+    const intervals = {step:stepInterval,turn:.12,hit:.08,attack:.1,guard:.1,alert:.25,discovery:.5,death:.8,glitch:.5,jumpscare:.9,jumpscareFear:.9,jumpscareInsanity:.9,cut:.09,knife:.09,block:.12,charge:.4,projectile:.13,nearMiss:.25,approach:.55,wave:.3,grab:.22};
+    const scare = ['jumpscare','jumpscareFear','jumpscareInsanity'].includes(key);
+    const timerKey = scare ? 'jumpscare' : key;
+    if (!(key in intervals) || now - (lastEffect.get(timerKey) ?? -Infinity) < intervals[key]) return false;
+    lastEffect.set(timerKey, now);
     let result = false;
     const tone = values => {
       result = emit({...values, amplitude:(values.amplitude ?? .08)*intensity, pan:options.pan ?? values.pan ?? 0, distance:options.distance ?? 1}) || result;
@@ -625,18 +628,49 @@ window.AudioSentia = (() => {
     }
     else if (key === 'alert') { tone({frequency:420,end:350,duration:.12,amplitude:.1,cutoff:900}); tone({frequency:300,end:260,duration:.14,delay:.14,amplitude:.09,cutoff:700}); }
     else if (key === 'discovery') [261.63,329.63,392].forEach((frequency,index)=>tone({frequency,duration:.2,delay:index*.08,amplitude:.075,cutoff:1200}));
+    else if (key === 'glitch') {
+      // A opção de poupar falha com interferência curta, sem usar o som de susto.
+      tone({noise:true,duration:.1,attack:.006,amplitude:.045,cutoff:1050,pan:-.15});
+      tone({noise:true,duration:.07,delay:.13,attack:.004,amplitude:.035,cutoff:750,pan:.15});
+      tone({noise:true,duration:.15,delay:.3,attack:.008,amplitude:.03,cutoff:900});
+      tone({frequency:310,end:275,duration:.34,attack:.01,amplitude:.014,wave:'triangle',cutoff:540});
+    }
     else if (key === 'death') { tone({frequency:145,end:38,duration:.6,amplitude:.16,wave:'triangle',cutoff:500}); tone({noise:true,duration:.4,amplitude:.11,cutoff:400}); }
-    else if (key === 'jumpscare') {
+    else if (scare) {
+      // Hunger tem um arranhão grave; Mizzery, um grito metálico quebrado. Nenhum depende de MP3 externo.
+      const profile = key === 'jumpscareFear' || ['medo','fear'].includes(options.variant) ? 'medo'
+        : key === 'jumpscareInsanity' || ['insanidade','insanity'].includes(options.variant) ? 'insanidade'
+        : ['watch','fearChase','medo','fear','chaseFear'].includes(scene) ? 'medo'
+        : ['maze','revelation','insaneChase','insanidade','insanity','chaseInsanity'].includes(scene) ? 'insanidade' : 'outro';
       stopVoice();
-      tone({noise:true,duration:.33,attack:.012,amplitude:.13,cutoff:900});
-      tone({frequency:65,end:42,duration:.5,amplitude:.13,wave:'triangle',cutoff:350});
-      tone({frequency:230,end:155,duration:.35,amplitude:.065,wave:'sawtooth',cutoff:650});
-      tone({frequency:247,end:170,duration:.3,amplitude:.045,wave:'triangle',cutoff:750});
+      // Abre espaço no limite de vozes: o susto não pode ficar mudo por um efeito do quadro anterior.
+      stopGroup(effects); stopGroup(ambience); stopGroup(tensionSources);
+      restUntil = now + 1;
+      if (profile === 'medo') {
+        tone({noise:true,duration:.16,attack:.003,amplitude:.15,cutoff:1450});
+        tone({frequency:59,end:35,duration:.65,attack:.006,amplitude:.16,wave:'triangle',cutoff:220});
+        tone({frequency:146,end:51,duration:.58,attack:.012,amplitude:.11,wave:'sawtooth',cutoff:590});
+        tone({noise:true,duration:.48,delay:.12,attack:.05,amplitude:.1,cutoff:650,pan:-.3});
+        tone({frequency:328,end:92,duration:.34,delay:.09,amplitude:.065,wave:'triangle',cutoff:1150,pan:.3});
+      } else if (profile === 'insanidade') {
+        tone({frequency:590,end:183,duration:.55,attack:.003,amplitude:.12,wave:'sawtooth',cutoff:1650,pan:-.25});
+        tone({frequency:631,end:245,duration:.4,attack:.006,amplitude:.095,wave:'triangle',cutoff:1500,pan:.25});
+        tone({noise:true,duration:.19,attack:.003,amplitude:.14,cutoff:1300});
+        tone({frequency:95,end:39,duration:.65,amplitude:.14,wave:'triangle',cutoff:290});
+        tone({frequency:266,end:690,duration:.18,delay:.24,attack:.003,amplitude:.075,wave:'sawtooth',cutoff:1400});
+        tone({noise:true,duration:.28,delay:.38,attack:.005,amplitude:.09,cutoff:900});
+      } else {
+        tone({noise:true,duration:.33,attack:.012,amplitude:.13,cutoff:900});
+        tone({frequency:65,end:42,duration:.5,amplitude:.13,wave:'triangle',cutoff:350});
+        tone({frequency:230,end:155,duration:.35,amplitude:.065,wave:'sawtooth',cutoff:650});
+        tone({frequency:247,end:170,duration:.3,amplitude:.045,wave:'triangle',cutoff:750});
+      }
+      if (result) { lastJumpscare = profile; jumpscaresPlayed++; }
       clearFade();
     }
     if (result) {
       effectsPlayed++;
-      if (['jumpscare','hit','charge','grab','nearMiss'].includes(key)) duckForEffect(key === 'jumpscare' ? 750 : key === 'charge' ? 550 : 360);
+      if (scare || ['hit','charge','grab','nearMiss'].includes(key)) duckForEffect(scare ? 1000 : key === 'charge' ? 550 : 360);
     }
     return result;
   }
@@ -647,7 +681,7 @@ window.AudioSentia = (() => {
       source:current?.source || '', license:current?.license || '', licenseURL:current?.licenseURL || '',
       volume, musicVolume:volume, voiceVolume, effectsVolume, muted, paused, unlocked, error,
       contextState:context?.state || 'uncreated', voicesActive:voices.size, effectsActive:effects.size + uiEffects.size + tensionSources.size,
-      voicePlayed, effectsPlayed, lastVoiceProfile, pulseActive:pulseTimer !== null, playbackRate:sceneRate(),
+      voicePlayed, effectsPlayed, lastVoiceProfile, lastJumpscare, jumpscaresPlayed, pulseActive:pulseTimer !== null, playbackRate:sceneRate(),
       tension:tension ? {...tension} : null, tensionLevel, tensionSourcesActive:tensionSources.size,
       tensionTimerActive:tension !== null && pulseTimer !== null, pulseMode:pulseTimer === null ? null : tension ? 'tension' : 'maze',
       pulsePlayed, pulseStarts, tensionBreaths, tensionDrones, tensionWindups, tensionPauses, tensionPhase,

@@ -1,5 +1,6 @@
 // Arquivos aprovados. O jogo escolhe a pose pelo nome, sem confundir choro com morte.
 window.ASSETS = [
+  "assets/02-Chases-Batalhas-Efeitos/04-Jumpscare-Medo/medo-jumpscare-7-quadros.png",
   "assets/01-Personagens/01-Ecos/amor/01-Dialogo/00-base.png",
   "assets/01-Personagens/01-Ecos/amor/01-Dialogo/01-gostou.png",
   "assets/01-Personagens/01-Ecos/amor/01-Dialogo/02-nao-gostou.png",

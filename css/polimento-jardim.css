@@ -81,6 +81,45 @@ body.reduced .room-atmosphere *,body:has(#motion:checked) .room-atmosphere * { a
 @media(prefers-reduced-motion:reduce) { .room-atmosphere * {animation:none;} }
 /* A ausência muda somente as camadas do quarto, sem escurecer texto, mãos ou controles. */
 .stage.room-empty > .background { filter:brightness(.46) saturate(.48); }
+/* A mesma escala vale para todas as mãos. A arte fica presa ao rodapé da cena. */
+#stage > #hands.hands {
+  position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+  width:min(76%,720px);height:43%;max-height:43%;
+  object-fit:contain;object-position:center bottom;z-index:4;
+  pointer-events:none;opacity:1;
+}
+#stage > #hands[data-layout="equipment"] {width:min(83%,740px);height:52%;max-height:52%;}
+#stage > #hands.inspecting-hands,#stage > #hands.gesture-hands {
+  bottom:19%;width:min(65%,620px);height:44%;max-height:44%;
+}
+#stage > #hands[data-layout="holding"] {height:47%;max-height:47%;}
+#stage > .held-object {z-index:5;left:46%;bottom:44%;width:8%;height:12%;}
+#stage > #effect {z-index:6;}
+#stage > #world-controls {z-index:8;}
+#stage > #dialogue {z-index:12;}
+#stage > #prompt {z-index:14;}
+#stage > #mobile-controls {z-index:15;}
+#stage > #fade {z-index:30;}
+.jumpscare-frame {position:absolute;inset:0;width:100%;height:100%;z-index:25;background:#000;image-rendering:pixelated;pointer-events:none;}
+.stage.sugar-finale > #actor {animation:none;}
+.stage.loss-scene > .background {filter:brightness(.5) saturate(.6);}
+.stage.choice-glitch > #dialogue {animation:choice-interference .5s steps(1,end);border-color:#9d626e;}
+.stage.choice-glitch > #actor {filter:drop-shadow(-4px 0 #6a263b) drop-shadow(4px 0 #245b61);}
+.stage.choice-glitch::after {content:'';position:absolute;inset:0;z-index:11;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 11px,#632b3938 12px 14px,transparent 15px 27px);box-shadow:inset 5px 0 #743c5588,inset -5px 0 #385d6c88;}
+@keyframes choice-interference {0%,100%{transform:translateX(0);}20%{transform:translateX(-7px);clip-path:inset(2% 0 0);}40%{transform:translateX(5px);clip-path:inset(0 0 5%);}65%{transform:translateX(-3px);}85%{transform:translateX(4px);}}
+body.reduced .stage.choice-glitch > #dialogue {animation:none;outline:2px solid #9d626e;}
+@media(prefers-reduced-motion:reduce){.stage.choice-glitch > #dialogue{animation:none;outline:2px solid #9d626e;}}
+@media(max-width:600px){
+  #stage > #hands.hands {width:100%;height:32%;max-height:32%;}
+  #stage > #hands[data-layout="equipment"] {width:100%;height:40%;max-height:40%;}
+  #stage > #hands.inspecting-hands,#stage > #hands.gesture-hands {bottom:23%;width:96%;height:38%;max-height:38%;}
+  #stage > .held-object {left:44%;bottom:44%;width:12%;height:10%;}
+}
+@media(orientation:landscape) and (max-height:550px){
+  #stage > #hands.hands {width:60%;height:42%;max-height:42%;}
+  #stage > #hands[data-layout="equipment"] {height:50%;max-height:50%;}
+  #stage > #hands.inspecting-hands,#stage > #hands.gesture-hands {bottom:12%;height:43%;max-height:43%;}
+}
 .room-empty .ambient-light { opacity:.025; }
 .game-header #journal-button.has-new { border-color:#e9cc86; }
 .journal-count { display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 3px;margin-left:5px;background:#e9cc86;color:#172024;font:700 10px/1 monospace; }

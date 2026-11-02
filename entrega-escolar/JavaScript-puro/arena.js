@@ -166,8 +166,8 @@ window.Arena = (() => {
     enemy = {
       x: 10.5,
       y: 4.5,
-      hp: options.assist ? 360 : 620,
-      maxHp: options.assist ? 360 : 620,
+      hp: 350,
+      maxHp: 350,
       phase: 'approach',
       timer: 2.2,
       pattern: 0,
@@ -319,7 +319,7 @@ window.Arena = (() => {
         if(enemy.phase==='recover')walk(enemy, Math.cos(player.a) * .15, Math.sin(player.a) * .15);
       }
     }
-    if (enemy.hp <= 20) {
+    if (enemy.hp <= 10) {
       active = false;
       window.AudioSentia?.clearTension?.();
       keys={};cancelDrag();

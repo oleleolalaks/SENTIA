@@ -64,8 +64,11 @@ const G = (() => {
     ninfaErrors = 0,
     ninfaConsecutive = 0,
     keysHeld = {},
-    rescueCooldown = 0;
+    rescueCooldown = 0,
+    promptKeyboardInput = false;
   const asset = part => ASSETS.find(p => p.includes(part));
+  const fearJumpscare=new Image();
+  fearJumpscare.src=asset('/04-Jumpscare-Medo/medo-jumpscare-7-quadros.png');
   const list = part => ASSETS.filter(p => p.includes(part) && p.endsWith('.png') && !/PREVIA|PRANCHA|ATLAS/.test(p));
   const startingRooms = ['amor', 'calma', 'felicidade', 'determinacao'];
   function unlockedRooms() {
@@ -235,6 +238,7 @@ const G = (() => {
     }
     el.src = id==='amor' && S?.phase==='candy' && pose==='quebrou' ? asset('amor-chorando-rosto-coberto.png') : baseSprite(id, pose);
     el.dataset.pose = pose;
+    el.dataset.eco = id;
     el.alt = D.names[id] || id;
     el.hidden = false;
     el.className = 'actor ' + extra + (['amor', 'calma'].includes(id) && !settings.reduced ? ' floating' : '');
@@ -282,6 +286,8 @@ const G = (() => {
     $('#effect').hidden = true;
     $('#hands').hidden = true;
     $('#hands').className = 'hands';
+    delete $('#hands').dataset.layout;
+    $('#jumpscare-frame')?.remove();
     $('#held-object')?.remove();
     $('#dialogue').hidden = true;
     $('#prompt').hidden = true;
@@ -293,7 +299,7 @@ const G = (() => {
     $('#action-panel').className = 'action-panel';
     $('#background').style.opacity = '1';
     $('#stage').classList.remove('light');
-    $('#stage').classList.remove('exploring','room-empty','chasing','impact','ninfa-pressure','cinematic-closeup','shared-scene');
+    $('#stage').classList.remove('exploring','room-empty','chasing','impact','ninfa-pressure','cinematic-closeup','shared-scene','choice-glitch','sugar-finale','loss-scene','lamp-out');
     delete $('#stage').dataset.urgency;
     $('#stage').style.removeProperty('--wave-pressure');
     $('#stage').style.removeProperty('--orb-scale');
@@ -358,7 +364,12 @@ const G = (() => {
     $('#dialogue').hidden = false;
     $('#stage').classList.remove('exploring','chasing');
     window.Perseguicao?.stop();
-    if (eco) actor(eco,dead(eco)?'morreu':'base');
+    // Continuar uma conversa não devolve a pose base a quem já está chorando.
+    if (eco) {
+      const visible=$('#actor');
+      const opening=queue[0]?.pose;
+      actor(eco,dead(eco)?'morreu':opening||(visible.dataset.eco===eco&&!visible.hidden?visible.dataset.pose:'base'));
+    }
     nextLine();
   }
   let writing = null;
@@ -402,6 +413,7 @@ const G = (() => {
     $('#dialogue').classList.remove('is-writing');
     $('#advance').hidden = false;
     if (line.choices) {
+      let choiceMade=false;
       $('#advance').hidden = true;
       $('#speech').textContent = line.text || 'O que você quer dizer?';
       $('#speech').setAttribute('aria-label',line.text || 'O que você quer dizer?');
@@ -410,6 +422,9 @@ const G = (() => {
       $('#speaker').title = 'Sua resposta';
       for (const c of line.choices) $('#choices').append(btn(c.label, () => {
         if (paused) return;
+        if(choiceMade)return;
+        choiceMade=true;
+        $('#choices').querySelectorAll('button').forEach(button=>button.disabled=true);
         S.choices.push({
           scene: line.id || S.phase,
           eco: currentEco,
@@ -478,13 +493,18 @@ const G = (() => {
     const hands=$('#hands');
     const equipped={espada:'/02-Equipamentos/espada/01-preparacao.png',escudo:'/02-Equipamentos/escudo/01-pronto-verso.png',faca:'/02-Equipamentos/faca/01-pronta.png',luz:'/02-Equipamentos/luz/01-segurar.png',lanterna:'/01-Gestos-Aprovados/12-carregar-lanterna.png','chave-sanidade':'/02-Equipamentos/chaves/01-sanidade.png','chave-insanidade':'/02-Equipamentos/chaves/02-insanidade.png'};
     const equippedSource=gesture==='00-repouso'&&S.items.includes(S.flags.equipped)?equipped[S.flags.equipped]:null;
-    const positive=startingRooms.includes(S.room)||S.room==='orgulho';
-    const emotional=gesture==='00-repouso'&&!equippedSource&&S.room&&(positive?S.sanity>85:S.sanity<35);
-    const source=equippedSource?asset(equippedSource):emotional?asset('/03-Efeitos-dos-Ecos/'+S.room+'.png'):asset('/01-Gestos-Aprovados/'+gesture+'.png');
-    if(hands.getAttribute('src')!==source)hands.src=source;
+    const source=equippedSource?asset(equippedSource):asset('/01-Gestos-Aprovados/'+gesture+'.png');
+    showHands(source,gesture);
     hands.dataset.gesture=gesture;
-    hands.hidden=false;
     hands.classList.add('exploration-hands');
+  }
+  // Uma arte já contém as duas mãos. Objetos avulsos ficam na camada seguinte.
+  function showHands(source,gesture='00-repouso') {
+    const hands=$('#hands');
+    if(!source){hands.hidden=true;return;}
+    if(hands.getAttribute('src')!==source)hands.src=source;
+    hands.dataset.layout=/02-Equipamentos/.test(source)?'equipment':/04-segurar-papel|05-equipar-chave|11-segurar-flor|06-oferecer-semente/.test(gesture)?'holding':gesture==='00-repouso'?'rest':'gesture';
+    hands.hidden=false;
   }
   function updateSanityHUD() {
     const hud=$('#sanity-hud');
@@ -505,6 +525,7 @@ const G = (() => {
   function hint(id) {
     if (dead(id)) return 'O quarto permaneceu.';
     if (S.pending[id]) return 'Uma visita ficou em aberto.';
+    if (id === 'calma') return 'Refúgio de Pax · passagem segura nas perseguições.';
     if (id === 'medo' && (!dead('calma') || !dead('determinacao'))) return 'A porta está fechada.';
     if (!S.talks[first[id]]) return 'Há alguém para conhecer.';
     if (id === 'determinacao' && !S.flags.knifeKnown) return 'A moldura guarda uma história.';
@@ -535,7 +556,7 @@ const G = (() => {
       img.src = worldSprite(id);
       img.alt = '';
       const name = document.createElement('span');
-      name.textContent = D.names[id];
+      name.textContent = id === 'calma' ? 'Pax · Calma / refúgio' : D.names[id];
       const status = document.createElement('small');
       status.textContent = hint(id);
       b.append(img, name, status);
@@ -826,8 +847,8 @@ const G = (() => {
       {who:'Jardim',text:'Você estende a mão até '+p.name.toLocaleLowerCase('pt-BR')+'.',effect:()=>holdObject(null,'01-alcancar')},
       {who:'Jardim',text:'Você pega o objeto com cuidado e o traz para perto dos olhos.',effect:()=>{
         holdObject(paper?null:sprite,'04-segurar-papel');
-        if(paper && /diário|anotações/.test(p.name)) $('#hands').src=asset('/02-Equipamentos/investigacao/01-caderno-aberto.png');
-        else if(!paper) $('#hands').src=asset('/02-Equipamentos/investigacao/02-recolher.png');
+        if(paper && /diário|anotações/.test(p.name)) showHands(asset('/02-Equipamentos/investigacao/01-caderno-aberto.png'));
+        else if(!paper) showHands(asset('/02-Equipamentos/investigacao/02-recolher.png'));
         if(/flores/i.test(p.name)){explorationHands('11-segurar-flor');$('#held-object')?.remove();}
         if(/semente/i.test(p.name)){explorationHands('06-oferecer-semente');$('#held-object')?.remove();}
       }}
@@ -854,16 +875,16 @@ const G = (() => {
     if(id==='O1') {
       const gift=script.findIndex(l=>l.pose==='entregar-espada/escudo');
       if(gift>=0) script.splice(gift,1,{text:'Pegue a espada pelo cabo. Não confunda força com invulnerabilidade.',pose:'entregar-espada-fogo',requiresItem:'espada'},{text:'O escudo fica apoiado no seu braço, pelo lado de dentro.',pose:'entregar-escudo-fogo',requiresItem:'escudo'});
-      script.push({who:D.names.orgulho,text:'Você recebe as duas peças. Ela espera até você ajustar o apoio do braço.',pose:'entregar-espada-e-escudo',requiresItem:'escudo',effect:()=>{explorationHands();$('#hands').src=asset('/02-Equipamentos/escudo/04-espada-verso.png');}});
+      script.push({who:D.names.orgulho,text:'Você recebe as duas peças. Ela espera até você ajustar o apoio do braço.',pose:'entregar-espada-e-escudo',requiresItem:'escudo',effect:()=>{explorationHands();showHands(asset('/02-Equipamentos/escudo/04-espada-verso.png'));}});
     }
     if(id==='N1') {script[0].pose='esconder-nas-nuvens';script.push({text:'Pode chegar mais perto. Eu deixei um espaço.',pose:'estender-a-mao'});}
     if(id==='N3') script.push({text:'Eu não queria ter que desconfiar de quem vinha ficar comigo.',pose:'choro-intenso'});
     if(id==='N4') script[0].pose='choro-intenso';
     script.forEach(line=>{
       const hands={'entregar-espada-fogo':'/02-Equipamentos/espada/01-preparacao.png','entregar-escudo-fogo':'/02-Equipamentos/escudo/01-pronto-verso.png','entregar-luz':'/02-Equipamentos/luz/02-oferecer.png'}[line.pose];
-      if(hands) line.effect=()=>{explorationHands();$('#hands').src=asset(hands);};
+      if(hands) line.effect=()=>{explorationHands();showHands(asset(hands));};
     });
-    const directions={F1:'Ninfa mora no caminho das flores azuis. Ela não recebe muitas visitas, então avise que chegou.',P1:'Procure Hermes pelo caminho dos fios e das luzes azuis. Ele pode ensinar a correr. Hunger também vem aqui; a passagem dele permanece fechada por enquanto.',D1:'Se quer equipamentos, procure Aurea nos arcos dourados. Não toque nas minhas coisas sem perguntar.',A1:'Lúmen está no caminho coberto de estrelas. Beerus fica depois dos arcos vermelhos. Eu passo pelos dois quando consigo.'};
+    const directions={F1:'Ninfa mora no caminho das flores azuis. Ela não recebe muitas visitas, então avise que chegou.',P1:'Este quarto é um refúgio seguro. Se uma perseguição começar, procure a porta com a xícara e entre aqui. Mesmo quando eu não estiver, esta passagem continua levando ao abrigo. Procure Hermes pelo caminho dos fios e das luzes azuis. Ele pode ensinar a correr. Hunger também vem aqui; a passagem dele permanece fechada por enquanto.',D1:'Se quer equipamentos, procure Aurea nos arcos dourados. Não toque nas minhas coisas sem perguntar.',A1:'Lúmen está no caminho coberto de estrelas. Beerus fica depois dos arcos vermelhos. Eu passo pelos dois quando consigo.'};
     if(directions[id]) script.push({text:directions[id],pose:'gostou'});
     // A confidência precisa aparecer na conversa antes de virar consequência depois.
     if (id === 'N2') script.push({who: 'Ninfa', text: 'Pax não gosta de perceber tarde que alguém ficou desconfortável. Se precisar ir, diga. Não suma para testar isso.', pose: 'base'});
@@ -1016,11 +1037,17 @@ const G = (() => {
     background(roomBg('determinacao'));
     say('determinacao', [{
       who:'Jardim',text:'Um corte atravessa a visão antes do primeiro turno.',image:asset('/cortes/faca/02-corte.png'),pose:'morreu',
-      effect:()=>{ $('#hands').src=asset('/02-Equipamentos/faca/03-atacar.png');$('#hands').hidden=false;kill('determinacao','O protagonista tomou a faca e a esfaqueou antes do primeiro turno.');addItem('faca'); }
+      effect:()=>{showHands(asset('/02-Equipamentos/faca/03-atacar.png'));window.AudioSentia?.sfx?.('knife');kill('determinacao','O protagonista tomou a faca e a esfaqueou antes do primeiro turno.');addItem('faca');$('#stage').classList.add('loss-scene');}
     }, {
       who: 'Jardim',
       text: 'A moldura está vazia. Friska já não se move nem responde. A escolha veio depois da ação.',
       pose: 'morreu'
+    }, {
+      who:'Jardim',text:'Ela não teve um turno. A única coisa que pediu foi que você não tocasse na faca.',pose:'morreu',effect:()=>{$('#hands').hidden=true;}
+    }, {
+      who:'Você',text:'Era para tirar a insegurança. Era só para isso.'
+    }, {
+      who:'Jardim',text:'Você espera o alívio. Continua ouvindo a própria respiração. O nome dela ainda está escrito nos projetos que não vai terminar.',pose:'morreu'
     }, {
       choices: [{
         label: 'POUPAR',
@@ -1096,6 +1123,12 @@ const G = (() => {
   // Essas quatro mortes são a proposta V4. Poupar agora deixa vivo até outro acontecimento.
   function minorEnd(id) {
     const m = minor[id];
+    const rupture={
+      felicidade:{plea:'Eu sei que você está com medo de não ser suficiente. Mas eu não sou a pessoa que te fez acreditar nisso.',before:'Sunny tenta terminar a brincadeira que começou quando você chegou. A voz falha no lugar em que viria a sua resposta.',last:'Só olha para mim. Não para o que você quer que desapareça.',after:'Os olhos perdem a luz. Um líquido preto desce pelo rosto. O corpo ainda ocupa o lugar onde ele esperava você sentar.'},
+      calma:{plea:'Eu deixei a porta aberta porque você precisava respirar. Não porque achava que podia consertar você.',before:'Pax deixa espaço no banco, por hábito. Mesmo chorando, continua esperando que você se sente em vez de avançar.',last:'Você pode ir embora. Não precisa me apagar para conseguir sair.',after:'A última tentativa de respirar não se completa. Os olhos escurecem e vazam preto. A segunda xícara continua esperando uma visita.'},
+      ansiedade:{plea:'Eu avisei porque queria você vivo. Você transformou cada aviso numa prova de que eu era o problema.',before:'Hermes tenta proteger o núcleo com as mãos. As faíscas seguem o ritmo irregular da voz; ele já não termina os cálculos.',last:'Se o aviso parar, o perigo não vai parar junto.',after:'O núcleo se apaga no meio de um pulso. Preto escorre dos olhos vazios. O rádio continua chamando por alguém que não responde.'},
+      orgulho:{plea:'Eu te dei proteção. Era para você ter tempo de escolher. Não para fazer de mim a próxima coisa que precisa vencer.',before:'Aurea tenta manter a postura. Não consegue esconder o choro, nem o tremor da mão que ofereceu o escudo.',last:'A força era sua. A responsabilidade também.',after:'A coroa perde o brilho. Os olhos ficam escuros e vazam preto. A mão cai sem retirar o que já tinha oferecido.'}
+    }[id];
     say(id, [{
       text: m.broken,
       pose: 'quebrou'
@@ -1124,15 +1157,22 @@ const G = (() => {
       }, {
         label: 'Continuar insistindo',
         go: () => {
-          say(id, [['Você', 'Eu não vou precisar disso depois.'], {
+          say(id, [{text:rupture.plea,pose:'quebrou'}, {who:'Jardim',text:rupture.before,pose:'quebrou'}, ['Você', 'Se eu não sentir mais nada, ninguém vai poder usar isso contra mim.'], {
+            text:rupture.last,pose:'quebrou'
+          }, {text:'Ele ainda está vivo. Você reconhece o que está fazendo.',choices:[{
+            label:'Recuar. Deixar vivo.',go:()=>{
+              S.pending[id]=S.activity;save();
+              say(id,[{text:'Eu preciso que você se afaste agora.',pose:'quebrou'},{who:'Jardim',text:'Você recua. O choro continua atrás de você; não há reconciliação instantânea.',pose:'quebrou'}],hub);
+            }
+          },{label:'Continuar mesmo assim',go:()=>say(id,[['Você','Eu não vou precisar disso depois.'],{
             text: m.last,
             pose: 'quebrou'
           }, {
             who: 'Jardim',
-            text: 'A presença perde a resposta. O silêncio que vem depois é diferente.',
+            text: rupture.after,
             pose: 'morreu',
-            effect: () => kill(id, 'A ruptura veio depois de o protagonista insistir nas vulnerabilidades conhecidas. ' + m.after)
-          }], renderRoom);
+            effect: () => {kill(id, 'A ruptura veio depois de o protagonista insistir nas vulnerabilidades conhecidas. ' + m.after);$('#hands').hidden=true;$('#stage').classList.add('loss-scene');window.AudioSentia?.sfx?.('death');}
+          },{who:'Jardim',text:'Você procura a sensação de alívio que prometeu a si mesmo. O quarto fica em silêncio. A insegurança continua com você.',pose:'morreu'}],renderRoom)}]}],renderRoom);
         }
       }]
     }], renderRoom);
@@ -1159,24 +1199,25 @@ const G = (() => {
   }
   function prompt(label, actions, seconds, done) {
     mode = 'prompt';
+    // Nos reflexos dos generais o PC usa a tecla indicada; clicar a fala não responde.
+    const keyboardOnly=settings.device==='pc'&&!settings.assist&&(qte?.eco==='insanidade'||chase?.kind==='insanidade');
+    $('#dialogue').hidden=true;
+    $('#prompt').dataset.input=keyboardOnly?'keyboard':'buttons';
     if(!chase)$('#status').textContent=qte?'Reaja ao movimento':'';
     $('#prompt').hidden = false;
     $('#prompt-label').textContent = label;
-    $('#prompt-actions').replaceChildren(...actions.map(a => btn(a.label, () => {
-      if (paused || !timed) return;
-      timed = null;
-      $('#prompt').hidden = true;
-      done(a.id);
-    })));
+    $('#prompt-actions').replaceChildren(...actions.map(a => {
+      const button=btn(a.label, () => {
+        if (paused || !timed || (keyboardOnly&&!promptKeyboardInput)) return;
+        if(chase?.kind==='medo'&&chase.index===chase.length-1&&!chase.lampOn&&a.id==='refuge')return;
+        timed = null; $('#prompt').hidden = true; done(a.id);
+      });
+      button.dataset.action=a.id;
+      if(keyboardOnly)button.setAttribute('aria-description','Use a tecla indicada na tela.');
+      return button;
+    }));
     $('#timer-fill').style.transform = 'scaleX(1)';
-    timed = {
-      left: seconds,
-      total: seconds,
-      done: () => {
-        $('#prompt').hidden = true;
-        done(null);
-      }
-    };
+    timed = {left:seconds,total:seconds,done:()=>{$('#prompt').hidden=true;done(null);}};
   }
   // Os comandos rápidos aceitam toque e teclado. Pausar congela o prazo.
   function startQTE(moves, onDone, onFail, eco = null) {
@@ -1249,10 +1290,10 @@ const G = (() => {
       id: x
     })) : [];
     const all = [action, ...decoy].sort((a, b) => a.id.localeCompare(b.id));
-    $('#prompt-status').textContent = 'Siga o comando indicado. Teclado ou toque.';
+    $('#prompt-status').textContent = qte.eco==='insanidade'&&settings.device==='pc'&&!settings.assist?'Use a tecla indicada. Clicar na caixa não responde.':'Siga o comando indicado. Teclado ou toque.';
     qte.expected = move;
     const pressure=qte.eco==='tristeza'?(S.flags.ninfaPressure||0):0;
-    const seconds=settings.assist?3.2:Math.max(.72,1.22-(qte.eco==='tristeza'?S.checkpoint*.055:0)-pressure*.12);
+    const seconds=settings.assist?3.2:qte.eco==='insanidade'?.85:Math.max(.72,1.22-(qte.eco==='tristeza'?S.checkpoint*.055:0)-pressure*.12);
     qte.tensionClock=0;
     window.AudioSentia?.setTension?.(qte.eco==='tristeza'?.5+S.checkpoint*.06:.68,{kind:qte.eco==='tristeza'?'ninfa':'chase',proximity:.65,health:qte.eco==='tristeza'?(S.flags.ninfaVitality||100)/100:1,charging:false});
     if(qte.eco==='tristeza')$('#prompt-status').textContent='Fôlego '+S.flags.ninfaVitality+' / 100 · Erros '+ninfaErrors+' · Responda antes da onda';
@@ -1276,7 +1317,7 @@ const G = (() => {
   }
   function deathScreen(text, restart, kind = 'insanidade') {
     resetScene();
-    window.AudioSentia?.sfx?.(settings.reduced?'death':'jumpscare');
+    window.AudioSentia?.sfx?.(settings.reduced?'death':kind==='medo'?'jumpscareFear':kind==='insanidade'?'jumpscareInsanity':'jumpscare');
     mode = 'defeat';
     retry = restart;
     objective('Uma tentativa terminou. Seu checkpoint foi preservado.');
@@ -1287,6 +1328,34 @@ const G = (() => {
     if (settings.reduced) {
       finish();
       return;
+    }
+    if(kind==='medo') {
+      // Sete desenhos novos, lidos em células. O susto ocupa a tela, não o canto.
+      const canvas=document.createElement('canvas');
+      canvas.id='jumpscare-frame';canvas.className='jumpscare-frame';
+      canvas.setAttribute('aria-label','Hunger avança da escuridão');
+      $('#stage').append(canvas);
+      const bounds=$('#stage').getBoundingClientRect();
+      canvas.width=Math.max(1,Math.round(bounds.width));canvas.height=Math.max(1,Math.round(bounds.height));
+      const ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+      const atlas=fearJumpscare;
+      let frame=0;
+      const animate=()=>{
+        if(!canvas.isConnected)return;
+        if(frame>=7){canvas.remove();finish();return;}
+        ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
+        if(atlas.complete&&atlas.naturalWidth) {
+          const cell=atlas.naturalWidth/7;
+          const height=canvas.height*(1+frame*.09),width=height*cell/atlas.naturalHeight;
+          ctx.drawImage(atlas,frame*cell,0,cell,atlas.naturalHeight,(canvas.width-width)/2,(canvas.height-height)/2,width,height);
+        } else {
+          const fallback=new Image();fallback.src=asset('/02-Medo/11-terror-jumpscare.png');
+          if(fallback.complete&&fallback.naturalWidth)ctx.drawImage(fallback,0,0,canvas.width,canvas.height);
+        }
+        canvas.dataset.frame=String(frame++);
+        defer(.15,animate);
+      };
+      animate();return;
     }
     const frames = kind === 'insanidade' ? list('/01-Frames-500x380/') : [];
     if (frames.length) {
@@ -1320,7 +1389,7 @@ const G = (() => {
     resetScene();
     background(asset('/03-Observatorio/09-observatorio.png'));
     say('medo', ['Você continua entrando como se eles fossem ficar esperando.', ['Você', 'Está tentando me assustar?'], 'Você ainda acha que isso é sobre o que eu quero que você sinta.'], () => {
-      const p = panel('Oito pontos de luz', 'Cada esfera mostra um corredor. Você tem 3 segundos para abrir a esfera em que Hunger apareceu. Sustente a visão por um instante para fazê-lo recuar. Cada ciclo passa pelas oito câmeras. Você precisa sustentar a vigilância por 3 minutos. A pausa suspende o tempo.');
+      const p = panel('Oito pontos de luz', 'Cada esfera mostra um corredor. Você tem 1,5 segundo para abrir a esfera em que Hunger apareceu. Sustente a visão por um instante para fazê-lo recuar. Cada ciclo passa pelas oito câmeras. Você precisa sustentar a vigilância por 2 minutos. A pausa suspende o tempo.');
       p.append(btn('Começar a vigilância', () => {
         setPhase('watch');
         watchStart();
@@ -1332,8 +1401,8 @@ const G = (() => {
     resetScene(); mode='watch';
     background(asset('/03-Observatorio/09-observatorio.png')); explorationHands();
     $('#location').textContent='Observatório';
-    watch={time:180,position:-1,stage:0,next:1.5,looking:-1,hold:0,repels:0,round:0,visited:[],spotted:false,grace:0};
-    drawWatch(); objective('Encontre Hunger em até 3 segundos. Todas as oito esferas fazem parte do circuito.');
+    watch={time:120,position:-1,stage:0,next:1.5,looking:-1,hold:0,repels:0,round:0,visited:[],spotted:false,grace:0};
+    drawWatch(); objective('Encontre Hunger em até 1,5 segundo. Todas as oito esferas fazem parte do circuito.');
   }
   function cameraButtons() {
     const grid=document.createElement('div');grid.className='orbs watch-switches';
@@ -1368,7 +1437,7 @@ const G = (() => {
     $('#status').textContent=watch.position<0?'Escute. Observe o brilho.':watch.looking===watch.position?'Presença na esfera '+(watch.position+1):'Hunger se moveu · '+Math.max(0,watch.next).toFixed(1)+' s';
   }
   function drawWatch() {
-    const p=panel('Pontos de observação','Uma esfera mudou de brilho. Abra a visão certa em até 3 segundos e sustente o olhar por um instante.');
+    const p=panel('Pontos de observação','Uma esfera mudou de brilho. Abra a visão certa em até 1,5 segundo e sustente o olhar por um instante.');
     p.classList.add('observation');p.append(watchHud(),cameraButtons());updateWatchHud();
   }
   function showCamera(i) {
@@ -1390,7 +1459,7 @@ const G = (() => {
       const circuit=[0,5,2,7,3,6,1,4];
       w.position=(circuit[w.round%8]+Math.floor(w.round/8)*3)%8;w.round++;
       if(!w.visited.includes(w.position))w.visited.push(w.position);
-      w.next=settings.assist?5:3;w.hold=0;w.spotted=w.looking===w.position;w.grace=0;
+      w.next=1.5;w.hold=0;w.spotted=w.looking===w.position;w.grace=0;
       window.AudioSentia?.sfx?.('alert');
       if(w.looking<0)drawWatch();else showCamera(w.looking);
     } else if(w.position>=0) {
@@ -1417,19 +1486,20 @@ const G = (() => {
   function fearChaseIntro() {
     resetScene();
     say('medo', ['Você conseguiu olhar todos eles. Conseguiu entender algum?'], () => {
-      const p = panel('A visão falhou', 'Corra pelos corredores. Segure Shift no PC ou toque em Correr para ligar e desligar a corrida. Reaja às vigas e ao piso cedendo. Nas saídas, siga a indicação visível. Dois erros próximos podem ser fatais; correr não apaga a distância perdida.');
+      const p = panel('A visão falhou', 'Corra pelos corredores: segure Shift no PC ou toque em Correr. A lanterna apaga durante a fuga; pressione F ou toque em Acender para recuperar a luz. Sem ela, você não enxerga a saída segura. Procure no fim a porta iluminada com uma xícara: é o quarto de Pax, o refúgio da Calma. Entre por E ou pelo objeto no cenário. Erros aproximam Hunger.');
       p.append(btn('Sair do observatório', () => chaseStart('medo')));
     });
   }
   // Cada chase usa seus próprios corredores, separados do labirinto comum.
-  function chaseStart(kind, index = 0, runLatched = false, carryDanger = null) {
+  function chaseStart(kind, index = 0, runLatched = false, carryDanger = null, lampState = null) {
     resetScene();
-    explorationHands('02-punhos-fechados');
+    explorationHands(kind==='medo'?'12-carregar-lanterna':'02-punhos-fechados');
     mode = 'chase';
     const n = kind === 'medo' ? 8 : 6;
     chase = {
       kind,
       index,
+      lampOn:lampState?.lampOn??true,lampCharge:lampState?.lampCharge??3.4,lampCooldown:0,
       progress: 0,
       danger: Number.isFinite(carryDanger)?carryDanger:settings.assist?2:3.8,
       stepClock:0, obstacleDone:false, feedbackLeft:0, tensionClock:0, elapsed:0,
@@ -1450,7 +1520,7 @@ const G = (() => {
     const monster=c.kind==='medo'?asset('/02-Medo/10-terror-emboscada.png'):baseSprite('insanidade','presenca-invasiva');
     Perseguicao.start(source,monster);
     $('#location').textContent=c.kind==='medo'?'Corredores de Hunger':'Além da saída';
-    objective('Corra e escolha a passagem antes de a presença alcançar você.');
+    objective(c.kind==='medo'?'F / Acender: mantenha a lanterna. No fim, entre no quarto de Pax, marcado pela xícara.':'Corra e responda com as setas. No PC, clicar a caixa não desvia.');
     $('#world-controls').replaceChildren();
     const nav=document.createElement('div');nav.className='room-nav chase-nav';
     const toggleRun=()=>{c.runLatched=!c.runLatched;run.setAttribute('aria-pressed',String(c.runLatched));};
@@ -1458,17 +1528,44 @@ const G = (() => {
     run.onpointerdown=e=>{if(e.button!==0)return;e.preventDefault();toggleRun();};
     run.id='chase-run';run.setAttribute('aria-pressed',String(!!c.runLatched));
     const back=btn('Olhar para trás · B',()=>{c.lookingBack=!c.lookingBack;back.setAttribute('aria-pressed',String(c.lookingBack));});
-    back.id='chase-back';back.setAttribute('aria-pressed','false');nav.append(run,back);$('#world-controls').append(nav);
+    back.id='chase-back';back.setAttribute('aria-pressed','false');nav.append(run,back);
+    if(c.kind==='medo'){
+      const lamp=btn('Lanterna · F',()=>relightChaseLamp());lamp.id='chase-lamp';lamp.setAttribute('aria-pressed',String(c.lampOn));nav.append(lamp);
+      const refuge=btn('☕ QUARTO DE PAX · ENTRAR [E]',()=>enterPaxRefuge(c));
+      refuge.id='chase-refuge';refuge.className='chase-refuge';refuge.hidden=true;$('#world-controls').append(refuge);
+    }
+    $('#world-controls').append(nav);updateChaseLamp();
+  }
+  function enterPaxRefuge(c) {
+    if(c!==chase||paused||c.kind!=='medo'||c.index!==c.length-1||!c.lampOn||c.progress<2.6*.65)return;
+    setPhase('fearRoom');fearRoom();
+  }
+  function relightChaseLamp() {
+    const c=chase;if(!c||c.kind!=='medo'||paused||c.lampCooldown>0)return;
+    c.lampOn=true;c.lampCharge=3.1+(c.index%3)*.45;c.lampCooldown=.3;
+    window.AudioSentia?.sfx?.('turn',{intensity:.28});updateChaseLamp();
+  }
+  function updateChaseLamp() {
+    const c=chase;if(!c||c.kind!=='medo')return;
+    $('#stage').classList.toggle('lamp-out',!c.lampOn);
+    const lamp=$('#chase-lamp');
+    if(lamp){lamp.textContent=c.lampOn?'Lanterna '+Math.ceil(c.lampCharge)+' s · F':'ACENDER LANTERNA · F';lamp.setAttribute('aria-pressed',String(c.lampOn));}
+    const refuge=$('#chase-refuge');if(refuge)refuge.hidden=!(c.lampOn&&c.index===c.length-1&&c.progress>=2.6*.65);
+    if(c.waiting&&c.index===c.length-1){
+      $('#prompt-label').textContent=c.lampOn?'A porta da xícara: entre no REFÚGIO DE PAX.':'ESCURO — acenda a lanterna para encontrar o refúgio!';
+      $('#prompt-actions').querySelectorAll('button').forEach(b=>b.hidden=!c.lampOn);
+    }
   }
   function chaseFailure(c,text) {
     deathScreen(text,()=>chaseStart(c.kind,Math.max(0,c.index-1)),c.kind);
   }
   function chaseDecision(c,label,dir,isTurn) {
     c.waiting=true;
-    const labels={left:'← Esquerda',up:'↑ Frente',right:'Direita →',down:'↓ Abaixar'};
+    const labels={left:'← / A · Esquerda',up:'↑ / W · Frente',right:'→ / D · Direita',down:'↓ / S · Abaixar'};
+    const refuge=c.kind==='medo'&&c.index===c.length-1&&isTurn;if(refuge)dir='refuge';
     const seconds=settings.assist?3:isTurn?1.15:1.05;
     window.AudioSentia?.sfx?.('alert');
-    prompt(label,Object.entries(labels).map(([id,label])=>({id,label})),seconds,r=>{
+    prompt(refuge?'A porta da xícara: entre no REFÚGIO DE PAX.':label,refuge?[{id:'refuge',label:'Entrar no quarto de Pax · E'}]:Object.entries(labels).map(([id,label])=>({id,label})),seconds,r=>{
       if(r!==dir){
         c.danger+=settings.assist?1.8:2.75;c.progress*=.58;c.waiting=false;mode='chase';
         c.turnFeedback='blocked';c.feedbackLeft=.65;
@@ -1486,11 +1583,18 @@ const G = (() => {
       setPhase(c.kind==='medo'?'fearChase':'insaneChase',c.index);drawChase();
     });
     $('#prompt').classList.add('chase-prompt');
+    $('#prompt-status').textContent=c.kind==='insanidade'&&settings.device==='pc'&&!settings.assist?'Use a seta ou WASD indicado. O clique não conta.':refuge?'E ou a porta iluminada. Só a luz revela o refúgio.':'Setas / WASD ou botões de toque. Lanterna: F.';
+    updateChaseLamp();
   }
   function tickChase(dt) {
     const c=chase;if(!c)return;
     const running=!!(keysHeld.run||c.runLatched),distance=c.kind==='medo'?2.6:2.9;
     c.elapsed+=dt;
+    if(c.kind==='medo'){
+      c.lampCooldown=Math.max(0,c.lampCooldown-dt);
+      if(c.lampOn){c.lampCharge-=dt;if(c.lampCharge<=0){c.lampOn=false;window.AudioSentia?.sfx?.('alert',{intensity:.25});}}
+      updateChaseLamp();
+    }
     c.feedbackLeft=Math.max(0,c.feedbackLeft-dt);if(!c.feedbackLeft)c.turnFeedback=null;
     // Correr mantém a distância; não apaga os erros anteriores.
     if(!c.waiting)c.progress+=dt*(running&&!c.lookingBack?1:.1);
@@ -1508,7 +1612,7 @@ const G = (() => {
     if(c.tensionClock>=.12){c.tensionClock=0;window.AudioSentia?.setTension?.(tension,{kind:'chase',proximity,health:1,charging:c.waiting});}
     Perseguicao.draw(dt,{...c,running,distance,proximity,surge,reduced:settings.reduced,catchingUp:c.danger>5.5,threatCue:tension});
     const presence=c.danger>6?'MUITO PERTO':c.danger>4.6?'A presença se aproxima':'Passos atrás de você';
-    $('#status').textContent='Passagem '+(c.index+1)+' / '+c.length+' · '+(running?'Correndo':'CORRA · Shift ou botão')+' · '+presence;
+    $('#status').textContent='Passagem '+(c.index+1)+' / '+c.length+' · '+(running?'Correndo':'CORRA · Shift ou botão')+' · '+presence+(c.kind==='medo'&&!c.lampOn?' · SEM LUZ — F / ACENDER':'');
     $('#chase-run')?.setAttribute('aria-pressed',String(running));
     if(c.danger>=8)return chaseFailure(c,'A presença alcançou você. Corra, reaja aos obstáculos e evite olhar para trás por muito tempo.');
     if(c.waiting)return;
@@ -1532,7 +1636,7 @@ const G = (() => {
       text: 'Ela não termina a frase.',
       pose: 'morreu',
       effect: () => kill('culpa', 'Medo a matou intencionalmente durante a perseguição. A razão específica não foi esclarecida.')
-    }], () => chaseStart('medo', saved.index, saved.runLatched, saved.danger));
+    }, {who:'Jardim',text:'A presença se afasta de Lúmen. Ele não se levanta. Hunger volta o rosto para você, e a perseguição continua sem ele.'}], () => chaseStart('medo', saved.index, saved.runLatched, saved.danger, saved));
   }
   function fearRoom() {
     resetScene();
@@ -1562,8 +1666,9 @@ const G = (() => {
           label: 'Matar',
           go: () => say('medo', [{
             who: 'Jardim',
-            text: 'A forma que assustava já tinha cedido. O protagonista ergue a mão mesmo assim.',
-            pose: 'morreu',
+            text: 'A forma que assustava já tinha cedido. Hunger recua até a parede do refúgio.',
+            pose: 'quebrou'
+          }, {text:'Eu não vou correr atrás de você. Não agora.',pose:'quebrou'}, {who:'Jardim',text:'Os dedos compridos cobrem parte do rosto. Sem a silhueta dos corredores, ele parece menor diante da xícara deixada por Pax.',pose:'quebrou'}, {who:'Você',text:'Eu ainda lembro dos seus passos.'}, {text:'Eu também vou lembrar.',pose:'quebrou'}, {who:'Jardim',text:'O protagonista se aproxima. Não há ataque vindo de Hunger para interceptar desta vez.',pose:'quebrou'}, {text:'Você encontrou um lugar seguro e ainda trouxe isso para dentro.',pose:'quebrou'}, {who:'Jardim',text:'A mão de Hunger tenta alcançar a parede. O movimento para antes de encontrar apoio.',pose:'morreu',
             effect: () => kill('medo', 'Morto pelo protagonista no quarto de Pax, depois de voltar à forma habitual.')
           }], () => {
             setPhase('explore');
@@ -1642,12 +1747,18 @@ const G = (() => {
     say('tristeza', [{
       text: 'Então não chama o que aconteceu de não sentir nada.',
       pose: 'quebrou'
+    }, {
+      text:'Eu te contei onde doía porque achei que você ia entender. Não porque queria te ensinar a machucar.',pose:'quebrou'
+    }, {
+      who:'Você',text:'Eu só queria parar de ter medo do que sentia.'
+    }, {
+      text:'E eu queria que você tivesse ficado para ouvir.',pose:'quebrou'
     }, {who:'Jardim',text:'A água escurece. Você ainda reconhece o último olhar antes de perder a vista dela.',effect:()=>{$('#actor').src=asset('/04-Tristeza/16-derrotada.png');}}, {
       who: 'Jardim',
       text: 'Quando o caminho retorna, Ninfa não vem junto.',
       pose:'morreu',
-      effect: () => kill('tristeza', 'Morreu no desfecho do confronto aquático, depois de reconhecer a traição. A água e o corte ocultaram o fim.')
-    }], () => {
+      effect: () => {kill('tristeza', 'Morreu no desfecho do confronto aquático, depois de reconhecer a traição. A água e o corte ocultaram o fim.');$('#stage').classList.add('loss-scene');$('#hands').hidden=true;window.AudioSentia?.sfx?.('death');}
+    }, {who:'Jardim',text:'Você continua esperando que alguma coisa pare de doer. O mar fica sem a voz dela. O que ela soube sobre você não desaparece com a água.',pose:'morreu'}], () => {
       note('A confiança de Ninfa', 'Ela percebeu que suas confidências sobre os irmãos foram usadas pelo protagonista.');
       setPhase('explore');
       hub();
@@ -1788,6 +1899,8 @@ const G = (() => {
   // O jogador pode querer poupar. O protagonista contraria essa escolha aqui.
   function candyFinal() {
     resetScene();
+    setPhase('candy');
+    $('#stage').classList.add('sugar-finale');
     background(asset('/01-Arena-Odio/01-frente.png'));
     say('amor', [{
       text: 'Eu achei que se chegasse a tempo…',
@@ -1796,23 +1909,31 @@ const G = (() => {
       text: 'Você fala como se tivesse acabado.',
       pose: 'quebrou'
     }, {
+      text:'Eu ainda estou ouvindo ele. Eu tentei parar os disparos. Eu não queria deixar ninguém no chão.',pose:'quebrou'
+    }, {
+      who:'Jardim',text:'Sugar aperta as mãos contra o rosto. As asas tremem. Ela não olha para a espada que você trouxe de volta.',pose:'quebrou'
+    }, {
       choices: [{
         label: 'POUPAR',
         go: () => {
           S.flags.triedSugar = true;
           save();
-          say('amor', [{
-            who: 'Você',
-            text: 'Eu não vou precisar de ninguém depois.'
-          }, {
-            text: 'Você ainda está aqui?',
-            pose: 'quebrou'
-          }, {
+          timed=null;writing=null;queue=[];afterDialogue=null;
+          mode='scene';$('#dialogue').hidden=false;$('#choices').replaceChildren();$('#advance').hidden=true;
+          $('#speech').textContent='POUPAR';
+          $('#stage').classList.add('choice-glitch');
+          actor('amor','quebrou');
+          window.AudioSentia?.sfx?.('glitch');
+          defer(settings.reduced ? .2 : .5,()=>{
+            $('#stage').classList.remove('choice-glitch');
+            say('amor', [{who:'Jardim',text:'Você tentou poupar. A mão do protagonista não recua. A alternativa desaparece.',pose:'quebrou'},{
+            who:'Você',text:'Eu não vou precisar de ninguém depois.'
+          }, {text:'A espada continua erguida. Sugar não consegue afastar as mãos do rosto.',pose:'quebrou',
             choices: [{
               label: 'MATAR',
               go: candyDeath
             }]
-          }], candyDeath);
+          }], candyDeath);});
         }
       }, {
         label: 'MATAR',
@@ -1822,14 +1943,21 @@ const G = (() => {
   }
   function candyDeath() {
     resetScene();
+    setPhase('candy');
+    $('#stage').classList.add('loss-scene');
     background(asset('/02-Cenas-500x380/09-silhueta.png'));
-    say(null, [['Jardim', 'O protagonista ergue a espada. A cena corta para uma silhueta.'], {
+    say(null, [['Jardim', 'Ela veio até a arena para impedir que você morresse. Agora a sombra da sua espada atravessa a luz que ela deixou.'], ['Jardim', 'O protagonista ergue a espada. A cena corta para uma silhueta.'], {
       who: 'Jardim',
       text: 'A luz deixa o corpo inteiro.',
       effect: () => {
         kill('amor', 'O protagonista a matou depois de recolher a espada. A tentativa de poupar, quando feita, não foi respeitada por ele.');
+        window.AudioSentia?.sfx?.('cut');
         actor('amor', 'morreu');
       }
+    }, {
+      who:'Jardim',text:'Ela inteira escurece. Não há luz para devolver às suas mãos. Você continua vivo por causa de quem acabou de matar.'
+    }, {
+      who:'Jardim',text:'A arena já não está sob ataque. O silêncio não parece segurança.'
     }], () => {
       setPhase('stairs');
       stairs();
@@ -1951,7 +2079,7 @@ const G = (() => {
           }, () => {
             deathScreen('A aproximação fechou o espaço.', () => revelation());
             return false;
-          });
+          },'insanidade');
         });
       });
     }
@@ -2361,6 +2489,7 @@ const G = (() => {
     });
   }
   function keyAction(key) {
+    if(chase?.waiting&&chase.kind==='medo'&&chase.index===chase.length-1&&key==='e')return 'refuge';
     if(qte?.expected==='hold'&&key===' ')return 'hold';
     if(qte?.expected==='push'&&['w','ArrowUp'].includes(key))return 'push';
     if (qte?.expected === 'back' && ['ArrowDown', 's'].includes(key)) return 'back';
@@ -2392,6 +2521,8 @@ const G = (() => {
     if(mode==='watch'&&/^[1-8]$/.test(key)){
       e.preventDefault();document.querySelector('[data-camera="'+(Number(key)-1)+'"]')?.click();return;
     }
+    if(chase?.kind==='medo'&&key==='e'&&chase.index===chase.length-1&&chase.progress>=2.6*.65){e.preventDefault();enterPaxRefuge(chase);return;}
+    if(chase?.kind==='medo'&&(mode==='chase'||mode==='prompt')&&key==='f'){e.preventDefault();relightChaseLamp();return;}
     if (key === 'l') {e.preventDefault();makeL();return;}
     if (key === 'i') return inventory();
     if (key === 'j') return journal();
@@ -2421,7 +2552,7 @@ const G = (() => {
       return;
     }
     if ((mode === 'chase'||chase?.waiting) && key === 'b') {chase.lookingBack=!chase.lookingBack;return;}
-    if (mode === 'chase' && key === 'Shift') {
+    if ((mode === 'chase'||chase?.waiting) && key === 'Shift') {
       keysHeld.run = true;
       return;
     }
@@ -2433,7 +2564,7 @@ const G = (() => {
     if (mode === 'prompt' && timed) {
       const action = keyAction(key);
       const buttons = [...$('#prompt-actions').querySelectorAll('button')];
-      const i = buttons.findIndex(b => b.textContent.includes({
+      const i = buttons.findIndex(b => b.dataset.action===action || b.textContent.includes({
         left: 'Esquerda',
         right: 'Direita',
         center: 'Meio',
@@ -2452,7 +2583,8 @@ const G = (() => {
       }[action] || '~'));
       if (i >= 0) {
         e.preventDefault();
-        buttons[i].click();
+        promptKeyboardInput=true;
+        try {buttons[i].click();} finally {promptKeyboardInput=false;}
       }
     }
   });
@@ -2553,3 +2685,4 @@ const G = (() => {
     runtime:()=>({writing:!!writing,watch:watch?structuredClone(watch):null,chase:chase?structuredClone(chase):null,paused})
   };
 })();
+

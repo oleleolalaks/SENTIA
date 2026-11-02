@@ -208,8 +208,25 @@ window.Perseguicao = (() => {
     }
     if (feedbackStrength > 0 && blocked) {ctx.fillStyle='rgba(115,20,22,'+(feedbackStrength*.13)+')';ctx.fillRect(0,0,width,height);}
     if (state.waiting) {ctx.fillStyle='#05070a36';ctx.fillRect(0,0,width,height);}
+    // A lanterna falha de verdade: sem luz nem a saída do refúgio fica visível.
+    if(state.kind==='medo') {
+      if(state.lampOn===false){ctx.fillStyle='#000';ctx.fillRect(0,0,width,height);}
+      else {
+        const beam=ctx.createRadialGradient(width*.51,height*.44,height*.08,width*.51,height*.44,height*.62);
+        beam.addColorStop(0,'#0000');beam.addColorStop(.5,'#00000018');beam.addColorStop(1,'#000000eb');
+        ctx.fillStyle=beam;ctx.fillRect(0,0,width,height);
+        if(Number(state.index)===Number(state.length)-1&&!back&&progress>.55){
+          ctx.fillStyle='#a5d1a233';ctx.fillRect(width*.69,height*.24,width*.19,height*.49);
+          ctx.strokeStyle='#d4edb8';ctx.lineWidth=2;ctx.strokeRect(width*.71,height*.27,width*.15,height*.44);
+          ctx.fillStyle='#eaf3c8';ctx.font='bold '+Math.max(9,Math.floor(width*.02))+'px monospace';ctx.textAlign='center';
+          ctx.fillText('PAX',width*.785,height*.36);ctx.fillText('REFÚGIO',width*.785,height*.41);
+          ctx.textAlign='start';
+        }
+      }
+    }
     view={zoom,progress,lookingBack:back,running:!!state.running,danger,pressure,reduced,monsterVisible:!!visibleMonster||forwardPresence.periphery,transition,feedback:feedbackStrength>0?feedback:null,
       proximity,surge,shadowVisible:forwardPresence.shadow,shadowReach:forwardPresence.reach,peripheryVisible:forwardPresence.periphery,peripherySide:forwardPresence.periphery?glimpseSide:0,
+      lampOn:state.kind==='medo'?state.lampOn!==false:null,refugeVisible:state.kind==='medo'&&state.lampOn!==false&&Number(state.index)===Number(state.length)-1&&progress>.55&&!back,
       cameraTime:time,sceneTransition:transition<1&&!!previousImage,motion:reduced?0:Math.abs(bob)+Math.abs(stumble)};
   }
   function stop() {if(canvas)canvas.hidden=true;lastState=null;active=false;}
