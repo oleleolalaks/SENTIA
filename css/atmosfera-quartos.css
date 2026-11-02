@@ -1,8 +1,9 @@
 /* Luz e materiais do quarto ficam sobre o cenário e atrás dos personagens, mãos e interface. */
 .stage > .room-atmosphere {position:absolute;inset:auto;z-index:0;isolation:auto;overflow:hidden;pointer-events:none;opacity:1;contain:layout paint;}
-.stage:not(.exploring) > .room-atmosphere {display:none;}
+.stage:not(.in-room) > .room-atmosphere {display:none;}
+.stage.in-room > .background {object-fit:contain;}
 .stage > .room-atmosphere * {position:absolute;display:block;pointer-events:none;}
-.stage > .room-atmosphere .ambient-light {inset:0;opacity:.14;background:radial-gradient(ellipse at 65% 18%,var(--room-color),transparent 64%);}
+.stage > .room-atmosphere .ambient-light {inset:0;opacity:.2;background:radial-gradient(ellipse at 65% 18%,var(--room-color),transparent 64%);}
 .room-feature {--intensity:.3;opacity:var(--intensity);animation:room-light-breath 12s ease-in-out infinite;animation-delay:calc(var(--part)*-2.3s);}
 .stage > .room-atmosphere .ambient-pixel {width:4px;height:4px;opacity:.56;box-shadow:0 0 4px var(--room-color);}
 /* Sunny: o sol atravessa a copa e termina em manchas quentes no chão. */

@@ -65,7 +65,8 @@ const G = (() => {
     ninfaConsecutive = 0,
     keysHeld = {},
     rescueCooldown = 0,
-    promptKeyboardInput = false;
+    promptKeyboardInput = false,
+    sceneSerial = 0;
   const asset = part => ASSETS.find(p => p.includes(part));
   const fearJumpscare=new Image();
   fearJumpscare.src=asset('/04-Jumpscare-Medo/medo-jumpscare-7-quadros.png');
@@ -272,6 +273,9 @@ const G = (() => {
     }
   }
   function resetScene() {
+    sceneSerial++;
+    window.AudioSentia?.cancelScare?.();
+    roomAtmosphere.cleanup?.();
     writing = null;
     window.AudioSentia?.stopVoice?.();
     window.AudioSentia?.clearRoom?.();
@@ -314,7 +318,7 @@ const G = (() => {
     $('#action-panel').className = 'action-panel';
     $('#background').style.opacity = '1';
     $('#stage').classList.remove('light');
-    $('#stage').classList.remove('exploring','room-empty','chasing','impact','ninfa-pressure','cinematic-closeup','shared-scene','choice-glitch','sugar-finale','loss-scene','lamp-out');
+    $('#stage').classList.remove('exploring','in-room','room-empty','chasing','impact','ninfa-pressure','cinematic-closeup','shared-scene','choice-glitch','sugar-finale','loss-scene','lamp-out');
     delete $('#stage').dataset.urgency;
     $('#stage').style.removeProperty('--wave-pressure');
     $('#stage').style.removeProperty('--orb-scale');
@@ -554,7 +558,6 @@ const G = (() => {
   function hint(id) {
     if (dead(id)) return 'O quarto permaneceu.';
     if (S.pending[id]) return 'Uma visita ficou em aberto.';
-    if (id === 'calma') return 'Refúgio de Pax · passagem segura nas perseguições.';
     if (id === 'medo' && (!dead('calma') || !dead('determinacao'))) return 'A porta está fechada.';
     if (!S.talks[first[id]]) return 'Há alguém para conhecer.';
     if (id === 'determinacao' && !S.flags.knifeKnown) return 'A moldura guarda uma história.';
@@ -585,7 +588,7 @@ const G = (() => {
       img.src = worldSprite(id);
       img.alt = '';
       const name = document.createElement('span');
-      name.textContent = id === 'calma' ? 'Pax · Calma / refúgio' : D.names[id];
+      name.textContent = D.names[id];
       const status = document.createElement('small');
       status.textContent = hint(id);
       b.append(img, name, status);
@@ -645,15 +648,14 @@ const G = (() => {
     const stage=$('#stage'),bg=$('#background');stage.append(layer);
     // O fundo usa contain: a luz deve terminar na borda da imagem, inclusive em retrato.
     const fit=()=>{
-      if(!scene.isConnected)return cleanup();
+      if(!layer.isConnected)return cleanup();
       const ratio=bg.naturalWidth&&bg.naturalHeight?bg.naturalWidth/bg.naturalHeight:1.7;
       const w=Math.min(stage.clientWidth,stage.clientHeight*ratio),h=w/ratio;
       Object.assign(layer.style,{width:w+'px',height:h+'px',left:(stage.clientWidth-w)/2+'px',top:(stage.clientHeight-h)/2+'px'});
     };
     const resize=new ResizeObserver(fit);
-    const lifecycle=new MutationObserver(()=>{if(!scene.isConnected)cleanup();});
-    const cleanup=()=>{resize.disconnect();lifecycle.disconnect();bg.removeEventListener('load',fit);layer.remove();if(roomAtmosphere.cleanup===cleanup)roomAtmosphere.cleanup=null;};
-    roomAtmosphere.cleanup=cleanup;resize.observe(stage);lifecycle.observe(scene.parentElement,{childList:true});bg.addEventListener('load',fit);fit();
+    const cleanup=()=>{resize.disconnect();bg.removeEventListener('load',fit);layer.remove();if(roomAtmosphere.cleanup===cleanup)roomAtmosphere.cleanup=null;};
+    roomAtmosphere.cleanup=cleanup;resize.observe(stage);bg.addEventListener('load',fit);fit();
   }
   function renderRoom() {
     resetScene();
@@ -662,7 +664,7 @@ const G = (() => {
     if (!id) return hub();
     if (!S.talks[first[id]] && !dead(id)) S.view = 0;
     background(roomBg(id, S.view));
-    $('#stage').classList.add('exploring');
+    $('#stage').classList.add('exploring','in-room');
     $('#stage').classList.toggle('room-empty',dead(id));
     window.AudioSentia?.setRoom?.(id,S.view,{dead:dead(id),reduced:settings.reduced});
     $('#location').textContent = D.names[id] + ' · ' + ['Frente', 'Direita', 'Atrás', 'Esquerda'][S.view];
@@ -839,6 +841,7 @@ const G = (() => {
       {label:'Voltar ao quarto',go:renderRoom}
     ]}],renderRoom);
     const visit=guestFor(p.eco);if(visit&&S.view===1&&!S.flags['visit-'+visit.key])return sharedVisit(visit,()=>{renderRoom();inspectPoint(p);});
+    window.AudioSentia?.roomCue?.('inspect');
     explorationHands(/bilhete|carta|diário|anotações|desenhos/i.test(p.name)?'04-segurar-papel':'01-alcancar');
     const wasSeen = S.seen[p.id];
     S.seen[p.id] = true;
@@ -1370,63 +1373,72 @@ const G = (() => {
   }
   function deathScreen(text, restart, kind = 'insanidade') {
     resetScene();
-    window.AudioSentia?.sfx?.(settings.reduced?'death':kind==='medo'?'jumpscareFear':kind==='insanidade'?'jumpscareInsanity':'jumpscare');
     mode = 'defeat';
     retry = restart;
+    const serial=sceneSerial;
+    let visualError='';
     objective('Uma tentativa terminou. Seu checkpoint foi preservado.');
     const finish = () => {
-      const p = panel('Tentar de novo', text);
+      if(serial!==sceneSerial)return;
+      const p = panel('Tentar de novo', text+visualError);
       p.append(btn('Voltar ao checkpoint', restart), btn('Configurações', pauseMenu));
     };
-    if (settings.reduced) {
-      finish();
-      return;
-    }
-    if(kind==='medo') {
-      // Sete desenhos novos, lidos em células. O susto ocupa a tela, não o canto.
-      const canvas=document.createElement('canvas');
-      canvas.id='jumpscare-frame';canvas.className='jumpscare-frame';
-      canvas.setAttribute('aria-label','Hunger avança da escuridão');
-      $('#stage').append(canvas);
-      const bounds=$('#stage').getBoundingClientRect();
-      canvas.width=Math.max(1,Math.round(bounds.width));canvas.height=Math.max(1,Math.round(bounds.height));
-      const ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
-      const atlas=fearJumpscare;
-      let frame=0;
-      const animate=()=>{
-        if(!canvas.isConnected)return;
-        if(frame>=7){canvas.remove();finish();return;}
-        ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
-        if(atlas.complete&&atlas.naturalWidth) {
-          const cell=atlas.naturalWidth/7;
-          const height=canvas.height*(1+frame*.09),width=height*cell/atlas.naturalHeight;
-          ctx.drawImage(atlas,frame*cell,0,cell,atlas.naturalHeight,(canvas.width-width)/2,(canvas.height-height)/2,width,height);
-        } else {
-          const fallback=new Image();fallback.src=asset('/02-Medo/11-terror-jumpscare.png');
-          if(fallback.complete&&fallback.naturalWidth)ctx.drawImage(fallback,0,0,canvas.width,canvas.height);
+    // As imagens ficam prontas antes do som. Carga lenta não troca a arte nova pela antiga.
+    const prepare=async()=>{
+      let frames=[];
+      try {
+        if(kind==='medo')await fearJumpscare.decode();
+        if(kind==='insanidade'){
+          frames=list('/01-Frames-500x380/');
+          await Promise.all(frames.map(src=>{const image=new Image();image.src=src;return image.decode();}));
         }
-        canvas.dataset.frame=String(frame++);
-        defer(.15,animate);
-      };
-      animate();return;
-    }
-    const frames = kind === 'insanidade' ? list('/01-Frames-500x380/') : [];
-    if (frames.length) {
-      let n = 0;
-      const animate = () => {
-        if (n === frames.length) {
-          $('#effect').hidden = true;
-          finish();
-          return;
-        }
-        $('#effect').src = frames[n++];
-        $('#effect').hidden = false;
-        defer(.125, animate);
-      };
-      animate();
-    } else {
+      }catch{
+        visualError=' A arte do susto não carregou. Confira a pasta assets do pacote completo.';
+      }
+      if(serial!==sceneSerial)return;
+      if(paused){defer(0,()=>void prepare());return;}
+      if(['medo','insanidade'].includes(kind)) {
+        if(window.AudioSentia?.playScare)await window.AudioSentia.playScare(kind);
+        else window.AudioSentia?.sfx?.(kind==='medo'?'jumpscareFear':'jumpscareInsanity');
+      }else window.AudioSentia?.sfx?.(settings.reduced?'death':'jumpscare');
+      if(serial!==sceneSerial)return;
+      if(paused){defer(0,()=>void prepare());return;}
+      if(visualError){finish();return;}
+      if(kind==='medo') {
+        const canvas=document.createElement('canvas');
+        canvas.id='jumpscare-frame';canvas.className='jumpscare-frame';
+        canvas.setAttribute('aria-label','Hunger avança da escuridão');
+        $('#stage').append(canvas);
+        const bounds=$('#stage').getBoundingClientRect();
+        canvas.width=Math.max(1,Math.round(bounds.width));canvas.height=Math.max(1,Math.round(bounds.height));
+        const ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+        const cell=fearJumpscare.naturalWidth/7;
+        let frame=settings.reduced?6:0;
+        const animate=()=>{
+          if(serial!==sceneSerial||!canvas.isConnected)return;
+          if(frame>=7){canvas.remove();finish();return;}
+          ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
+          // O rosto chega perto da câmera; cada célula preserva a sua proporção.
+          const width=settings.reduced?Math.min(canvas.width*.82,canvas.height*.6):canvas.width*(.26+frame/6*.66);
+          const height=width*fearJumpscare.naturalHeight/cell;
+          ctx.drawImage(fearJumpscare,frame*cell,0,cell,fearJumpscare.naturalHeight,(canvas.width-width)/2,canvas.height*.5-height*.48,width,height);
+          canvas.dataset.frame=String(frame++);canvas.dataset.reduced=String(settings.reduced);
+          defer(settings.reduced?1.05:.15,animate);
+        };
+        animate();return;
+      }
+      if(frames.length) {
+        let n=settings.reduced?frames.length-1:0;
+        const animate=()=>{
+          if(serial!==sceneSerial)return;
+          if(n===frames.length){$('#effect').hidden=true;finish();return;}
+          $('#effect').src=frames[n++];$('#effect').hidden=false;
+          defer(settings.reduced?1:.125,animate);
+        };
+        animate();return;
+      }
+      if(settings.reduced){finish();return;}
       actor(kind);
-      if (kind === 'medo') $('#actor').src = asset('/02-Medo/11-terror-jumpscare.png') || baseSprite('medo');
       if (kind === 'odio') {
         $('#actor').src=asset('/01-Odio/20-jumpscare.png');$('#actor').classList.add('closeup');
         return defer(.3,()=>{actor('odio','jumpscare','closeup');defer(.4,()=>{actor(null);finish();});});
@@ -1435,7 +1447,8 @@ const G = (() => {
         actor(null);
         finish();
       });
-    }
+    };
+    void prepare();
   }
   function watchIntro() {
     if (!S.flags.rescues && S.talks.A1 && !dead('amor')) return rescue(watchIntro);
@@ -2284,7 +2297,7 @@ const G = (() => {
   function pauseMenu() {
     if (!S) return;
     const wrap = document.createElement('div');
-    wrap.innerHTML = '<p class="eyebrow">JARDIM DOS ECOS</p><h2>Um intervalo</h2><p>O tempo fica parado enquanto esta janela estiver aberta.</p><label for="device">Como você quer jogar?</label><select id="device"><option value="pc">PC · teclado e mouse</option><option value="mobile">Celular · botões de toque</option></select><label><input type="checkbox" id="assist"> Modo assistido: mais tempo para reagir</label><label><input type="checkbox" id="motion"> Reduzir movimentos e sustos animados</label><p class="hint">O save retoma o último ponto seguro. Conversas em andamento recomeçam. Nenhuma partida é enviada para fora do navegador.</p>';
+    wrap.innerHTML = '<p class="eyebrow">JARDIM DOS ECOS</p><h2>Um intervalo</h2><p>O tempo fica parado enquanto esta janela estiver aberta.</p><label for="device">Como você quer jogar?</label><select id="device"><option value="pc">PC · teclado e mouse</option><option value="mobile">Celular · botões de toque</option></select><label><input type="checkbox" id="assist"> Modo assistido: mais tempo para reagir</label><label><input type="checkbox" id="motion"> Reduzir movimentos e sustos animados</label><p class="hint">Os sustos ficam estáticos nesse modo; seus sons continuam seguindo o volume de efeitos.</p><p class="hint">O save retoma o último ponto seguro. Conversas em andamento recomeçam. Nenhuma partida é enviada para fora do navegador.</p>';
     wrap.querySelector('#device').value = settings.device;
     wrap.querySelector('#assist').checked = settings.assist;
     wrap.querySelector('#motion').checked = settings.reduced;

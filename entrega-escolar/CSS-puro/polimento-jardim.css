@@ -170,7 +170,7 @@ body.reduced .stage.choice-glitch > #dialogue {animation:none;outline:2px solid 
   height:calc(var(--room-height,600px)*.52);max-height:calc(var(--room-height,600px)*.52);
 }
 /* O cenário continua inteiro; as faixas restantes recebem só a sua luz ambiente. */
-#stage.exploring::before {
+#stage.in-room::before {
   content:'';position:absolute;inset:-20px;z-index:-4;pointer-events:none;
   background:var(--room-backdrop,none) center/cover no-repeat;
   filter:blur(14px) brightness(.2) saturate(.7);opacity:.8;

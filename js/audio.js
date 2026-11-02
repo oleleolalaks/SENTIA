@@ -20,7 +20,7 @@ window.AudioSentia = (() => {
   };
   let scene = 'explore', selected = 'garden', unlocked = false, paused = false;
   let volume = .45, voiceVolume = .28, effectsVolume = .45, muted = false, fade = null, generation = 0, error = '';
-  let context = null, voiceBus = null, effectsBus = null, tensionBus = null, pulseTimer = null, duckTimer = null;
+  let context = null, voiceBus = null, effectsBus = null, ambientBus = null, tensionBus = null, scareBus = null, pulseTimer = null, duckTimer = null;
   let voiceDuckTimer = null, previewTimer = null, speechDucked = false, effectDucked = false, previewing = false;
   let previewGeneration = 0;
   let uiPreviewing = false, uiTimer = null, uiGeneration = 0;
@@ -28,10 +28,12 @@ window.AudioSentia = (() => {
   let ambientPlayed = 0, lastAmbient = '', spatialPlayed = 0;
   let lastVoice = -Infinity, voicePlayed = 0, effectsPlayed = 0, lastVoiceProfile = null, stepSide = false;
   let lastJumpscare = null, jumpscaresPlayed = 0;
+  let scareGeneration = 0, scarePending = false, scareError = '', roomCuesPlayed = 0, lastRoomCue = -Infinity;
+  let presentedRoom = null, roomEntryPending = null;
   let tension = null, tensionLevel = 0, legacyPulse = false, pulseGeneration = 0, pulseStarts = 0;
   let pulseLastTime = 0, nextBeat = 0, nextBreath = 0, nextDrone = 0, restUntil = 0, windupPending = false;
   let pulsePlayed = 0, tensionBreaths = 0, tensionDrones = 0, tensionWindups = 0, tensionPauses = 0, tensionPhase = 'silent';
-  const voices = new Set(), effects = new Set(), tensionSources = new Set(), ambience = new Set(), uiEffects = new Set(), uiPending = new Set(), lastEffect = new Map();
+  const voices = new Set(), effects = new Set(), scares = new Set(), tensionSources = new Set(), ambience = new Set(), uiEffects = new Set(), uiPending = new Set(), lastEffect = new Map();
   try {
     const settings = JSON.parse(localStorage.getItem('sentia-audio') || '{}');
     if (Number.isFinite(settings.volume)) volume = Math.max(0, Math.min(1, settings.volume));
@@ -51,6 +53,7 @@ window.AudioSentia = (() => {
   }
   function refreshTensionMix() {
     if (tensionBus) tensionBus.gain.setTargetAtTime(speechDucked ? .3 : effectDucked ? .55 : 1, context.currentTime, .025);
+    if (ambientBus) ambientBus.gain.setTargetAtTime(effectsVolume * 1.65 * (speechDucked ? .38 : 1), context.currentTime, .025);
   }
   function persist() {
     try { localStorage.setItem('sentia-audio', JSON.stringify({volume, voiceVolume, effectsVolume, muted})); } catch {}
@@ -121,7 +124,7 @@ window.AudioSentia = (() => {
   async function unlock() {
     unlocked = true;
     ensureSynth();
-    if (!pageHidden && context?.state === 'suspended') { try { await context.resume(); } catch {} }
+    if (!pageHidden && !muted && context && ['suspended','interrupted'].includes(context.state)) { try { await context.resume(); } catch {} }
     startPulse();
     startRoom();
     return playSelected(.25);
@@ -160,7 +163,7 @@ window.AudioSentia = (() => {
   function resume() {
     paused = false;
     stopVoice(); stopUi();
-    if (unlocked && !pageHidden && context?.state === 'suspended') void context.resume().then(() => { startPulse(); startRoom(); }).catch(() => {});
+    if (unlocked && !muted && !pageHidden && context && ['suspended','interrupted'].includes(context.state)) void context.resume().then(() => { if(!paused&&!muted&&!pageHidden){startPulse(); startRoom();} }).catch(() => {});
     else { startPulse(); startRoom(); }
     void playSelected(.25);
   }
@@ -177,9 +180,11 @@ window.AudioSentia = (() => {
       const limiter = context.createDynamicsCompressor();
       limiter.threshold.value = -15; limiter.knee.value = 12; limiter.ratio.value = 8;
       limiter.attack.value = .003; limiter.release.value = .12;
-      voiceBus = context.createGain(); effectsBus = context.createGain(); tensionBus = context.createGain();
+      voiceBus = context.createGain(); effectsBus = context.createGain(); ambientBus = context.createGain(); tensionBus = context.createGain(); scareBus = context.createGain();
       voiceBus.gain.value = voiceVolume; effectsBus.gain.value = effectsVolume;
-      voiceBus.connect(master); effectsBus.connect(master); tensionBus.connect(effectsBus); master.connect(limiter); limiter.connect(context.destination);
+      ambientBus.gain.value = effectsVolume * 1.65;
+      scareBus.gain.value = effectsVolume * 2.2;
+      voiceBus.connect(master); effectsBus.connect(master); ambientBus.connect(master); scareBus.connect(master); tensionBus.connect(effectsBus); master.connect(limiter); limiter.connect(context.destination);
     } catch { context = null; }
   }
   function allowed(group) {
@@ -227,21 +232,21 @@ window.AudioSentia = (() => {
     if (suspend && paused && !previewing && context?.state === 'running') void context.suspend().catch(() => {});
   }
   function stopSynth() {
-    stopUi(); stopVoice(); stopGroup(effects);
+    cancelScare(); stopUi(); stopVoice(); stopGroup(effects);
     stopRoom();
     stopPulse();
     if (duckTimer !== null) clearTimeout(duckTimer);
     pulseTimer = null; duckTimer = null; effectDucked = false;
     refreshTensionMix();
   }
-  function emit({frequency=180, end=frequency, duration=.1, delay=0, amplitude=.08, wave='sine', group='effects', cutoff=1100, noise=false, pan=0, distance=1, attack=.006}) {
+  function emit({frequency=180, end=frequency, duration=.1, delay=0, amplitude=.08, wave='sine', group='effects', cutoff=1100, noise=false, pan=0, distance=1, attack=.006, hold=0}) {
     if (!allowed(group)) return false;
-    const pool = group === 'voice' ? voices : group === 'ambient' ? ambience : group === 'ui' ? uiEffects : group === 'tension' ? tensionSources : effects;
-    const active = voices.size + effects.size + uiEffects.size + tensionSources.size;
+    const pool = group === 'voice' ? voices : group === 'scare' ? scares : group === 'ambient' ? ambience : group === 'ui' ? uiEffects : group === 'tension' ? tensionSources : effects;
+    const active = voices.size + effects.size + scares.size + ambience.size + uiEffects.size + tensionSources.size;
     // A camada contínua reserva espaço para a fala e para os avisos de combate.
     if (pool.size >= (group === 'voice' ? 3 : group === 'ambient' ? 3 : group === 'ui' || group === 'tension' ? 4 : 8) || active >= 8 || (group === 'tension' && active >= 5)) return false;
     const now = context.currentTime + Math.max(0, Math.min(.4, delay));
-    const length = Math.max(group==='voice'?.018:.025, Math.min(group==='ambient'?2.4:group==='tension'?1.3:.65, duration));
+    const length = Math.max(group==='voice'?.018:.025, Math.min(group==='ambient'?2.4:group==='tension'?1.3:group==='scare'?1.2:.65, duration));
     const gain = context.createGain(), filter = context.createBiquadFilter();
     filter.type = 'lowpass'; filter.frequency.value = Math.max(100, Math.min(1800, cutoff)); filter.Q.value = .6;
     let source;
@@ -257,13 +262,14 @@ window.AudioSentia = (() => {
       source.frequency.exponentialRampToValueAtTime(Math.max(35, Math.min(800, end)), now + length);
     }
     const depth = Math.max(1, Math.min(8, Number(distance) || 1));
-    const peak = Math.max(0, Math.min(group==='ambient'?.07:.18, amplitude)) / (1 + (depth - 1) * .55);
+    const peak = Math.max(0, Math.min(group==='ambient'?.1:.18, amplitude)) / (1 + (depth - 1) * .55);
     gain.gain.setValueAtTime(0, now);
     gain.gain.linearRampToValueAtTime(peak, now + Math.min(Math.max(.003, attack), length / 3));
     if (group === 'voice') gain.gain.setValueAtTime(peak * .85, now + length * .42);
+    if (hold > 0) gain.gain.setValueAtTime(peak * .88, now + Math.max(Math.min(Math.max(.003, attack),length/3),Math.min(length-.025,hold)));
     gain.gain.exponentialRampToValueAtTime(.0001, now + length);
     source.connect(filter); filter.connect(gain);
-    const bus = group === 'voice' ? voiceBus : group === 'tension' ? tensionBus : effectsBus;
+    const bus = group === 'voice' ? voiceBus : group === 'scare' ? scareBus : group === 'ambient' ? ambientBus : group === 'tension' ? tensionBus : effectsBus;
     let panner = null;
     if (pan && context.createStereoPanner) {
       panner = context.createStereoPanner(); panner.pan.value = Math.max(-.4, Math.min(.4, pan));
@@ -296,18 +302,19 @@ window.AudioSentia = (() => {
     roomTimer = null;
     stopGroup(ambience);
   }
-  function clearRoom() { stopRoom(); room = null; lastAmbient = ''; }
+  function clearRoom() { stopRoom(); room = null; roomEntryPending = null; lastAmbient = ''; }
   function setRoom(id, view=0, options={}) {
     if (id === null || id === undefined || id === '') { clearRoom(); return; }
     const next = {id:String(id), view:((Math.trunc(Number(view) || 0) % 4) + 4) % 4, dead:options.dead === true, reduced:options.reduced === true};
     if (room && Object.keys(next).every(key => room[key] === next[key])) return;
+    roomEntryPending = !presentedRoom || presentedRoom.id !== next.id ? 'enter' : presentedRoom.view !== next.view ? 'turn' : null;
+    presentedRoom = {id:next.id,view:next.view};
     room = next;
     startRoom();
   }
-  function roomSound(kind, pan, distance) {
-    const softness = room?.reduced ? .65 : 1;
+  function roomSound(kind, pan, distance, level=1) {
     let result = false;
-    const tone = options => { result = emit({...options, amplitude:(options.amplitude || .04) * softness, group:'ambient', pan, distance}) || result; };
+    const tone = options => { result = emit({...options, hold:level>1.5?Math.min(.18,(options.duration||.1)*.45):0, amplitude:(options.amplitude || .04) * level, group:'ambient', pan, distance}) || result; };
     if (kind === 'air') tone({noise:true,duration:1.7,attack:.35,amplitude:.06,cutoff:490});
     else if (kind === 'pollen') {
       tone({noise:true,duration:1.1,attack:.25,amplitude:.035,cutoff:720});
@@ -328,22 +335,37 @@ window.AudioSentia = (() => {
       tone({noise:true,duration:.1,delay:.29,amplitude:.043,cutoff:350});
     }
     if (result) { ambientPlayed++; lastAmbient = kind; }
+    return result;
+  }
+  // Entrar, virar e tocar num objeto têm um retorno do próprio quarto; reabrir o diálogo não repete a entrada.
+  function roomCue(action='inspect', options={}) {
+    if (!room || !allowed('ambient') || scares.size || !['enter','turn','inspect'].includes(action)) return false;
+    const now=context.currentTime;
+    if(now-lastRoomCue<(action==='inspect'?.35:.6))return false;
+    const choices=room.dead?['air','creaks']:roomSounds[room.id]||['air','creaks'];
+    const kind=choices.includes(options.kind)?options.kind:choices[room.view%choices.length];
+    const pan=Number.isFinite(options.pan)?options.pan:Math.sin(room.view*Math.PI/2)*.3;
+    const played=roomSound(kind,pan,1,action==='turn'?1.65:2.25);
+    if(played){lastRoomCue=now;roomCuesPlayed++;duckForEffect(action==='inspect'?330:420);}
+    return played;
   }
   function startRoom() {
     stopRoom();
     if (!room || !allowed('ambient')) return;
+    if(roomEntryPending&&roomCue(roomEntryPending))roomEntryPending=null;
     const token = roomGeneration;
     const schedule = initial => {
-      const spacing = (room.reduced ? 4700 : 2900) + Math.random()*2500 + (room.dead ? 900 : 0);
+      const spacing = 2400 + Math.random()*1400 + (room.dead ? 700 : 0);
       roomTimer = setTimeout(() => {
         roomTimer = null;
         if (token !== roomGeneration || !room || !allowed('ambient')) return;
+        if(roomEntryPending){if(roomCue(roomEntryPending))roomEntryPending=null;schedule(true);return;}
         const choices = room.dead ? ['air','creaks'] : roomSounds[room.id] || ['air','creaks'];
         const kind = choices[Math.floor(Math.random()*choices.length)];
         const sourceAngle = (choices.indexOf(kind) ? 1.1 : -.8) - room.view*Math.PI/2;
-        roomSound(kind, Math.sin(sourceAngle)*.34, kind==='distantsteps'?3.4:1.5);
+        if(!scares.size)roomSound(kind, Math.sin(sourceAngle)*.34, kind==='distantsteps'?2.2:1.1,1.35);
         schedule(false);
-      }, initial ? 900 + Math.random()*500 : spacing);
+      }, roomEntryPending ? 120 : initial ? 1600 + Math.random()*500 : spacing);
     };
     schedule(true);
   }
@@ -457,8 +479,10 @@ window.AudioSentia = (() => {
     const number = Number(value); if (!Number.isFinite(number)) return;
     effectsVolume = Math.max(0, Math.min(1, number)); persist();
     if (effectsBus) effectsBus.gain.setTargetAtTime(effectsVolume, context.currentTime, .015);
+    if (ambientBus) ambientBus.gain.setTargetAtTime(effectsVolume * 1.65 * (speechDucked ? .38 : 1), context.currentTime, .015);
+    if (scareBus) scareBus.gain.setTargetAtTime(effectsVolume * 2.2, context.currentTime, .015);
     if (effectsVolume === 0) {
-      stopGroup(effects); stopUi(true); stopRoom(); stopPulse();
+      cancelScare(); stopGroup(effects); stopUi(true); stopRoom(); stopPulse();
       if (duckTimer !== null) clearTimeout(duckTimer);
       duckTimer = null; effectDucked = false; refreshTensionMix(); refreshMusicMix();
     }
@@ -573,6 +597,34 @@ window.AudioSentia = (() => {
       if (!paused && !muted && !pageHidden) void playSelected(.3);
     }, duration);
   }
+  function cancelScare() {
+    scareGeneration++;
+    scarePending=false;
+    stopGroup(scares);
+    lastEffect.delete('jumpscare');
+  }
+  // Continuar uma partida retoma o AudioContext de forma assíncrona. O susto espera essa retomada;
+  // mudar de cena, pausar ou silenciar invalida a espera e nunca deixa áudio tocar depois.
+  async function playScare(kind='insanidade') {
+    if(!unlocked||paused||muted||pageHidden||effectsVolume===0)return false;
+    ensureSynth();
+    if(!context||context.state==='closed'){scareError='Áudio indisponível neste navegador.';return false;}
+    const ticket=++scareGeneration;
+    scarePending=true;scareError='';
+    let timeout=null;
+    try {
+      if(context.state!=='running'){
+        const resumed=await Promise.race([
+          Promise.resolve(context.resume()).then(()=>true),
+          new Promise(resolve=>{timeout=setTimeout(()=>resolve(false),900);})
+        ]);
+        if(!resumed){scareError='O navegador não retomou o áudio a tempo.';return false;}
+      }
+      if(ticket!==scareGeneration||!allowed('scare'))return false;
+      return sfx(kind==='medo'||kind==='fear'?'jumpscareFear':kind==='insanidade'||kind==='insanity'?'jumpscareInsanity':'jumpscare');
+    }catch{scareError='Não foi possível retomar o áudio do susto.';return false;}
+    finally{if(timeout!==null)clearTimeout(timeout);if(ticket===scareGeneration)scarePending=false;}
+  }
   function sfx(kind, options={}) {
     if (['inspect','item','notification','page','bag','door','enter'].includes(String(kind))) return spatialCue(kind, options);
     if (!allowed('effects')) return false;
@@ -587,7 +639,7 @@ window.AudioSentia = (() => {
     lastEffect.set(timerKey, now);
     let result = false;
     const tone = values => {
-      result = emit({...values, amplitude:(values.amplitude ?? .08)*intensity, pan:options.pan ?? values.pan ?? 0, distance:options.distance ?? 1}) || result;
+      result = emit({...values, group:scare?'scare':'effects', amplitude:(values.amplitude ?? .08)*intensity, pan:options.pan ?? values.pan ?? 0, distance:options.distance ?? 1}) || result;
     };
     if (key === 'step') {
       stepSide = !stepSide;
@@ -644,21 +696,21 @@ window.AudioSentia = (() => {
         : ['maze','revelation','insaneChase','insanidade','insanity','chaseInsanity'].includes(scene) ? 'insanidade' : 'outro';
       stopVoice();
       // Abre espaço no limite de vozes: o susto não pode ficar mudo por um efeito do quadro anterior.
-      stopGroup(effects); stopGroup(ambience); stopGroup(tensionSources);
-      restUntil = now + 1;
+      stopGroup(effects); stopGroup(scares); stopGroup(ambience); stopGroup(tensionSources); stopUi();
+      restUntil = now + 1.3;
       if (profile === 'medo') {
-        tone({noise:true,duration:.16,attack:.003,amplitude:.15,cutoff:1450});
-        tone({frequency:59,end:35,duration:.65,attack:.006,amplitude:.16,wave:'triangle',cutoff:220});
-        tone({frequency:146,end:51,duration:.58,attack:.012,amplitude:.11,wave:'sawtooth',cutoff:590});
-        tone({noise:true,duration:.48,delay:.12,attack:.05,amplitude:.1,cutoff:650,pan:-.3});
-        tone({frequency:328,end:92,duration:.34,delay:.09,amplitude:.065,wave:'triangle',cutoff:1150,pan:.3});
+        tone({noise:true,duration:.24,attack:.005,hold:.07,amplitude:.18,cutoff:1750});
+        tone({frequency:88,end:48,duration:1.08,attack:.008,hold:.32,amplitude:.16,wave:'triangle',cutoff:500});
+        tone({frequency:220,end:70,duration:.94,attack:.012,hold:.3,amplitude:.18,wave:'sawtooth',cutoff:1050});
+        tone({noise:true,duration:.68,delay:.14,attack:.025,hold:.22,amplitude:.12,cutoff:1150,pan:-.3});
+        tone({frequency:390,end:135,duration:.65,delay:.1,hold:.17,amplitude:.1,wave:'triangle',cutoff:1400,pan:.3});
       } else if (profile === 'insanidade') {
-        tone({frequency:590,end:183,duration:.55,attack:.003,amplitude:.12,wave:'sawtooth',cutoff:1650,pan:-.25});
-        tone({frequency:631,end:245,duration:.4,attack:.006,amplitude:.095,wave:'triangle',cutoff:1500,pan:.25});
-        tone({noise:true,duration:.19,attack:.003,amplitude:.14,cutoff:1300});
-        tone({frequency:95,end:39,duration:.65,amplitude:.14,wave:'triangle',cutoff:290});
-        tone({frequency:266,end:690,duration:.18,delay:.24,attack:.003,amplitude:.075,wave:'sawtooth',cutoff:1400});
-        tone({noise:true,duration:.28,delay:.38,attack:.005,amplitude:.09,cutoff:900});
+        tone({frequency:590,end:183,duration:.9,attack:.005,hold:.28,amplitude:.16,wave:'sawtooth',cutoff:1750,pan:-.25});
+        tone({frequency:631,end:245,duration:.78,attack:.008,hold:.22,amplitude:.14,wave:'triangle',cutoff:1650,pan:.25});
+        tone({noise:true,duration:.25,attack:.005,hold:.06,amplitude:.17,cutoff:1500});
+        tone({frequency:135,end:59,duration:1.1,hold:.32,amplitude:.16,wave:'triangle',cutoff:500});
+        tone({frequency:266,end:690,duration:.38,delay:.24,attack:.006,hold:.12,amplitude:.1,wave:'sawtooth',cutoff:1600});
+        tone({noise:true,duration:.48,delay:.38,attack:.008,hold:.14,amplitude:.12,cutoff:1350});
       } else {
         tone({noise:true,duration:.33,attack:.012,amplitude:.13,cutoff:900});
         tone({frequency:65,end:42,duration:.5,amplitude:.13,wave:'triangle',cutoff:350});
@@ -670,7 +722,7 @@ window.AudioSentia = (() => {
     }
     if (result) {
       effectsPlayed++;
-      if (scare || ['hit','charge','grab','nearMiss'].includes(key)) duckForEffect(scare ? 1000 : key === 'charge' ? 550 : 360);
+      if (scare || ['hit','charge','grab','nearMiss'].includes(key)) duckForEffect(scare ? 1400 : key === 'charge' ? 550 : 360);
     }
     return result;
   }
@@ -680,13 +732,13 @@ window.AudioSentia = (() => {
       scene, track:selected, title:current?.title || '', author:current?.author || '',
       source:current?.source || '', license:current?.license || '', licenseURL:current?.licenseURL || '',
       volume, musicVolume:volume, voiceVolume, effectsVolume, muted, paused, unlocked, error,
-      contextState:context?.state || 'uncreated', voicesActive:voices.size, effectsActive:effects.size + uiEffects.size + tensionSources.size,
-      voicePlayed, effectsPlayed, lastVoiceProfile, lastJumpscare, jumpscaresPlayed, pulseActive:pulseTimer !== null, playbackRate:sceneRate(),
+      contextState:context?.state || 'uncreated', voicesActive:voices.size, effectsActive:effects.size + scares.size + uiEffects.size + tensionSources.size,
+      voicePlayed, effectsPlayed, lastVoiceProfile, lastJumpscare, jumpscaresPlayed, scarePending, scareError, scareSourcesActive:scares.size, pulseActive:pulseTimer !== null, playbackRate:sceneRate(),
       tension:tension ? {...tension} : null, tensionLevel, tensionSourcesActive:tensionSources.size,
       tensionTimerActive:tension !== null && pulseTimer !== null, pulseMode:pulseTimer === null ? null : tension ? 'tension' : 'maze',
       pulsePlayed, pulseStarts, tensionBreaths, tensionDrones, tensionWindups, tensionPauses, tensionPhase,
       pageHidden, room:room ? {...room} : null, ambientActive:ambience.size, ambientTimerActive:roomTimer !== null,
-      ambientPlayed, lastAmbient, spatialPlayed,
+      ambientPlayed, lastAmbient, spatialPlayed, roomCuesPlayed,
       uiEffectsActive:uiEffects.size, uiPreviewing,
       speechDucked, effectDucked, previewing, musicLevel:channels.get(selected)?.volume || 0,
       playing: [...channels.values()].some(audio => !audio.paused && audio.volume > 0),
@@ -695,8 +747,8 @@ window.AudioSentia = (() => {
   }
   // O navegador só recebe play depois de um gesto real: abrir a página sozinho não dispara som.
   const firstGesture = event => {
-    if (!event.isTrusted || unlocked) return;
-    void unlock();
+    if (!event.isTrusted) return;
+    if(!unlocked||(!paused&&!muted&&context&&['suspended','interrupted'].includes(context.state)))void unlock();
   };
   document.addEventListener('pointerdown', firstGesture, {passive:true});
   document.addEventListener('keydown', firstGesture);
@@ -710,5 +762,5 @@ window.AudioSentia = (() => {
       }).catch(() => {});
     } else if (unlocked && !paused && !muted) resume();
   });
-  return Object.freeze({unlock, setScene, setVolume, setVoiceVolume, setEffectsVolume, setMuted, pause, resume, state, voice, stopVoice, previewVoice, sfx, setRoom, clearRoom, spatialCue, setTension, clearTension});
+  return Object.freeze({unlock, setScene, setVolume, setVoiceVolume, setEffectsVolume, setMuted, pause, resume, state, voice, stopVoice, previewVoice, sfx, playScare, cancelScare, setRoom, clearRoom, roomCue, spatialCue, setTension, clearTension});
 })();
