@@ -644,7 +644,10 @@ dialog p {
   z-index:10;
   display:grid;
   gap:12px;
-  max-width:calc(100vw - 40px)
+  width:min(440px,calc(100vw - 40px));
+  max-height:calc(100dvh - 40px);
+  overflow:auto;
+  overscroll-behavior:contain
 }
 .alert {
   background:var(--ink);
@@ -661,8 +664,11 @@ dialog p {
   background:none;
   color:inherit;
   border:0;
-  font-size:22px
+  font-size:22px;
+  flex:0 0 44px;
+  min-height:44px
 }
+.alert span { flex:1;min-width:0;overflow-wrap:anywhere; }
 /* Keyframes descrevem início e fim; steps() mantém uma entrada curta com ritmo de pixel art. */
 @keyframes sentia-alert-in {
   from { opacity:0;transform:translateY(6px); }
@@ -974,7 +980,7 @@ input[aria-invalid="true"],textarea[aria-invalid="true"] { border:2px solid #b57
   .tasks li { gap:8px; }
   .tasks button { padding-inline:3px; }
   .alert { gap:12px;padding:14px; }
-  .alert button { flex:0 0 36px;min-height:44px; }
+  .alert button { flex:0 0 44px;min-height:44px; }
   .empty-state { padding:26px 22px; }
   .puzzle-form .actions { gap:12px; }
   #trail-check { flex-basis:100%; }

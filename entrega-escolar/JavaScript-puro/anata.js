@@ -65,9 +65,9 @@ window.ANATA = Object.freeze({
     scene('A figura não muda de expressão. Você percebe que vinha esperando uma expressão que dissesse quando já ouviu o bastante.');
     a('Beerus reconheceu os pedidos dos outros. Uma peça, uma fita, o jeito de deixar uma coisa perto da entrada. Ele não conhecia apenas a maneira como eles morriam.');
     a('A raiva dele apareceu diante da sua passagem. Você pôde desviar, defender, esperar uma abertura. Foi uma luta. Isso não transforma cada quarto anterior numa arena.');
-    a('Quando ele perdeu o controle, Sugar veio. Não porque o protagonista tinha provado que merecia. Ela viu alguém em perigo e escolheu chegar.');
+    a('Quando ele perdeu o controle, Candy veio. Não porque o protagonista tinha provado que merecia. Ela viu alguém em perigo e escolheu chegar.');
     a('Depois a espada ficou no chão. Houve um espaço inteiro entre perdê-la e recolhê-la. Um objetivo na tela é uma frase curta. O caminho até ele pode carregar uma escolha enorme.');
-    a(state.flags.triedSugar?'Você tentou poupar Sugar. A alternativa desapareceu diante de você. Aquela tentativa pertence a quem jogava; o golpe pertenceu ao protagonista. Não vou juntar essas vontades só para ter uma acusação mais fácil.':'Sugar estava ajoelhada e chorava com o rosto coberto. A mão que ergueu a espada já tinha recebido uma luz daquela mesma pessoa. O protagonista não podia dizer que nunca foi acolhido.');
+    a(state.flags.triedSugar?'Você tentou poupar Candy. A alternativa desapareceu diante de você. Aquela tentativa pertence a quem jogava; o golpe pertenceu ao protagonista. Não vou juntar essas vontades só para ter uma acusação mais fácil.':'Candy estava ajoelhada e chorava com o rosto coberto. A mão que ergueu a espada já tinha recebido uma luz daquela mesma pessoa. O protagonista não podia dizer que nunca foi acolhido.');
     a('Ele pensou que, sem amor, não haveria risco de perder. Mas guardou a luz, lembrou a voz e reconheceu a falta. Destruir uma presença não transforma o vínculo em algo que nunca existiu.');
     question('Até aqui falamos do protagonista. O que fez você continuar acompanhando?',[
       ['Eu queria salvar alguém','Houve momentos em que você tentou. A história não respeitou todas essas tentativas. Você pode reconhecer isso sem fingir que desejou o que foi obrigado a ver.'],

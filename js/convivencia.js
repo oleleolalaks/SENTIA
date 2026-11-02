@@ -8,8 +8,8 @@ window.CONVIVENCIA = [
   {id:'pax-hunger', eco:'calma', talks:['P1'], label:'Perguntar por que Hunger procura você', lines:[['Você','Você disse que Hunger vem aqui. O que ele procura?'],['Pax','Um lugar onde não precise vigiar todas as portas sozinho.'],['Pax','Ele se afasta quando está assustado. Não confunda a distância com falta de afeto.'],['Pax','Se você o encontrar, avise antes de se aproximar. Não teste o limite só para ver o que acontece.']]},
   {id:'pax-ninfa', eco:'calma', talks:['N2'], label:'Contar o que Ninfa disse sobre você', lines:[['Você','Ninfa disse que você se preocupa em perceber tarde demais.'],['Pax','Eu conto com quem está perto para dizer quando alguma coisa machuca. Não consigo adivinhar tudo.'],['Pax','Ela te contou isso para aproximar você de nós. O que você pretende fazer com essa confiança?']]},
   {id:'pax-carta', eco:'calma', clues:['calma.p5'], label:'Conversar sobre a segunda xícara', lines:[['Você','Você guarda um lugar para alguém que pode nem voltar.'],['Pax','Guardar um lugar não é prender alguém nele.'],['Pax','Eu quero que possam escolher ficar. Inclusive você.']]},
-  {id:'candy-hunger', eco:'amor', clues:['amor.p4'], label:'Perguntar das flores de Hunger', lines:[['Você','As flores são dele?'],['Sugar','Algumas. Ele deixa perto da porta e vai embora.'],['Sugar','Não quer que o cuidado vire um interrogatório. Se você percebeu, pode agradecer sem obrigá-lo a explicar.']]},
-  {id:'candy-beerus', eco:'amor', allClues:['amor.p5','odio.p5'], label:'Perguntar o que existe entre você e Beerus', lines:[['Você','Há uma lembrança sua no quarto dele.'],['Sugar','Ele guarda coisas que não consegue dizer em voz alta.'],['Sugar','Ele parece feito só de hostilidade quando alguém entra procurando isso. Eu conheço mais do que essa parte.']]},
+  {id:'candy-hunger', eco:'amor', clues:['amor.p4'], label:'Perguntar das flores de Hunger', lines:[['Você','As flores são dele?'],['Candy','Algumas. Ele deixa perto da porta e vai embora.'],['Candy','Não quer que o cuidado vire um interrogatório. Se você percebeu, pode agradecer sem obrigá-lo a explicar.']]},
+  {id:'candy-beerus', eco:'amor', allClues:['amor.p5','odio.p5'], label:'Perguntar o que existe entre você e Beerus', lines:[['Você','Há uma lembrança sua no quarto dele.'],['Candy','Ele guarda coisas que não consegue dizer em voz alta.'],['Candy','Ele parece feito só de hostilidade quando alguém entra procurando isso. Eu conheço mais do que essa parte.']]},
   {id:'ninfa-diario', eco:'tristeza', clues:['tristeza.p2'], label:'Pedir licença para falar do diário', lines:[['Você','Eu vi suas lembranças. Não quero fingir que não li.'],['Ninfa','Obrigada por dizer. Você pode perguntar, mas eu também posso não responder.'],['Ninfa','Uma lembrança não é uma instrução de onde ferir alguém.']]},
   {id:'ninfa-sunny', eco:'tristeza', allClues:['tristeza.p4','felicidade.p2'], label:'Falar da música de Sunny', lines:[['Você','Vocês tocaram juntos?'],['Ninfa','Ele errou uma nota e continuou. Eu ri. Não precisou virar uma explicação sobre eu estar melhor.'],['Ninfa','Às vezes companhia é isso: deixar o momento existir.']]},
   {id:'aurea-escudo', eco:'orgulho', allClues:['orgulho.p4','orgulho.p6'], label:'Perguntar por que o escudo tem marcas', lines:[['Você','Você já precisou dessa proteção?'],['Aurea','Precisei. Oferecer não significa que nunca tive medo.'],['Aurea','A alça fica voltada para você. Aprenda a segurar antes de achar que está invulnerável.']]},
@@ -19,7 +19,7 @@ window.CONVIVENCIA = [
   {id:'lumen-hunger', eco:'culpa', clues:['culpa.p5'], label:'Perguntar pelo bilhete de Hunger', lines:[['Você','Ele deixou uma mensagem para você.'],['Lúmen','Eu li várias vezes. Na primeira parecia uma coisa boa. Depois comecei a procurar o que eu podia ter entendido errado.'],['Lúmen','Não queria precisar pedir desculpa por ter gostado.']]},
   {id:'hunger-pax', eco:'medo', flags:['topic-pax-hunger'], label:'Dizer que conversou com Pax sobre ele', lines:[['Você','Pax falou de quando você vai até lá.'],['Hunger','Ele te ofereceu um lugar. Você voltou para procurar a minha fraqueza?'],['Você','Quero entender por que você está me evitando.'],['Hunger','Você carrega uma faca que ela não emprestaria. E o lugar que Pax deixava aberto está vazio.']]},
   {id:'hunger-lumen', eco:'medo', clues:['culpa.p5'], label:'Perguntar pela mensagem para Lúmen', lines:[['Você','Lúmen guardou o seu bilhete.'],['Hunger','Não use o nome dele para conseguir que eu abaixe a guarda.'],['Hunger','Você ainda tem tempo de deixá-lo longe disso.']]},
-  {id:'beerus-candy', eco:'odio', allClues:['amor.p5','odio.p5'], label:'Perguntar por que ele guarda a lembrança de Sugar', lines:[['Você','Você não jogou a lembrança fora.'],['Beerus','Por que jogaria?'],['Você','Você parece odiar tudo.'],['Beerus','Você chegou com essa resposta e está procurando onde encaixar. Sugar não precisa disso para falar comigo.']]}
+  {id:'beerus-candy', eco:'odio', allClues:['amor.p5','odio.p5'], label:'Perguntar por que ele guarda a lembrança de Candy', lines:[['Você','Você não jogou a lembrança fora.'],['Beerus','Por que jogaria?'],['Você','Você parece odiar tudo.'],['Beerus','Você chegou com essa resposta e está procurando onde encaixar. Candy não precisa disso para falar comigo.']]}
 ];
 // Esse assunto só aparece quando a faca já passou para a bolsa.
 window.CONVIVENCIA.push({
@@ -75,36 +75,36 @@ window.CONVIVENCIA.push(
     id:'sugar-descanso',eco:'amor',clues:['amor.p6'],talks:['A1'],label:'Perguntar quem faz companhia quando você para',
     lines:[
       ['Você','Você tem um canto separado dos lugares de visita. Quem pode sentar lá?'],
-      {who:'Sugar',text:'Depende do dia. Às vezes eu deixo uma coisa em cima do assento para ninguém perguntar.',pose:'base'},
+      {who:'Candy',text:'Depende do dia. Às vezes eu deixo uma coisa em cima do assento para ninguém perguntar.',pose:'base'},
       ['Você','Você podia dizer que quer ficar sozinha.'],
-      {who:'Sugar',text:'Podia. Também podia aceitar companhia sem já levantar para buscar alguma coisa.',pose:'abalado'},
+      {who:'Candy',text:'Podia. Também podia aceitar companhia sem já levantar para buscar alguma coisa.',pose:'abalado'},
       ['Você','Quer que eu fique?'],
-      {who:'Sugar',text:'Um pouco. Se alguém passar, não diga que está tudo bem por mim. Eu mesma respondo.',pose:'acolhido'},
-      {who:'Sugar',text:'E senta aqui. Desse lado eu consigo olhar a janela sem você achar que estou esperando outra visita.',pose:'gostou'}
+      {who:'Candy',text:'Um pouco. Se alguém passar, não diga que está tudo bem por mim. Eu mesma respondo.',pose:'acolhido'},
+      {who:'Candy',text:'E senta aqui. Desse lado eu consigo olhar a janela sem você achar que estou esperando outra visita.',pose:'gostou'}
     ]
   },
   {
     id:'sugar-flores-diferentes',eco:'amor',allClues:['amor.p4','medo.p2'],flags:['topic-candy-hunger'],label:'Perguntar por que as flores não ficam na janela',
     lines:[
       ['Você','No quarto de Hunger a janela fica coberta. Você deixa as flores longe da sua também.'],
-      {who:'Sugar',text:'Estas vieram de um lugar com pouca luz. No primeiro dia eu pus todas no mesmo vaso.',pose:'base'},
+      {who:'Candy',text:'Estas vieram de um lugar com pouca luz. No primeiro dia eu pus todas no mesmo vaso.',pose:'base'},
       ['Você','Ele reclamou?'],
-      {who:'Sugar',text:'Voltou para mudar o vaso de lugar. Disse que eu estava acabando com elas.',pose:'gostou'},
+      {who:'Candy',text:'Voltou para mudar o vaso de lugar. Disse que eu estava acabando com elas.',pose:'gostou'},
       ['Você','Você não ficou chateada com o jeito?'],
-      {who:'Sugar',text:'Fiquei. Eu disse. Ele ficou quieto e me mostrou onde deixar.',pose:'base'},
-      {who:'Sugar',text:'Agora pergunto antes de mudar. E ele pode me ensinar uma coisa sem falar comigo daquele jeito.',pose:'acolhido'}
+      {who:'Candy',text:'Fiquei. Eu disse. Ele ficou quieto e me mostrou onde deixar.',pose:'base'},
+      {who:'Candy',text:'Agora pergunto antes de mudar. E ele pode me ensinar uma coisa sem falar comigo daquele jeito.',pose:'acolhido'}
     ]
   },
   {
     id:'sugar-presente-lumen',eco:'amor',allClues:['culpa.p3','amor.p1'],dead:['culpa'],label:'Contar que o presente de Lúmen continua esperando',
     lines:[
       ['Você','Lúmen deixou um presente pronto. Ainda está no quarto.'],
-      {who:'Sugar',text:'Ele me perguntou se devia embrulhar outra vez. Eu disse que aquela dobra estava boa.',pose:'abalado'},
+      {who:'Candy',text:'Ele me perguntou se devia embrulhar outra vez. Eu disse que aquela dobra estava boa.',pose:'abalado'},
       ['Você','Talvez fosse para Hunger.'],
-      {who:'Sugar',text:'Talvez. Não vou abrir para descobrir uma resposta que Lúmen podia ter dado.',pose:'base'},
+      {who:'Candy',text:'Talvez. Não vou abrir para descobrir uma resposta que Lúmen podia ter dado.',pose:'base'},
       ['Você','E vai deixar esperando?'],
-      {who:'Sugar',text:'Vou lembrar onde ele deixou. Depois posso perguntar a quem o visitava. Eu também ainda tenho perguntas.',pose:'quebrando'},
-      {who:'Sugar',text:'Obrigada por me contar onde está. Não precisa trazer agora. Quero ver o quarto antes que alguém tente arrumar tudo.',pose:'abalado'}
+      {who:'Candy',text:'Vou lembrar onde ele deixou. Depois posso perguntar a quem o visitava. Eu também ainda tenho perguntas.',pose:'quebrando'},
+      {who:'Candy',text:'Obrigada por me contar onde está. Não precisa trazer agora. Quero ver o quarto antes que alguém tente arrumar tudo.',pose:'abalado'}
     ]
   },
   {
@@ -156,10 +156,10 @@ window.CONVIVENCIA.push(
     ]
   },
   {
-    id:'aurea-alca-ajustada',eco:'orgulho',flags:['visit-protecao'],items:['escudo'],label:'Retomar o ajuste que você fez com Sugar',
+    id:'aurea-alca-ajustada',eco:'orgulho',flags:['visit-protecao'],items:['escudo'],label:'Retomar o ajuste que você fez com Candy',
     lines:[
       ['Você','Você entregou o escudo e depois voltou para ajustar. Achou que eu ia usar errado?'],
-      {who:'Aurea',text:'Vi que seu braço estava ficando preso. Sugar percebeu antes de mim.',pose:'base'},
+      {who:'Aurea',text:'Vi que seu braço estava ficando preso. Candy percebeu antes de mim.',pose:'base'},
       ['Você','Ela conhece melhor o equipamento?'],
       {who:'Aurea',text:'Ela estava olhando para você. Eu estava olhando para a alça.',pose:'abalado'},
       ['Você','Isso te incomoda?'],
@@ -192,9 +192,9 @@ window.CONVIVENCIA.push(
     ]
   },
   {
-    id:'friska-ajuda-sugar',eco:'determinacao',allClues:['determinacao.p4','amor.p1'],talks:['A1'],alive:['amor'],label:'Perguntar como Sugar ajuda sem terminar por você',
+    id:'friska-ajuda-sugar',eco:'determinacao',allClues:['determinacao.p4','amor.p1'],talks:['A1'],alive:['amor'],label:'Perguntar como Candy ajuda sem terminar por você',
     lines:[
-      ['Você','Sugar disse que passa por aqui. Ela já tentou terminar alguma coisa enquanto você saía?'],
+      ['Você','Candy disse que passa por aqui. Ela já tentou terminar alguma coisa enquanto você saía?'],
       {who:'Friska',text:'Perguntou se podia. Eu disse que queria ver onde a peça estava prendendo.',pose:'base'},
       ['Você','Ela ficou só olhando?'],
       {who:'Friska',text:'Segurou a outra ponta. Depois os dedos dela começaram a doer e a gente trocou.',pose:'gostou'},
@@ -324,9 +324,9 @@ window.CONVIVENCIA.push(
     ]
   },
   {
-    id:'hunger-flores-soleira',eco:'medo',clues:['medo.p1'],flags:['topic-candy-hunger'],alive:['amor'],label:'Dizer que Sugar reconheceu as flores da soleira',
+    id:'hunger-flores-soleira',eco:'medo',clues:['medo.p1'],flags:['topic-candy-hunger'],alive:['amor'],label:'Dizer que Candy reconheceu as flores da soleira',
     lines:[
-      ['Você','Sugar contou que algumas flores vieram de você.'],
+      ['Você','Candy contou que algumas flores vieram de você.'],
       {who:'Hunger',text:'Ela contou onde eu encontro ou só que eu levo?',pose:'nao-gostou'},
       ['Você','Só que você deixa perto da porta.'],
       {who:'Hunger',text:'Então ela entendeu a parte que importava.',pose:'base'},

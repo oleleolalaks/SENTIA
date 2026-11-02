@@ -1,0 +1,76 @@
+/* Luz e materiais do quarto ficam sobre o cenário e atrás dos personagens, mãos e interface. */
+.stage > .room-atmosphere {position:absolute;inset:auto;z-index:0;isolation:auto;overflow:hidden;pointer-events:none;opacity:1;contain:layout paint;}
+.stage:not(.exploring) > .room-atmosphere {display:none;}
+.stage > .room-atmosphere * {position:absolute;display:block;pointer-events:none;}
+.stage > .room-atmosphere .ambient-light {inset:0;opacity:.14;background:radial-gradient(ellipse at 65% 18%,var(--room-color),transparent 64%);}
+.room-feature {--intensity:.3;opacity:var(--intensity);animation:room-light-breath 12s ease-in-out infinite;animation-delay:calc(var(--part)*-2.3s);}
+.stage > .room-atmosphere .ambient-pixel {width:4px;height:4px;opacity:.56;box-shadow:0 0 4px var(--room-color);}
+/* Sunny: o sol atravessa a copa e termina em manchas quentes no chão. */
+.room-felicidade .sun-shaft {--intensity:.3;top:-12%;left:calc(7% + var(--part)*30% + var(--view-offset));width:19%;height:89%;background:linear-gradient(180deg,#fff9b6d9,#ffdd7255 60%,transparent);clip-path:polygon(36% 0,52% 0,100% 100%,0 100%);transform:skewX(-17deg);}
+.room-felicidade .sun-floor {--intensity:.32;left:8%;right:5%;bottom:3%;height:28%;background:repeating-linear-gradient(155deg,transparent 0 8%,#fff0a77d 10% 12%,transparent 15% 24%);mask-image:linear-gradient(transparent,#000 30%,transparent);}
+.room-felicidade .canopy-light {--intensity:.25;inset:0 0 50%;background:radial-gradient(ellipse at 25% 10%,#ffe3849c,transparent 38%),radial-gradient(ellipse at 80% 8%,#ffe9a5a6,transparent 35%);}
+.room-felicidade .ambient-pixel {background:#fff1a3;animation-name:room-drift;}
+/* Amor: a luz abre dois leques leves; pétalas e reflexos acompanham os arcos. */
+.room-amor .feather-light {--intensity:.25;top:2%;left:calc(2% + var(--part)*55%);width:43%;height:66%;background:repeating-conic-gradient(from 12deg at 50% 0%,#ffdfedb0 0 5deg,transparent 7deg 16deg);clip-path:polygon(48% 0,61% 0,100% 93%,74% 80%,64% 98%,48% 72%,30% 94%,0 80%);}
+.room-amor .rose-halo {--intensity:.28;top:4%;left:32%;width:36%;height:42%;border:2px solid #ffe2f0b0;border-radius:50%;box-shadow:0 0 22px #ffb3d27d,inset 0 0 16px #ffdef348;transform:scaleY(.5);}
+.room-amor .rose-floor {--intensity:.25;left:14%;bottom:1%;width:72%;height:27%;background:radial-gradient(ellipse,#ffdfecb8,transparent 68%);}
+.room-amor .ambient-pixel {width:7px;height:4px;background:#ffdae9;animation-name:room-petal-fall;}
+/* Ninfa: chuva contínua nas bordas, luz fria e água refletida nas pedras. */
+.room-tristeza .rain-sheet {--intensity:.3;inset:-8%;background:repeating-linear-gradient(103deg,transparent 0 27px,#a7deed90 28px,transparent 30px 61px);mask-image:linear-gradient(90deg,#000,transparent 41%,transparent 64%,#000);animation:room-rain-sheet 2.8s linear infinite;}
+.room-tristeza .water-light {--intensity:.27;inset:0;background:linear-gradient(110deg,transparent 23%,#9be0f64d 43%,transparent 60%),radial-gradient(ellipse at 52% 21%,#7bb8d7b0,transparent 44%);}
+.room-tristeza .water-floor {--intensity:.38;left:0;right:0;bottom:0;height:35%;background:repeating-radial-gradient(ellipse at 38% 10%,transparent 0 8%,#b8edfb8c 9% 10%,transparent 12% 20%);transform:perspective(200px) rotateX(25deg);animation:room-water-surface 9s ease-in-out infinite;}
+.room-tristeza .water-ripple {--intensity:.46;left:calc(13% + var(--part)*31%);top:calc(70% + var(--part)*5%);width:15%;height:5%;border:2px solid #c7efff8c;border-radius:50%;animation:room-water-ring 5s ease-out infinite;animation-delay:calc(var(--part)*-1.6s);}
+.room-tristeza .ambient-pixel {height:11px;width:2px;background:#b1e6ff;}
+/* Aurea: luz vertical nas colunas, fogo baixo e brilho concentrado no pedestal. */
+.room-orgulho .gold-column {--intensity:.35;top:0;left:calc(12% + var(--part)*65%);width:12%;height:78%;background:linear-gradient(90deg,transparent,#ffe69dc4,transparent);clip-path:polygon(40% 0,58% 0,100% 100%,0 100%);}
+.room-orgulho .solar-ring {--intensity:.21;left:38%;top:7%;width:24%;height:37%;border:3px solid #fff0b49e;border-radius:50%;box-shadow:0 0 18px #ffcf775e;}
+.room-orgulho .gold-floor {--intensity:.32;left:12%;right:12%;height:29%;bottom:3%;background:radial-gradient(ellipse at 50% 0,#ffe5a8d0,transparent 69%);}
+.room-orgulho .brazier {--intensity:.4;left:calc(14% + var(--part)*64%);top:47%;width:8%;height:20%;background:radial-gradient(ellipse at 50% 65%,#ffdd999c,#ff8a253d 45%,transparent 68%);}
+/* Friska: os detalhes escarlates persistem contra a pedra escura. */
+.room-determinacao .scarlet-thread {--intensity:.5;left:calc(13% + var(--part)*70%);top:4%;width:2%;height:72%;background:linear-gradient(180deg,transparent,#e8424a9c 30%,#ff5d6e6e 70%,transparent);clip-path:polygon(0 0,70% 0,100% 40%,38% 57%,90% 100%,12% 100%,0 57%,60% 35%);}
+.room-determinacao .scarlet-glow {--intensity:.38;left:34%;top:12%;width:32%;height:53%;background:radial-gradient(ellipse at 50% 47%,#d834456e,transparent 69%);}
+.room-determinacao .scarlet-floor {--intensity:.3;left:0;right:0;bottom:2%;height:22%;background:linear-gradient(175deg,transparent 30%,#e250555e 48%,transparent 54%);}
+.room-determinacao .ambient-pixel {width:3px;height:3px;background:#ff737e;}
+/* Pax: luz da lua, brisa e folhas claras, sem transformar o chão num lago. */
+.room-calma .moon-shaft {--intensity:.25;left:17%;top:-8%;width:35%;height:90%;background:linear-gradient(180deg,#eef9e9d0,transparent);clip-path:polygon(53% 0,59% 0,100% 100%,0 100%);transform:rotate(13deg);}
+.room-calma .moon-halo {--intensity:.3;left:37%;top:-10%;width:27%;height:50%;background:radial-gradient(ellipse,#e4f6d966,transparent 67%);}
+.room-calma .breeze-band {--intensity:.3;left:calc(-5% + var(--part)*24%);top:calc(52% + var(--part)*19%);width:75%;height:15%;border-top:2px solid #e1f2d36b;border-radius:50%;transform:rotate(-7deg);animation:room-breeze 15s ease-in-out infinite;}
+.room-calma .calm-floor {--intensity:.22;left:10%;right:10%;bottom:0;height:25%;background:radial-gradient(ellipse,#d2edc6c4,transparent 65%);}
+.room-calma .ambient-pixel {width:6px;height:3px;background:#e0f1c9;}
+/* Hermes: um núcleo respira ao fundo e a energia percorre os arcos, sem flashes. */
+.room-ansiedade .electric-core {--intensity:.5;left:43%;top:26%;width:14%;height:23%;background:radial-gradient(ellipse,#d8fbffb0,#4bbed665 22%,transparent 66%);}
+.room-ansiedade .electric-wire {--intensity:.48;left:calc(5% + var(--part)*24%);top:calc(13% + var(--part)*5%);width:13%;height:48%;background:linear-gradient(90deg,transparent 44%,#b8f5fcab 48% 52%,transparent 56%);clip-path:polygon(39% 0,56% 0,38% 31%,85% 45%,48% 64%,62% 100%,43% 100%,28% 64%,65% 45%,16% 32%);}
+.room-ansiedade .electric-floor {--intensity:.3;left:5%;right:5%;bottom:3%;height:24%;background:radial-gradient(ellipse at 50% 0,#7ed8ecb0,transparent 70%);}
+.room-ansiedade .ambient-pixel {width:3px;height:3px;background:#cdf7ff;}
+/* Lúmen: o teto estrelado projeta uma constelação e filetes dourados no piso. */
+.room-culpa .star-window {--intensity:.33;left:31%;top:0;width:38%;height:47%;background:radial-gradient(ellipse at 50% 30%,#cce5f299,transparent 60%);}
+.room-culpa .star-ray {--intensity:.27;left:calc(22% + var(--part)*38%);top:5%;width:19%;height:93%;background:linear-gradient(#e8dfaad0,transparent 90%);clip-path:polygon(47% 0,53% 0,100% 100%,0 100%);transform:rotate(calc(-9deg + var(--part)*18deg));}
+.room-culpa .constellation {--intensity:.43;left:27%;top:16%;width:46%;height:32%;border-top:1px solid #e3d7a585;transform:rotate(-12deg);background:linear-gradient(56deg,transparent 49.6%,#dfe7b894 50%,transparent 50.4%);}
+.room-culpa .star-floor {--intensity:.3;left:3%;right:3%;bottom:0;height:30%;background:repeating-linear-gradient(105deg,transparent 0 10%,#f6e4a666 11% 13%,transparent 15% 29%);mask-image:linear-gradient(transparent,#000 30%,transparent);}
+.room-culpa .ambient-pixel {background:#fff1b8;clip-path:polygon(40% 0,60% 0,60% 38%,100% 40%,100% 60%,62% 60%,60% 100%,40% 100%,40% 62%,0 60%,0 40%,38% 40%);width:7px;height:7px;}
+/* Hunger: neblina rasteira e pressão nas laterais, deixando os objetos legíveis. */
+.room-medo .fog-bank {--intensity:.36;left:calc(-15% + var(--part)*45%);bottom:calc(1% + var(--part)*18%);width:80%;height:24%;background:radial-gradient(ellipse,#b1a7d575,transparent 66%);animation:room-fog-bank 18s ease-in-out infinite;}
+.room-medo .watching-shadow {--intensity:.38;left:calc(-10% + var(--part)*96%);top:0;width:24%;height:100%;background:radial-gradient(ellipse at 50% 45%,#090615d9,transparent 72%);}
+.room-medo .violet-depth {--intensity:.25;left:27%;top:8%;width:47%;height:52%;background:radial-gradient(ellipse,#b49bdb66,transparent 70%);}
+.room-medo .ambient-pixel {width:28px;height:2px;opacity:.2;}
+/* Beerus: calor que sobe nas pedras, brasas e fissuras luminosas baixas. */
+.room-odio .heat-column {--intensity:.35;left:calc(6% + var(--part)*34%);top:8%;width:18%;height:84%;background:linear-gradient(90deg,transparent,#db38123f,transparent);clip-path:polygon(25% 0,70% 0,100% 35%,60% 60%,90% 100%,15% 100%,35% 60%,0 35%);animation:room-heat-rise 11s ease-in-out infinite;}
+.room-odio .ember-floor {--intensity:.35;left:0;right:0;bottom:0;height:28%;background:radial-gradient(ellipse at 50% 100%,#ff6e226e,transparent 72%);}
+.room-odio .red-vein {--intensity:.5;left:calc(7% + var(--part)*57%);bottom:5%;width:32%;height:16%;background:#ff6d318c;clip-path:polygon(0 70%,27% 49%,53% 56%,78% 16%,100% 4%,79% 23%,54% 63%,28% 56%,0 76%);}
+.room-odio .ambient-pixel {background:#ffc66e;width:3px;height:5px;}
+@keyframes room-light-breath {0%,100%{opacity:calc(var(--intensity)*.8);}50%{opacity:var(--intensity);}}
+@keyframes room-petal-fall {0%,100%{transform:translate(0,-5px) rotate(-12deg);opacity:.35;}50%{transform:translate(var(--drift),18px) rotate(25deg);opacity:.65;}}
+@keyframes room-rain-sheet {from{transform:translate(0,-12px);}to{transform:translate(-8px,16px);}}
+@keyframes room-water-surface {0%,100%{transform:perspective(200px) rotateX(25deg) translateX(-1%);opacity:.25;}50%{transform:perspective(200px) rotateX(25deg) translateX(2%);opacity:.4;}}
+@keyframes room-water-ring {0%{transform:scale(.55);opacity:.1;}30%{opacity:.46;}100%{transform:scale(1.7);opacity:.02;}}
+@keyframes room-breeze {0%,100%{transform:translateX(-4%) rotate(-7deg);opacity:.15;}50%{transform:translateX(6%) rotate(-3deg);opacity:.32;}}
+@keyframes room-fog-bank {0%,100%{transform:translateX(-8%);opacity:.26;}50%{transform:translateX(9%);opacity:.4;}}
+@keyframes room-heat-rise {0%,100%{transform:translate(0,0) skewX(-3deg);opacity:.2;}50%{transform:translate(1%,-2%) skewX(3deg);opacity:.35;}}
+/* A ausência não volta a acender o quarto. O modo reduzido mantém a composição parada. */
+.stage > .room-atmosphere.spent {opacity:.34;filter:saturate(.18);}
+.stage > .room-atmosphere.spent .room-feature {animation:none;opacity:.12;}
+.stage > .room-atmosphere.spent .ambient-pixel {animation:none;opacity:.1;}
+.stage > .room-atmosphere.spent .ambient-light {opacity:.025;}
+body.reduced .room-atmosphere *,body:has(#motion:checked) .room-atmosphere * {animation:none!important;transition:none!important;}
+@media(prefers-reduced-motion:reduce){.room-atmosphere *{animation:none!important;transition:none!important;}}
+@media(max-width:600px){.stage > .room-atmosphere .ambient-pixel{max-width:5px;max-height:7px;}.room-medo .ambient-pixel{max-width:18px!important;}.room-tristeza .water-ripple{border-width:1px;}.room-orgulho .solar-ring,.room-amor .rose-halo{border-width:1px;}}

@@ -147,6 +147,34 @@ body.reduced .stage.choice-glitch > #dialogue {animation:none;outline:2px solid 
 .observation-controls button,.item-observation>button { min-height:44px; }
 .observation-finding { padding:12px;border-left:2px solid #c8b67f;background:#b9c7b112; }
 .observation-finding:empty { display:none; }
+/* O papel fica discreto no canto da entrada da Candy, mas continua clicável no toque. */
+#stage .room-scene .quiet-interaction {
+  right:2%;bottom:3%;width:48px;height:48px;min-height:48px;
+  padding:0;opacity:1;z-index:3;pointer-events:auto;touch-action:manipulation;
+  border:0;background:transparent;box-shadow:none;
+}
+#stage .quiet-interaction img {
+  right:7px;bottom:7px;width:22px;height:22px;opacity:.62;
+  filter:drop-shadow(1px 2px 1px #000a);transition:opacity .15s;
+}
+#stage .quiet-interaction:hover img,#stage .quiet-interaction:focus-visible img {opacity:1;}
+#stage .quiet-interaction:focus-visible {outline:1px dashed #eadde3;outline-offset:1px;}
+/* Na exploração os punhos terminam na própria arte, inclusive na tela vertical. */
+#stage.exploring > #hands.hands {
+  bottom:var(--room-bottom,0px);
+  width:min(76%,calc(var(--room-width,800px)*.76),720px);
+  height:calc(var(--room-height,600px)*.43);max-height:calc(var(--room-height,600px)*.43);
+}
+#stage.exploring > #hands.hands[data-layout="equipment"] {
+  width:min(83%,calc(var(--room-width,800px)*.83),740px);
+  height:calc(var(--room-height,600px)*.52);max-height:calc(var(--room-height,600px)*.52);
+}
+/* O cenário continua inteiro; as faixas restantes recebem só a sua luz ambiente. */
+#stage.exploring::before {
+  content:'';position:absolute;inset:-20px;z-index:-4;pointer-events:none;
+  background:var(--room-backdrop,none) center/cover no-repeat;
+  filter:blur(14px) brightness(.2) saturate(.7);opacity:.8;
+}
 @media(max-width:600px) { .object-viewer {height:195px;}.bag-item {gap:8px;}.journal-entry {padding:10px;}.journal-toolbar button {flex:1;font-size:12px;} }
 @media(orientation:landscape) and (max-height:550px) {
   .watch-hud.camera-hud { left:23%;width:62%; }

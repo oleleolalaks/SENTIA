@@ -383,7 +383,7 @@ window.Arena = (() => {
     if (freeMode) {
       const nearSword = Math.hypot(player.x - 10.5, player.y - 4.5) < 1.3,
         nearSugar = Math.hypot(player.x - 3.5, player.y - 4.5) < 1.5;
-      warning = !collected ? nearSword ? 'E · Pegar a espada' : 'Pegue a espada — centro da arena' : nearSugar ? 'E · Aproximar-se de Sugar' : 'Sugar está do outro lado, à esquerda';
+      warning = !collected ? nearSword ? 'E · Pegar a espada' : 'Pegue a espada — centro da arena' : nearSugar ? 'E · Aproximar-se de Candy' : 'Candy está do outro lado, à esquerda';
       config.onHud?.({
         hp: player.hp,
         enemy: 0,

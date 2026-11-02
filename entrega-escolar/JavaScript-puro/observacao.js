@@ -6,7 +6,7 @@ window.ObservacaoSentia = (() => {
     espada: ['A lâmina', 'O fogo acompanha o contorno da espada. A oferta de Aurea não dizia quem deveria ser atingido.'],
     escudo: ['O apoio do braço', 'A proteção precisa ser segurada pelo lado de dentro. As marcas de uso não desapareceram quando ela mudou de mãos.'],
     faca: ['O cabo', 'A faca é reconhecível. Tirar o objeto da moldura não apagou a recusa de Friska em entregá-lo.'],
-    luz: ['A claridade', 'A luz continua pequena o suficiente para caber na mão. Sugar a ofereceu; não foi preciso arrancá-la de alguém.'],
+    luz: ['A claridade', 'A luz continua pequena o suficiente para caber na mão. Candy a ofereceu; não foi preciso arrancá-la de alguém.'],
     lanterna: ['A pega', 'A pega mantém a luz à frente da mão. Iluminar uma passagem não mostra o que está do outro lado das paredes.'],
     'chave-sanidade': ['Os dentes', 'Há dentes e uma haste para uma fechadura comum. A forma de Cassidy agora cabe entre os dedos.'],
     'chave-insanidade': ['A haste', 'A segunda chave tem o próprio contorno. A porta adiante pede as duas, sem que uma substitua a outra.']

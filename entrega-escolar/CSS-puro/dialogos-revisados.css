@@ -1,0 +1,9 @@
+/* A arte continua sendo a moldura aprovada; só o conteúdo interno pode rolar. */
+#stage > #dialogue .dialogue-body { min-width:0; touch-action:pan-y; }
+#stage > #dialogue #speech { max-width:none; overflow-wrap:anywhere; }
+#stage > #dialogue #choices { min-width:0; }
+#stage > #dialogue #choices button { max-width:100%; overflow-wrap:anywhere; }
+/* Uma fala curta não ocupa quase o cenário inteiro quando o celular está deitado. */
+@media(orientation:landscape) and (max-height:550px) {
+  #stage > #dialogue:not(:has(.choices:not(:empty))) { height:min(205px,58%); max-height:64%; }
+}

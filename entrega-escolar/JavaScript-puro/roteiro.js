@@ -2,7 +2,7 @@
 window.ROTEIRO = {
   "names": {
     "felicidade": "Sunny",
-    "amor": "Sugar",
+    "amor": "Candy",
     "tristeza": "Ninfa",
     "orgulho": "Aurea",
     "determinacao": "Friska",
@@ -518,7 +518,7 @@ window.ROTEIRO = {
       "name": "Retrato danificado",
       "description": "O retrato pertence a irmãos, não a um vilão sem vínculo.",
       "voice": "Isso não é seu para examinar.",
-      "after": "Objeto preserva a relação com Sugar."
+      "after": "Objeto preserva a relação com Candy."
     },
     {
       "id": "odio.p3",
@@ -542,7 +542,7 @@ window.ROTEIRO = {
       "id": "odio.p5",
       "eco": "odio",
       "view": 2,
-      "name": "Objeto de Sugar",
+      "name": "Objeto de Candy",
       "description": "Uma lembrança contradiz a impressão de ódio sem laços.",
       "voice": "Ela não precisa saber que ainda está aqui.",
       "after": "Não vira souvenir de recompensa por assassinato."
@@ -554,7 +554,7 @@ window.ROTEIRO = {
       "name": "Limiar da arena",
       "description": "A travessia final leva ao confronto após destinos dos oito.",
       "voice": "Não tem mais ninguém entre você e o que fez.",
-      "after": "No pós-combate o espaço contém corpo, Sugar e espada caída."
+      "after": "No pós-combate o espaço contém corpo, Candy e espada caída."
     }
   ],
   "conversations": {
@@ -1063,7 +1063,7 @@ window.ROTEIRO = {
       "title": "PRIMEIRA CONFIANÇA",
       "script": [
         {
-          "who": "Sugar",
+          "who": "Candy",
           "text": "Você não precisa estar machucado para aceitar ajuda.",
           "pose": "base"
         },
@@ -1073,7 +1073,7 @@ window.ROTEIRO = {
           "pose": "base"
         },
         {
-          "who": "Sugar",
+          "who": "Candy",
           "text": "Eu ofereci. Você ainda pode dizer não.",
           "pose": "base"
         },
@@ -1097,7 +1097,7 @@ window.ROTEIRO = {
           ]
         },
         {
-          "who": "Sugar",
+          "who": "Candy",
           "text": "Tenta primeiro onde você consegue enxergar o que vai atingir.",
           "pose": "entregar-luz"
         }
@@ -1108,7 +1108,7 @@ window.ROTEIRO = {
       "title": "UMA INTERAÇÃO COMUM",
       "script": [
         {
-          "who": "Sugar",
+          "who": "Candy",
           "text": "Você viu as flores dele?",
           "pose": "base"
         },
@@ -1118,7 +1118,7 @@ window.ROTEIRO = {
           "pose": "base"
         },
         {
-          "who": "Sugar",
+          "who": "Candy",
           "text": "Então ainda não viu tudo.",
           "pose": "gostou"
         },
@@ -1134,7 +1134,7 @@ window.ROTEIRO = {
       "title": "CONFIANÇA ANTES DA RETA FINAL",
       "script": [
         {
-          "who": "Sugar",
+          "who": "Candy",
           "text": "Eu ainda estou tentando entender quando começou.",
           "pose": "abalado"
         },
@@ -1144,7 +1144,7 @@ window.ROTEIRO = {
           "pose": "base"
         },
         {
-          "who": "Sugar",
+          "who": "Candy",
           "text": "De quem?",
           "pose": "base"
         },
@@ -1169,7 +1169,7 @@ window.ROTEIRO = {
       "title": "ANTES DO ÓDIO",
       "script": [
         {
-          "who": "Sugar",
+          "who": "Candy",
           "text": "Ele não vai ouvir se você entrar daquele jeito.",
           "pose": "base"
         },
@@ -1179,7 +1179,7 @@ window.ROTEIRO = {
           "pose": "base"
         },
         {
-          "who": "Sugar",
+          "who": "Candy",
           "text": "Você está chamando de passagem uma coisa que começa nele e termina em quem?",
           "pose": "base"
         }
@@ -1405,7 +1405,7 @@ window.ROTEIRO = {
               "pose": "gostou"
             },
             {
-              "label": "Sugar confia em mim",
+              "label": "Candy confia em mim",
               "reply": "Não usa o nome dela como escudo.",
               "pose": "abalado, tensão"
             }
@@ -1502,7 +1502,7 @@ window.ROTEIRO = {
       ]
     },
     {
-      "text": "Sugar ainda acha que consegue alcançar você.",
+      "text": "Candy ainda acha que consegue alcançar você.",
       "answers": [
         [
           "Ela sempre aparece",
@@ -1655,7 +1655,7 @@ window.ROTEIRO = {
     ],
     [
       "Anata",
-      "Você queria não depender de ninguém. Quando o caminho se fechou, Sugar ainda foi até você."
+      "Você queria não depender de ninguém. Quando o caminho se fechou, Candy ainda foi até você."
     ],
     [
       "Anata",

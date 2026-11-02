@@ -87,7 +87,7 @@ const G = (() => {
   }
   function showRoomNotice() {
     const notice=$('#room-notice');
-    notice.hidden=!S?.flags.roomNotice;
+    notice.hidden=mode!=='explore'||!S?.flags.roomNotice;
     if(notice.hidden) return;
     notice.replaceChildren(document.createTextNode(S.flags.roomNotice));
     notice.append(btn('Entendi',()=>{S.flags.roomNotice='';notice.hidden=true;save();}));
@@ -128,6 +128,14 @@ const G = (() => {
   function valid(s) {
     const record=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
     return record(s) && (s.room === null || ids.includes(s.room)) && Number.isInteger(s.view) && s.view >= 0 && s.view <= 3 && s.version === 4 && Array.isArray(s.dead) && s.dead.every(x => ids.includes(x)) && Array.isArray(s.items) && s.items.every(x=>typeof x==='string'&&x.length<120) && Array.isArray(s.log) && s.log.every(n=>record(n)&&typeof n.title==='string'&&typeof n.text==='string') && [s.seen,s.talks,s.flags,s.pending,s.lastTalk].every(record) && Array.isArray(s.choices) && Number.isFinite(s.activity) && Number.isFinite(s.sanity) && Number.isFinite(s.playSeconds) && ['explore', 'watch', 'fearChase', 'fearRoom', 'ninfa', 'odio', 'comics', 'arena', 'candy', 'stairs', 'maze', 'insaneChase', 'interrogation', 'revelation', 'keys', 'gate', 'ending', 'complete'].includes(s.phase);
+  }
+  // Atualiza o nome nos registros antigos sem alterar as chaves do save nem o progresso.
+  function currentNames(state) {
+    const rename=text=>typeof text==='string'?text.replace(/\bSugar\b/gi,'Candy'):text;
+    state.log.forEach(entry=>{for(const key of ['title','text','voice','source'])if(key in entry)entry[key]=rename(entry[key]);});
+    state.choices.forEach(choice=>{if(choice&&typeof choice==='object')for(const key of ['label','text','reply','who'])if(key in choice)choice[key]=rename(choice[key]);});
+    if(state.flags.roomNotice)state.flags.roomNotice=rename(state.flags.roomNotice);
+    return state;
   }
   // Salva no navegador, sem mandar os dados da partida para fora.
   function save() {
@@ -200,7 +208,7 @@ const G = (() => {
   function addItem(id) {
     if (S.items.includes(id)) return;
     S.items.push(id);
-    const name=({espada:'Espada de fogo',escudo:'Escudo de fogo',luz:'Luz de Sugar',faca:'Faca vermelha',lanterna:'Lanterna','chave-sanidade':'Chave de Cassidy','chave-insanidade':'Chave de Mizzery'})[id]||id;
+    const name=({espada:'Espada de fogo',escudo:'Escudo de fogo',luz:'Luz de Candy',faca:'Faca vermelha',lanterna:'Lanterna','chave-sanidade':'Chave de Cassidy','chave-insanidade':'Chave de Mizzery'})[id]||id;
     note('Na bolsa: '+name,'O objeto passou para a sua bolsa e pode ser examinado sem ser equipado.',{item:id,source:'Inventário'});
     window.AudioSentia?.spatialCue?.('item');
     save();
@@ -290,6 +298,13 @@ const G = (() => {
     $('#jumpscare-frame')?.remove();
     $('#held-object')?.remove();
     $('#dialogue').hidden = true;
+    $('#choices').replaceChildren();
+    $('#speaker').textContent = '';
+    $('#speaker').removeAttribute('title');
+    $('#speech').textContent = '';
+    $('#speech').removeAttribute('aria-label');
+    $('.dialogue-body').scrollTop = 0;
+    setDialogueTheme(null);
     $('#prompt').hidden = true;
     $('#action-panel').hidden = true;
     $('#mobile-controls').hidden = true;
@@ -343,9 +358,18 @@ const G = (() => {
     }
     return p;
   }
+  // A narração também tem moldura: ela não depende do último personagem exibido.
+  function setDialogueTheme(eco) {
+    const theme=eco&&D.names[eco]?eco:'neutralidade',box=$('#dialogue');
+    const image=asset('/02-Caixas-Dialogo/PNG/'+theme+'.png');
+    box.dataset.theme=theme;
+    box.style.setProperty('--accent',palette[theme]||'#d6c395');
+    box.style.setProperty('--dialogue-art',image?'url("'+new URL(image,document.baseURI).href+'")':'none');
+  }
   // A fila cuida das falas e escolhas, travando as setinhas durante a conversa.
   function say(eco, lines, done) {
     writing = null;
+    timed = null;
     window.AudioSentia?.stopVoice?.();
     mode = 'dialogue';
     updateGestureControl();
@@ -362,6 +386,9 @@ const G = (() => {
     $('#prompt').hidden = true;
     $('#world-controls').replaceChildren();
     $('#dialogue').hidden = false;
+    $('#room-notice').hidden = true;
+    if(/^Resposta\s*·/.test($('#status').textContent))$('#status').textContent='';
+    setDialogueTheme(eco);
     $('#stage').classList.remove('exploring','chasing');
     window.Perseguicao?.stop();
     // Continuar uma conversa não devolve a pose base a quem já está chorando.
@@ -400,6 +427,7 @@ const G = (() => {
     if (finishWriting()) return;
     $('.dialogue-body').scrollTop=0;
     timed = null;
+    if(/^Resposta\s*·/.test($('#status').textContent))$('#status').textContent='';
     const line = queue.shift();
       if (line?.requiresItem && !S.items.includes(line.requiresItem)) return nextLine();
     if (!line) {
@@ -412,14 +440,17 @@ const G = (() => {
     $('#choices').replaceChildren();
     $('#dialogue').classList.remove('is-writing');
     $('#advance').hidden = false;
+    // Um efeito de corte não permanece na tela da escolha seguinte.
+    if(line.image){$('#effect').src=line.image;$('#effect').hidden=false;}else $('#effect').hidden=true;
     if (line.choices) {
       let choiceMade=false;
       $('#advance').hidden = true;
       $('#speech').textContent = line.text || 'O que você quer dizer?';
       $('#speech').setAttribute('aria-label',line.text || 'O que você quer dizer?');
       $('#speech').setAttribute('aria-live','polite');
-      $('#speaker').textContent = 'Você';
-      $('#speaker').title = 'Sua resposta';
+      $('#speaker').textContent = line.who || 'Você';
+      $('#speaker').title = line.who || 'Sua resposta';
+      setDialogueTheme(currentEco);
       for (const c of line.choices) $('#choices').append(btn(c.label, () => {
         if (paused) return;
         if(choiceMade)return;
@@ -470,10 +501,8 @@ const G = (() => {
       }
       actor(currentEco,dead(currentEco)?'morreu':pose);
     }
-    if (line.image) {
-      $('#effect').src = line.image;
-      $('#effect').hidden = false;
-    } else $('#effect').hidden = true;
+    const speakerEco=Object.keys(D.names).find(id=>D.names[id]===$('#speaker').textContent);
+    setDialogueTheme(speakerEco||currentEco);
     if (line.effect) line.effect();
     if($('#stage').classList.contains('shared-scene')&&!$('#actor-two').hidden)$('#actor').classList.add('paired');
   }
@@ -568,6 +597,7 @@ const G = (() => {
     small.className = 'hint';
     small.textContent = ready() ? 'Algumas conversas mudaram. Há detalhes novos nos lugares conhecidos.' : 'Observe os lugares e converse antes de insistir em assuntos delicados. Ninfa e Hermes podem ajudar você a conhecer o Jardim.';
     p.append(small);
+    showRoomNotice();
   }
   function enterRoom(id) {
     if (!ids.includes(id)) return hub();
@@ -581,31 +611,49 @@ const G = (() => {
     if (S.pending[id] != null && S.activity > S.pending[id]) return laterDeath(id);
     renderRoom();
   }
-  // Pólen, gotas e brasas são detalhes do quarto; não recebem cliques nem mudam a história.
+  // A atmosfera acompanha a própria arte, atrás das mãos e dos moradores.
+  // Cada quarto tem luz e materiais próprios. Nada dessa camada recebe cliques.
   function roomAtmosphere(scene, id) {
-    const layer = document.createElement('div');
-    const kind = ({tristeza:'rain',orgulho:'embers',odio:'embers',calma:'leaves',amor:'petals',ansiedade:'electric',medo:'mist'})[id] || 'dust';
-    layer.className = 'room-atmosphere ' + kind + (dead(id) ? ' spent' : '');
-    layer.setAttribute('aria-hidden','true');
-    layer.style.setProperty('--room-color',palette[id] || '#c2d3b5');
-    const light = document.createElement('i');light.className = 'ambient-light';layer.append(light);
-    for (let i = 0; i < 10; i++) {
-      const particle = document.createElement('i');particle.className = 'ambient-pixel';
-      particle.style.left = (7 + (i * 31 + S.view * 13) % 86) + '%';
-      particle.style.top = (12 + i * 19 % 67) + '%';
-      particle.style.setProperty('--drift', (i % 2 ? 13 : -11) + 'px');
-      particle.style.animationDelay = (-i * 2.7) + 's';
-      particle.style.animationDuration = (14 + i % 4 * 5) + 's';
-      layer.append(particle);
+    roomAtmosphere.cleanup?.();
+    const layer=document.createElement('div');
+    const kind=({tristeza:'rain',orgulho:'embers',odio:'embers',calma:'leaves',amor:'petals',ansiedade:'electric',medo:'mist'})[id]||'dust';
+    layer.className='room-atmosphere room-'+id+' '+kind+(dead(id)?' spent':'');
+    layer.dataset.room=id;layer.dataset.view=String(S.view);layer.setAttribute('aria-hidden','true');
+    layer.style.setProperty('--room-color',palette[id]||'#c2d3b5');
+    layer.style.setProperty('--view-offset',String((S.view-1.5)*4)+'%');
+    const light=document.createElement('i');light.className='ambient-light';layer.append(light);
+    const materials={
+      felicidade:['sun-shaft','sun-shaft','sun-shaft','sun-floor','canopy-light'],
+      amor:['feather-light','feather-light','rose-halo','rose-floor'],
+      tristeza:['water-light','water-floor','water-ripple','water-ripple','water-ripple','rain-sheet'],
+      orgulho:['gold-column','gold-column','solar-ring','gold-floor','brazier','brazier'],
+      determinacao:['scarlet-thread','scarlet-thread','scarlet-glow','scarlet-floor'],
+      calma:['moon-shaft','moon-halo','breeze-band','breeze-band','calm-floor'],
+      ansiedade:['electric-core','electric-wire','electric-wire','electric-wire','electric-wire','electric-floor'],
+      culpa:['star-window','star-ray','star-ray','constellation','star-floor'],
+      medo:['fog-bank','fog-bank','watching-shadow','watching-shadow','violet-depth'],
+      odio:['heat-column','heat-column','heat-column','ember-floor','red-vein','red-vein']
+    }[id]||[];
+    const counts={};
+    materials.forEach(type=>{const node=document.createElement('i');node.className='room-feature '+type;node.dataset.part=String(counts[type]||0);counts[type]=(counts[type]||0)+1;node.style.setProperty('--part',node.dataset.part);layer.append(node);});
+    for(let i=0;i<10;i++){
+      const particle=document.createElement('i');particle.className='ambient-pixel';
+      particle.style.left=(7+(i*31+S.view*13)%86)+'%';particle.style.top=(12+i*19%67)+'%';
+      particle.style.setProperty('--drift',(i%2?16:-13)+'px');particle.style.setProperty('--part',String(i));
+      particle.style.animationDelay=(-i*2.7)+'s';particle.style.animationDuration=(10+i%4*3)+'s';layer.append(particle);
     }
-    if (['tristeza','calma'].includes(id)) {
-      for (let i = 0; i < 3; i++) {
-        const ripple = document.createElement('i');ripple.className = 'ambient-ripple';
-        ripple.style.left = (18 + i * 30) + '%';ripple.style.top = (77 + i % 2 * 9) + '%';
-        ripple.style.animationDelay = (-i * 3) + 's';layer.append(ripple);
-      }
-    }
-    scene.append(layer);
+    const stage=$('#stage'),bg=$('#background');stage.append(layer);
+    // O fundo usa contain: a luz deve terminar na borda da imagem, inclusive em retrato.
+    const fit=()=>{
+      if(!scene.isConnected)return cleanup();
+      const ratio=bg.naturalWidth&&bg.naturalHeight?bg.naturalWidth/bg.naturalHeight:1.7;
+      const w=Math.min(stage.clientWidth,stage.clientHeight*ratio),h=w/ratio;
+      Object.assign(layer.style,{width:w+'px',height:h+'px',left:(stage.clientWidth-w)/2+'px',top:(stage.clientHeight-h)/2+'px'});
+    };
+    const resize=new ResizeObserver(fit);
+    const lifecycle=new MutationObserver(()=>{if(!scene.isConnected)cleanup();});
+    const cleanup=()=>{resize.disconnect();lifecycle.disconnect();bg.removeEventListener('load',fit);layer.remove();if(roomAtmosphere.cleanup===cleanup)roomAtmosphere.cleanup=null;};
+    roomAtmosphere.cleanup=cleanup;resize.observe(stage);lifecycle.observe(scene.parentElement,{childList:true});bg.addEventListener('load',fit);fit();
   }
   function renderRoom() {
     resetScene();
@@ -695,6 +743,7 @@ const G = (() => {
     } else if(id==='determinacao' && S.flags.knifeKnown && !dead(id)) objective('A faca continua na moldura. Você pode voltar a falar sobre ela.');
     else if(storyAction(id)) objective('Há uma nova conversa com '+D.names[id]+'.');
     updateGestureControl();
+    showRoomNotice();
   }
   function updateGestureControl() {
     const control=$('#gesture-l-button');
@@ -704,7 +753,7 @@ const G = (() => {
   const visits = [
     {key:'acolhimento',hosts:['calma','felicidade'],people:['calma','felicidade'],requires:['P1','F1'],lines:[['Sunny','Eu achei que ia só deixar a fita e sair.'],['Pax','Você não precisa inventar uma entrega para sentar.'],['Você','Vocês fazem isso sempre?'],['Sunny','Ele deixa o lugar livre até quando eu não tenho assunto.'],['Pax','Ninfa também aparece. Cada um sabe que pode ir embora e voltar.'],{choices:[{label:'Ficar e escutar os dois',reply:'A conversa continua sem pedir que você justifique a visita.',pose:'acolhido'},{label:'Perguntar se Pax se sente responsável por todos',reply:'Receber alguém não me dá o controle do que essa pessoa escolhe.',pose:'abalado'}]},['Sunny','Era só isso que eu queria que você visse.']]},
     {key:'melodia',hosts:['tristeza','ansiedade'],people:['tristeza','ansiedade'],requires:['N1','H1'],lines:[['Ninfa','Trouxe a caixa para você ouvir. Não para calcular.'],['Hermes','Eu calculei o intervalo em que ela parava. Depois parei de contar.'],['Você','Você guardou uma coisa sem utilidade?'],['Hermes','Sem uma utilidade que eu pudesse nomear. São afirmações diferentes.'],['Ninfa','As coisas que contamos aqui não precisam virar uma maneira de nos medir.'],{choices:[{label:'Pedir para ouvir a música',reply:'Por um momento, os dois deixam a conversa parar nas notas.',pose:'acolhido'},{label:'Perguntar o que Hermes não consegue prever',reply:'Uma intenção omitida continua fora da conta. Inclusive a sua.',pose:'nao-gostou'}]},['Ninfa','Você pode voltar e perguntar. Só não finja que não sabe de onde veio o que ouviu.']]},
-    {key:'protecao',hosts:['amor','orgulho'],people:['amor','orgulho'],requires:['A1','O1'],lines:[['Sugar','O apoio está machucando o braço dele.'],['Aurea','Então ajustamos o apoio. Uma oferta não termina quando sai da mão.'],['Você','Vocês ainda estão conferindo isso?'],['Sugar','Sim. Cuidado também é voltar para perguntar.'],['Aurea','Escute o que ela está dizendo antes de chamar isso de fraqueza.'],{choices:[{label:'Deixar que ajustem a proteção',reply:'A alça fica firme sem apertar. Ninguém pede uma promessa em troca.',pose:'gostou'},{label:'Dizer que não precisa de ninguém',reply:'Você pode escolher seguir. Só não reescreva quem esteve aqui para tornar isso mais fácil.',pose:'nao-gostou'}]},['Sugar','Se o caminho mudar, eu tento encontrar você.']]},
+    {key:'protecao',hosts:['amor','orgulho'],people:['amor','orgulho'],requires:['A1','O1'],lines:[['Candy','O apoio está machucando o braço dele.'],['Aurea','Então ajustamos o apoio. Uma oferta não termina quando sai da mão.'],['Você','Vocês ainda estão conferindo isso?'],['Candy','Sim. Cuidado também é voltar para perguntar.'],['Aurea','Escute o que ela está dizendo antes de chamar isso de fraqueza.'],{choices:[{label:'Deixar que ajustem a proteção',reply:'A alça fica firme sem apertar. Ninguém pede uma promessa em troca.',pose:'gostou'},{label:'Dizer que não precisa de ninguém',reply:'Você pode escolher seguir. Só não reescreva quem esteve aqui para tornar isso mais fácil.',pose:'nao-gostou'}]},['Candy','Se o caminho mudar, eu tento encontrar você.']]},
     {key:'bilhete',hosts:['medo'],people:['medo','culpa'],requires:['M1'],lines:[['Lúmen','Eu só vim ver se você tinha recebido a mensagem.'],['Hunger','Recebi. Você não precisava atravessar tudo sozinho.'],['Você','Vocês já estavam se procurando antes de eu chegar?'],['Lúmen','As visitas não começaram com você. Eu queria que ele soubesse que podia voltar.'],['Hunger','Não vá atrás de outra pessoa para usar uma resposta contra ela.'],{choices:[{label:'Perguntar pela passagem adiante',reply:'O observatório fica depois deste quarto. Eu continuo de olho nesse caminho.',pose:'nao-gostou'},{label:'Ouvir a preocupação de Lúmen',reply:'Eu queria conseguir perguntar uma coisa sem ensaiar todas as respostas antes.',pose:'abalado'}]},['Lúmen','Eu vou deixar vocês conversarem. Depois eu passo outra vez.']]}
   ];
   function guestFor(host) {
@@ -774,6 +823,10 @@ const G = (() => {
     const scale = Math.min(stage.clientWidth / image.naturalWidth, stage.clientHeight / image.naturalHeight);
     const width = image.naturalWidth * scale, height = image.naturalHeight * scale;
     Object.assign(scene.style, {width: width + 'px', height: height + 'px', left: (stage.clientWidth-width)/2 + 'px', top: (stage.clientHeight-height)/2 + 'px'});
+    // As mãos também podem se apoiar na borda real da arte, sem flutuar nas faixas laterais.
+    const horizontal=(stage.clientWidth-width)/2,vertical=(stage.clientHeight-height)/2;
+    for(const [key,value] of Object.entries({left:horizontal,right:horizontal,top:vertical,bottom:vertical,width,height}))stage.style.setProperty('--room-'+key,value+'px');
+    stage.style.setProperty('--room-backdrop','url("'+image.src+'")');
   }
   $('#background').addEventListener('load', alignRoomScene);
   new ResizeObserver(alignRoomScene).observe($('#stage'));
@@ -861,7 +914,7 @@ const G = (() => {
     save();
     const links={F1:['tristeza','Sunny indicou o caminho das flores azuis, onde Ninfa guarda suas lembranças.'],P1:['ansiedade','Pax indicou o caminho dos fios e das luzes azuis para encontrar Hermes.'],D1:['orgulho','Friska apontou os arcos dourados. Aurea guarda os equipamentos naquele lugar.']};
     if(links[id]) unlockRoom(...links[id]);
-    if(id==='A1') {unlockRoom('culpa','Sugar indicou o caminho coberto de estrelas para encontrar Lúmen.');unlockRoom('odio','Sugar indicou os arcos vermelhos, no caminho de Beerus.');}
+    if(id==='A1') {unlockRoom('culpa','Candy indicou o caminho coberto de estrelas para encontrar Lúmen.');unlockRoom('odio','Candy indicou os arcos vermelhos, no caminho de Beerus.');}
     checkHungerDoor();
   }
   function conversation(id, done = renderRoom) {
@@ -942,7 +995,7 @@ const G = (() => {
   function talk(id) {
     if (dead(id)) return renderRoom();
     if (!S.talks[first[id]]) {
-      if(id==='odio' && !S.dead.length) return say('odio',[{text:'Se você veio visitar, pergunte antes de entrar.',pose:'base'},['Você','Sugar falou do seu caminho.'],{text:'Então não bloqueie a passagem dela. E olhe para quem mora aqui antes de atravessar.',pose:'nao-gostou'}],()=>{finishConversation(first[id],id);renderRoom();});
+      if(id==='odio' && !S.dead.length) return say('odio',[{text:'Se você veio visitar, pergunte antes de entrar.',pose:'base'},['Você','Candy falou do seu caminho.'],{text:'Então não bloqueie a passagem dela. E olhe para quem mora aqui antes de atravessar.',pose:'nao-gostou'}],()=>{finishConversation(first[id],id);renderRoom();});
       return conversation(first[id]);
     }
     talkMenu(id);
@@ -982,7 +1035,7 @@ const G = (() => {
     ansiedade:['O trajeto de volta é o mesmo. O tempo da visita mudou.','Não estou pedindo uma justificativa. Estou distinguindo as coisas.','Ainda posso mostrar o caminho quando você quiser sair.'],
     culpa:['Consegui deixar o presente onde estava.','Depois voltei para ver se tinha ficado torto. Eu sei.','Mas não tirei. Hoje isso já foi alguma coisa.'],
     medo:['Eu sei que você está aí.','Não se aproxime pelas costas. Você pode falar desse lugar.','Estou ouvindo.'],
-    odio:['Se veio perguntar, espere a resposta.','Nem tudo que fica aqui precisa ser retirado ou consertado.','Sugar entende isso. Eu queria que você também entendesse.']
+    odio:['Se veio perguntar, espere a resposta.','Nem tudo que fica aqui precisa ser retirado ou consertado.','Candy entende isso. Eu queria que você também entendesse.']
   };
   function aureaGifts() {
     say('orgulho',[{text:'A espada fica neste pedestal. Pegue pelo cabo.',pose:'entregar-espada-fogo',effect:()=>addItem('espada')},{text:'E este é o escudo. O apoio fica virado para o seu braço.',pose:'entregar-escudo-fogo',effect:()=>addItem('escudo')},{text:'Proteção não decide por você. Eu espero que se lembre disso.',pose:'entregar-espada-e-escudo'}],()=>talkMenu('orgulho'));
@@ -1767,7 +1820,7 @@ const G = (() => {
   function odioIntro() {
     resetScene();
     background(asset('/01-Arena-Odio/01-frente.png'));
-    say('odio', [{text:'Não usa a voz deles para passar por mim.',pose:'chase'}, ['Você', 'Você não deixou outra passagem.'], {text:'Você faz a mesma pergunta até ouvir o que pode usar.',pose:'agarre'}, {text:'Sugar não vai entender isso como você.',pose:'grito'}], () => {
+    say('odio', [{text:'Não usa a voz deles para passar por mim.',pose:'chase'}, ['Você', 'Você não deixou outra passagem.'], {text:'Você faz a mesma pergunta até ouvir o que pode usar.',pose:'agarre'}, {text:'Candy não vai entender isso como você.',pose:'grito'}], () => {
       const p = panel('A arena', 'Clique e arraste para olhar, ou use as setas. No celular, arraste o dedo para girar e use os controles para andar. PC: W/S avança e recua, A/D desloca, setas giram, F ataca, Espaço protege, E interage e Q lança a luz recebida. No celular, use o direcional e os botões. Aproxime-se para atingir, recue durante o preparo dos ataques.');
       p.append(btn('Entrar', () => {
         setPhase('odio');
@@ -1808,7 +1861,7 @@ const G = (() => {
       onCollect: () => {
         S.flags.swordPicked = true;
         addItem('espada');
-        objective('Aproxime-se de Sugar.');
+        objective('Aproxime-se de Candy.');
       },
       onSugar: () => {
         setPhase('candy');
@@ -1877,7 +1930,7 @@ const G = (() => {
     p.classList.add('comic');
     const img = document.createElement('img');
     img.src = asset('/04-Quadrinhos/pagina-0' + (page + 1) + '.png');
-    img.alt = ['Ódio surta e atira; o rosto de Sugar surge, seguido por sua chegada à arena.', 'Sugar enfrenta Ódio com sua luz, voltada para ele.', 'A luz encerra o confronto. Ódio cai; Sugar permanece na arena.'][page];
+    img.alt = ['Ódio surta e atira; o rosto de Candy surge, seguido por sua chegada à arena.', 'Candy enfrenta Ódio com sua luz, voltada para ele.', 'A luz encerra o confronto. Ódio cai; Candy permanece na arena.'][page];
     p.append(img);
     const nav = document.createElement('div');
     nav.className = 'comic-controls';
@@ -1886,15 +1939,15 @@ const G = (() => {
     counter.textContent = page + 1 + ' / 3';
     nav.append(counter, btn(page < 2 ? 'Próxima página →' : 'Voltar à arena', () => {
       if (page < 2) return comics(page + 1);
-      kill('odio', 'Sugar o matou com seus poderes de luz para impedir os disparos e proteger o protagonista.');
+      kill('odio', 'Candy o matou com seus poderes de luz para impedir os disparos e proteger o protagonista.');
       S.flags.comics = true;
       setPhase('arena');
-      const end=[{who:'Jardim',text:'A luz se desfaz. Beerus não se levanta. Sugar permanece do outro lado da arena.',pose:'morreu'}];
-      if(!S.items.includes('espada'))end.push(['Jardim','Sugar trouxe a espada do pedestal de Aurea. Durante a intervenção, ela caiu no centro da arena.']);
+      const end=[{who:'Jardim',text:'A luz se desfaz. Beerus não se levanta. Candy permanece do outro lado da arena.',pose:'morreu'}];
+      if(!S.items.includes('espada'))end.push(['Jardim','Candy trouxe a espada do pedestal de Aurea. Durante a intervenção, ela caiu no centro da arena.']);
       say('odio',end,()=>startArena(true));
     }));
     p.append(nav);
-    objective('A intervenção de Sugar · leitura livre');
+    objective('A intervenção de Candy · leitura livre');
   }
   // O jogador pode querer poupar. O protagonista contraria essa escolha aqui.
   function candyFinal() {
@@ -1911,7 +1964,7 @@ const G = (() => {
     }, {
       text:'Eu ainda estou ouvindo ele. Eu tentei parar os disparos. Eu não queria deixar ninguém no chão.',pose:'quebrou'
     }, {
-      who:'Jardim',text:'Sugar aperta as mãos contra o rosto. As asas tremem. Ela não olha para a espada que você trouxe de volta.',pose:'quebrou'
+      who:'Jardim',text:'Candy aperta as mãos contra o rosto. As asas tremem. Ela não olha para a espada que você trouxe de volta.',pose:'quebrou'
     }, {
       choices: [{
         label: 'POUPAR',
@@ -1928,7 +1981,7 @@ const G = (() => {
             $('#stage').classList.remove('choice-glitch');
             say('amor', [{who:'Jardim',text:'Você tentou poupar. A mão do protagonista não recua. A alternativa desaparece.',pose:'quebrou'},{
             who:'Você',text:'Eu não vou precisar de ninguém depois.'
-          }, {text:'A espada continua erguida. Sugar não consegue afastar as mãos do rosto.',pose:'quebrou',
+          }, {text:'A espada continua erguida. Candy não consegue afastar as mãos do rosto.',pose:'quebrou',
             choices: [{
               label: 'MATAR',
               go: candyDeath
@@ -1966,7 +2019,7 @@ const G = (() => {
   function stairs() {
     resetScene();
     background(asset('/02-Cenas-500x380/10-escadaria.png'));
-    say(null, [['Jardim', 'A escadaria começa onde a arena termina. Cada lance afasta o chão em que Sugar ficou.'], ['Jardim', 'Você sobe. Nada do que deixou para trás responde.'], ['Jardim', 'No alto, há um labirinto comum. Dois nomes ainda serão ouvidos.']], mazeTutorial);
+    say(null, [['Jardim', 'A escadaria começa onde a arena termina. Cada lance afasta o chão em que Candy ficou.'], ['Jardim', 'Você sobe. Nada do que deixou para trás responde.'], ['Jardim', 'No alto, há um labirinto comum. Dois nomes ainda serão ouvidos.']], mazeTutorial);
   }
   function mazeTutorial(step = 0) {
     resetScene();
@@ -2069,7 +2122,7 @@ const G = (() => {
         actor('insanidade');
         actorTwo('amor', 'morreu');
         $('#actor-two').className = 'actor ghost';
-        say('insanidade', ['Você está esperando por ela?', ['Jardim', 'Muito longe, a imagem escura de Sugar permanece imóvel. Não há voz, toque ou luz chegando.']], () => {
+        say('insanidade', ['Você está esperando por ela?', ['Jardim', 'Muito longe, a imagem escura de Candy permanece imóvel. Não há voz, toque ou luz chegando.']], () => {
           actor('sanidade', 'orientar');
           $('#actor-two').hidden = true;
           startQTE(['back', 'right', 'cross'], () => {
@@ -2176,7 +2229,7 @@ const G = (() => {
     say('amor', [{
       text: 'Olha para mim. Só por um instante.',
       pose: 'acolher-bracos-abertos'
-    }, ['Jardim', 'Sugar se aproxima e toca seus ombros. Ela espera sua respiração encontrar um intervalo.'], {
+    }, ['Jardim', 'Candy se aproxima e toca seus ombros. Ela espera sua respiração encontrar um intervalo.'], {
       text: 'Você ainda está aqui. Eu também.',
       pose: 'proteger-com-asas'
     }, ['Jardim', 'Ela se afasta. A presença se desfaz num feixe de luz.']], () => {
@@ -2310,7 +2363,7 @@ const G = (() => {
     const itemNames = {
       espada: ['Espada de fogo', 'Orgulho ofereceu proteção. A escolha de como usá-la continua sendo do protagonista.'],
       escudo: ['Escudo de fogo', 'Visto pelo lado interno. Segure Proteger para reduzir impactos na arena.'],
-      luz: ['Luz de Sugar', dead('amor') ? 'Ela ofereceu algo que podia ser levado sem arrancar de alguém.' : 'Uma luz recebida de Sugar. Na arena, Q ou Luz dispara.'],
+      luz: ['Luz de Candy', dead('amor') ? 'Ela ofereceu algo que podia ser levado sem arrancar de alguém.' : 'Uma luz recebida de Candy. Na arena, Q ou Luz dispara.'],
       faca: ['Faca vermelha', 'Retirada da moldura após a morte de Determinação. Os outros conhecem esse objeto.'],
       lanterna:['Lanterna','Recolhida junto à entrada de Hunger. Pode ser segurada durante a exploração.'],
       'chave-sanidade': ['Chave de Sanidade', 'Uma das duas chaves do último portão.'],
@@ -2428,7 +2481,7 @@ const G = (() => {
     mode = 'menu';
     background(asset('/01-Entrada/01-portal.png'));
     const stored = read('sentia-garden-v4', null);
-    S = valid(stored) ? stored : fresh();
+    S = valid(stored) ? currentNames(stored) : fresh();
     updateJournalBadge();
     updateGestureControl();
     settings = {
@@ -2464,7 +2517,7 @@ const G = (() => {
         if (!file || file.size > 2e6) throw Error();
         const parsed = JSON.parse(await file.text());
         if (!valid(parsed)) throw Error();
-        S = parsed;
+        S = currentNames(parsed);
         save();
         resume();
       } catch {
@@ -2484,7 +2537,7 @@ const G = (() => {
     resetScene();
     background(asset('/01-Entrada/02-caminho.png'));
     say(null, [['Jardim', 'A passagem parece menor depois que você atravessa. O caminho continua, mesmo quando você olha para trás.'], ['Você', 'Se eu não precisasse disso, ninguém poderia usar contra mim.'], ['Jardim', 'Há vozes adiante. Antes de qualquer conclusão, há alguém para conhecer.']], () => {
-      const p = panel('Explore no seu ritmo', 'Converse com cada morador antes de explorar o quarto. Depois, use as setinhas e toque nos objetos do cenário. Novas pistas abrem assuntos nas conversas; as indicações dos moradores liberam outros quartos. Sanidade sobe nos quartos positivos e cai nos negativos. Sugar só poderá ajudar depois que vocês se conhecerem.');
+      const p = panel('Explore no seu ritmo', 'Converse com cada morador antes de explorar o quarto. Depois, use as setinhas e toque nos objetos do cenário. Novas pistas abrem assuntos nas conversas; as indicações dos moradores liberam outros quartos. Sanidade sobe nos quartos positivos e cai nos negativos. Candy só poderá ajudar depois que vocês se conhecerem.');
       p.append(btn('Conhecer o Jardim', hub));
     });
   }
