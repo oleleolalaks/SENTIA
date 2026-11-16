@@ -1,0 +1,67 @@
+SENTIA, TÓPICOS DO PROFESSOR E CONVERSAS COM IA
+
+As funcionalidades escolares ficam em index.html, fora do Jardim dos Ecos. Os exemplos das Partes 2 a 6 foram adaptados ao contexto do SENTIA. Os nomes NovaMind, os textos, as cores e os identificadores de exemplo não são nomes obrigatórios do projeto.
+
+1. TEMA
+O botão do cabeçalho alterna o tema claro e escuro. O JavaScript aplica classes e guarda a preferência no localStorage. O CSS usa variáveis para compartilhar as cores. A Parte 1 não estava entre os cinco PDFs recebidos nesta revisão, mas seu assunto de modo escuro já está presente.
+
+2. MODAL, CTA E VALIDAÇÃO
+Na página Sobre, contact-form valida nome, e-mail e mensagem e abre a conferência em uma janela. O formulário usa evento submit e preventDefault para não recarregar a página. openModal prepara o conteúdo, o nome acessível e o retorno do foco. Fechar, Escape e clique no fundo encerram a janela. O formulário é limpo ao concluir a conferência. A coleção do Atlas também usa a janela para apresentar um sentimento e guardar a descoberta. A conferência é local, não finge enviar e-mail.
+Arquivos principais, index.html e js/site.js. Elementos, contact-form, nome, email, mensagem, modal e modal-body.
+
+3. ALERTAS DINÂMICOS
+alertBox cria uma mensagem e um botão de fechar com createElement, atribui texto com textContent e insere o aviso no documento. A pessoa pode fechar o aviso e o temporizador também o retira. A pilha é limitada a três avisos. Textos longos quebram dentro do cartão e os alvos de toque mantêm um tamanho acessível.
+Arquivos principais, js/site.js e css/site.css. Elemento, alerts. As notificações não são imagens nem uma lista fixa escrita no HTML.
+
+4. FILTRO INTERATIVO
+No Atlas emocional, busca filtra os dez sentimentos a cada evento input. renderAtlas percorre os dados, compara o texto normalizado com toLowerCase e includes e apresenta o resultado. Há estado de nenhum resultado e controle para limpar a busca. O detalhe de um sentimento é aberto no modal.
+Arquivos principais, index.html, js/site.js e css/site.css. Elementos, busca e emotion-grid.
+
+5. GERENCIADOR DE TAREFAS
+Meu registro permite criar, editar, concluir e excluir ações. No modo pessoal, a fonte é um array de objetos. JSON.stringify e JSON.parse fazem a conversão para o localStorage. Mudar o estado salva os dados e renderiza a lista novamente. Há cópia em texto, limpeza com confirmação e recuperação após recarregar.
+Arquivos principais, js/registros.js e js/site.js. Elementos, task-form, task e tasks. O modo pessoal funciona sem PHP.
+O registro compartilhado é uma alternativa adicional. api/registros.php valida os dados e usa PDO com parâmetros. banco/schema.sql prepara a tabela no MySQL. O banco não é usado pela conversa com IA nem pela partida do Jardim.
+
+6. OPERAÇÕES ASSÍNCRONAS
+O botão Receber uma reflexão mantém o exercício da apostila. Uma função async aguarda uma Promise manual, usa try, catch e finally e sorteia uma frase com Math.random e Math.floor. O botão fica disabled durante a espera e volta ao normal ao terminar. A interface explica que são frases pré-escritas, não uma IA.
+Arquivos principais, js/site.js e index.html. Elementos, reflection, reflection-result e reflection-text.
+Isso preserva os conceitos pedidos no PDF sem apresentar um sorteio como inteligência artificial.
+
+7. IA REAL, ADIÇÃO AO EXERCÍCIO
+A página Conversas recebe texto livre e o modelo gera uma resposta nova no aparelho do visitante. Não usa uma lista de respostas nem uma chamada para Ollama ou outro programa no computador do autor.
+As personalidades são Sunny, Candy, Ninfa, Aurea, Friska, Pax, Hermes, Lúmen, Hunger e Beerus. A personalidade e o histórico são separados para cada sentimento. Todos reaproveitam uma única instância do modelo.
+js/ia-personas.js guarda as personalidades e sugestões que preenchem o campo, sem fingir que são respostas geradas.
+js/conversas.js controla a interface, os eventos, o histórico opcional, o progresso, os erros, a parada e a exportação. A Promise espera mensagens reais do worker. try, catch e finally recuperam os controles.
+js/ia-worker.js carrega o motor e os pesos e executa a inferência em um Web Worker. O texto chega por streaming. O preparo acontece só depois do clique. As mensagens não viram requisições HTTP.
+css/conversas.css cuida da página em telas pequenas e grandes, dos estados disabled e hidden e do tema claro e escuro.
+
+Modelo, onnx-community/Qwen2.5-0.5B-Instruct.
+Revisão dos pesos, 22942cb7d7ba4cc81bb4673549ca4d4614469b5e.
+Quantização usada, q4f16. O arquivo principal tem 483.003.582 bytes, além do tokenizer e de configurações. A interface arredonda o primeiro download para cerca de 500 MB.
+Motor, Transformers.js 3.8.1, com ONNX Runtime Web.
+Compatibilidade, WebAssembly com uma thread. Não exige COOP ou COEP. A aceleração gráfica é opcional e confere shader-f16 antes de tentar carregar.
+O programa usa HTML, CSS e JavaScript separados, sem framework de interface. A biblioteca de inferência é pública e tem versão fixa. Os pesos não estão dentro do ZIP para evitar duplicar centenas de megabytes.
+
+8. LIMITES E PRIVACIDADE
+É um modelo pequeno, com respostas mais simples e possibilidade de erro. Não é atendimento profissional. O aparelho precisa ter memória disponível. O botão Parar pode interromper a resposta e Liberar memória encerra o modelo. Erros ficam visíveis e não são escondidos por frases prontas.
+O primeiro uso precisa de internet para baixar o motor e os pesos. O cache pode evitar novos downloads, dependendo do navegador e do espaço disponível. Não há promessa de funcionamento offline de todo o site.
+Por padrão, o histórico fica só na memória da aba. Guardar conversas neste navegador é opcional. As conversas não são misturadas aos registros compartilhados nem ao save do Jardim. Reiniciar o SENTIA apaga também as conversas guardadas, mas não apaga os arquivos públicos do modelo no cache.
+
+9. ABERTURA, PUBLICAÇÃO E ENTREGA
+Extraia a pasta inteira e abra no VS Code. A IA precisa de HTTP local para desenvolvimento ou de HTTPS na publicação. O Live Server ou o Apache do XAMPP fornecem HTTP local, não um servidor de IA. Quando o site estiver publicado, cada visitante executa o modelo no próprio navegador.
+Hospedagem estática serve as páginas, o Jardim e a IA local. Somente o registro compartilhado precisa de uma hospedagem com PHP e MySQL para funcionar pela internet. O modo pessoal permanece disponível em hospedagem estática.
+As pastas HTML-puro, CSS-puro, JavaScript-puro, PHP-servidor e SQL contêm as cópias isoladas para estudo. Para usar o projeto completo, abra o index.html da raiz. O portfólio incorpora capturas da página Conversas junto das outras telas. O comentário de index.html contém o link público do GitHub.
+
+FONTES TÉCNICAS PÚBLICAS
+Transformers.js e execução no navegador, https://huggingface.co/docs/transformers.js/v3.8.1/en/index
+Modelo ONNX, https://huggingface.co/onnx-community/Qwen2.5-0.5B-Instruct
+Modelo original e licença Apache 2.0, https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct
+Biblioteca, https://github.com/huggingface/transformers.js
+Repositório do trabalho, https://github.com/oleleolalaks/SENTIA
+
+MATERIAL DIDÁTICO CONFERIDO
+Parte_2__Modal_e_CTA.pdf.
+Parte_3__Alerta_Dinamico.pdf.
+Parte_4__Filtro_Interativo.pdf.
+Parte_5__Gerenciador_de_Tarefas.pdf.
+Parte_6__Simulador_de_IA.pdf.

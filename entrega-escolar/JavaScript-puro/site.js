@@ -1445,20 +1445,20 @@ else  /* Esse teste confere se puzzle.stage é igual a 5, e só entra nesse cami
 */ const  /* Aqui wrap recebe o resultado de document.create Element.
 */ wrap =  /* Cria um elemento HTML do tipo section. */ document.createElement('section');
    /* Monta a marcação HTML interna desse elemento.
-*/ wrap.innerHTML = '<h2>Reiniciar o SENTIA?</h2><p>Sua coleção do Atlas, as descobertas, as pistas, o enigma e as ações do plano pessoal serão apagados deste navegador. O site voltará ao início, com o plano pessoal vazio.</p><p>A partida do Jardim, os registros compartilhados do MySQL e suas preferências de tema e movimento serão mantidos.</p><p class="small">Essa ação não pode ser desfeita. Se quiser guardar seu plano pessoal, baixe o registro antes.</p><div class="actions"><button type="button" class="button secondary" id="cancel-reset-site">Cancelar</button><button type="button" class="button primary" id="confirm-reset-site">Sim, reiniciar o SENTIA</button></div><p id="reset-site-status" role="status"></p>';
+*/ wrap.innerHTML = '<h2>Reiniciar o SENTIA?</h2><p>Sua coleção do Atlas, as descobertas, as pistas, o enigma, as ações do plano pessoal e as conversas salvas serão apagados deste navegador. O site voltará ao início, com o plano pessoal vazio.</p><p>A partida do Jardim, os registros compartilhados do MySQL e suas preferências de tema e movimento serão mantidos.</p><p class="small">Essa ação não pode ser desfeita. Se quiser guardar seu plano pessoal ou uma conversa, baixe os textos antes. Os arquivos públicos do modelo podem continuar no cache do navegador, sem suas mensagens.</p><div class="actions"><button type="button" class="button secondary" id="cancel-reset-site">Cancelar</button><button type="button" class="button primary" id="confirm-reset-site">Sim, reiniciar o SENTIA</button></div><p id="reset-site-status" role="status"></p>';
    /* Liga essa função ao clique desse controle.
 */ wrap.querySelector('#cancel-reset-site').onclick =  /* Essa função recebe nenhum parâmetro e devolve o resultado de .close. */ () =>  /* Fecha essa janela ou recurso que estava aberto. */ $('#modal').close();
    /* Liga essa função ao clique desse controle.
 */ wrap.querySelector('#confirm-reset-site').onclick =  /* Essa função agrupa a ação executada quando for chamada nesta parte. */ () => {
      /* Essa declaração usa const para preparar keys, mantendo essas referências fixas.
-*/ const  /* Aqui keys recebe uma lista com 6 posições.
+*/ const  /* Aqui keys recebe as sete chaves do site normal, incluindo as conversas salvas.
 */ keys = [ /* Essa posição da lista guarda sentia discoveries.
 */ 'sentia-discoveries',  /* Essa posição da lista guarda sentia collection.
 */ 'sentia-collection',  /* Essa posição da lista guarda sentia portal puzzle v2.
 */ 'sentia-portal-puzzle-v2',  /* Essa posição da lista guarda sentia personal tasks.
 */ 'sentia-personal-tasks',  /* Essa posição da lista guarda sentia tasks.
 */ 'sentia-tasks',  /* Essa posição da lista guarda sentia record mode.
-*/ 'sentia-record-mode'];
+*/ 'sentia-record-mode', /* Essa chave guarda apenas as conversas que a pessoa escolheu salvar. */ 'sentia-conversas-v1'];
      /* Essa declaração usa const para preparar backup, mantendo essas referências fixas.
 */ const  /* Aqui backup recebe uma instância de Map.
 */ backup =  /* Cria uma instância de Map para usar nesse recurso. */ new Map();
@@ -1494,6 +1494,8 @@ else  /* Esse teste confere se puzzle.stage é igual a 5, e só entra nesse cami
 */ return;
     }
                                                                                                 
+     /* Esse aviso limpa também a memória da conversa antes do recarregamento do site. */
+     window.dispatchEvent(new Event('sentia:reset'));
      /* Percorre os itens e executa a função indicada em cada um.
 */ document.querySelectorAll('form').forEach( /* Essa função recebe form e devolve o resultado de form.reset. */ form =>  /* Executa form.reset com os valores definidos nessa parte. */ form.reset());
      /* Atualiza location.hash usando home.
@@ -1593,6 +1595,8 @@ else  /* Esse teste confere se puzzle.stage é igual a 5, e só entra nesse cami
 */ case 'praticas': /* Atualiza title usando Práticas e registro.
 */ title='Práticas e registro'; /* Encerra esse laço ou seleção sem executar as repetições restantes.
 */ break;
+     /* Essa página oferece a IA local dos sentimentos fora do Jardim. */
+case 'conversas': /* Esse título identifica a conversa na aba do navegador. */ title='Conversas com sentimentos'; break;
      /* Esse caminho trata o valor jardim.
 */ case 'jardim': /* Atualiza title usando Jardim dos Ecos.
 */ title='Jardim dos Ecos'; /* Encerra esse laço ou seleção sem executar as repetições restantes.

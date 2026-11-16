@@ -1,0 +1,974 @@
+/* Essa página reaproveita as cores do SENTIA e permite que seus filhos encolham sem criar uma faixa fora da tela. */
+#conversas {
+  /* Essa largura mínima permite reduzir a página mesmo com uma mensagem longa. */
+  min-width:0;
+  /* Esse ajuste quebra palavras que não cabem na largura disponível. */
+  overflow-wrap:anywhere;
+}
+
+/* Esse cabeçalho deixa o título e a apresentação no mesmo ritmo visual das outras páginas. */
+#conversas .chat-page-heading {
+  /* Esse limite mantém a apresentação confortável para ler no computador. */
+  max-width:840px;
+}
+
+/* Essa grade separa a escolha do sentimento e a conversa no computador. */
+#conversas .chat-layout {
+  /* Esse comando organiza os dois painéis em uma grade. */
+  display:grid;
+  /* A primeira coluna fica compacta e a segunda usa o espaço restante sem forçar largura. */
+  grid-template-columns:248px minmax(0,1fr);
+  /* Esse espaço separa os painéis sem criar uma borda dupla. */
+  gap:24px;
+  /* Esse alinhamento começa os dois painéis na mesma altura. */
+  align-items:start;
+}
+
+/* Esses painéis usam o papel e as linhas que já aparecem no restante do site. */
+#conversas .chat-picker,
+#conversas .chat-panel {
+  /* Esse ajuste permite que conteúdo comprido encolha dentro da grade. */
+  min-width:0;
+  /* Essa linha desenha o contorno discreto de cada painel. */
+  border:1px solid var(--line);
+  /* Esse fundo acompanha o tema claro ou escuro do site. */
+  background:var(--paper);
+}
+
+/* Essa área deixa a lista de sentimentos com espaço em volta. */
+#conversas .chat-picker {
+  /* Esse espaço separa textos e botões das bordas. */
+  padding:22px 16px 18px;
+}
+
+/* Esse rótulo segue a letra pequena e espaçada da marca. */
+#conversas .chat-picker>.eyebrow {
+  /* Esse tamanho deixa o rótulo caber na coluna sem dominar o título. */
+  font-size:10px;
+  /* Esse intervalo aproxima o rótulo do título correspondente. */
+  margin-bottom:14px;
+}
+
+/* Esse título apresenta a escolha de sentimentos na coluna menor. */
+#conversas .chat-picker h2 {
+  /* Esse tamanho evita que o título fique maior que o painel da conversa. */
+  font-size:25px;
+  /* Esse ajuste mantém as letras próximas sem diminuir a legibilidade. */
+  letter-spacing:-.7px;
+}
+
+/* Esses textos secundários usam menos destaque que os nomes dos sentimentos. */
+#conversas .chat-picker-copy,
+#conversas .chat-picker-note,
+#conversas .chat-mobile-hint {
+  /* Essa cor diferencia as explicações dos comandos principais. */
+  color:var(--muted);
+  /* Esse tamanho mantém as notas discretas e legíveis. */
+  font-size:12px;
+  /* Esse intervalo dá espaço entre as linhas de uma explicação. */
+  line-height:1.6;
+}
+
+/* Essa apresentação separa o título dos botões de escolha. */
+#conversas .chat-picker-copy {
+  /* Esse espaço mantém a instrução próxima do título. */
+  margin-top:12px;
+}
+
+/* Esse grupo recebe os dez botões criados pelo controlador. */
+#conversas .chat-personas {
+  /* Esse comando coloca os botões em uma coluna regular. */
+  display:grid;
+  /* Esse intervalo separa os alvos de toque e de clique. */
+  gap:8px;
+  /* Esse espaço afasta o grupo da explicação anterior. */
+  margin-top:20px;
+}
+
+/* Cada botão combina um pequeno retrato e os nomes sem usar um novo menu de navegação. */
+#conversas .chat-persona {
+  /* Esse comando coloca retrato e texto lado a lado. */
+  display:flex;
+  /* Esse alinhamento centraliza os dois na altura do botão. */
+  align-items:center;
+  /* Esse espaço impede o retrato de encostar nas palavras. */
+  gap:10px;
+  /* Essa largura mínima deixa o botão caber na coluna. */
+  min-width:0;
+  /* Essa altura mantém o botão confortável para tocar. */
+  min-height:66px;
+  /* Esse espaço separa o conteúdo do contorno. */
+  padding:8px 10px;
+  /* Essa linha define o alvo antes de ele ser selecionado. */
+  border:1px solid var(--line);
+  /* Esses cantos retos seguem os cartões do site. */
+  border-radius:0;
+  /* Esse fundo mantém a escolha sem seleção no papel do painel. */
+  background:var(--paper);
+  /* Essa cor acompanha o texto principal nos dois temas. */
+  color:var(--ink);
+  /* Esse alinhamento mantém nomes e descrições à esquerda. */
+  text-align:left;
+  /* Essa transição suaviza apenas o contorno e o fundo da escolha. */
+  transition:background-color .15s,border-color .15s;
+}
+
+/* Esses estados mostram qual sentimento foi escolhido sem depender só de uma cor. */
+#conversas .chat-persona[aria-pressed="true"],
+#conversas .chat-persona[data-selected="true"],
+#conversas .chat-persona.is-active,
+#conversas .chat-persona.active {
+  /* Esse fundo dá destaque à escolha atual. */
+  background:var(--mint);
+  /* Essa borda reforça o estado selecionado. */
+  border-color:var(--ink);
+  /* Essa marca interna cria um segundo sinal visual de seleção. */
+  box-shadow:inset 3px 0 0 var(--ink);
+}
+
+/* Esse detalhe sinaliza que uma escolha está disponível ao passar o ponteiro. */
+#conversas .chat-persona:hover:not(:disabled) {
+  /* Essa cor torna o limite do botão mais evidente. */
+  border-color:var(--ink);
+}
+
+/* Esses retratos usam os sprites aprovados sem cortar a personagem. */
+#conversas .chat-persona img {
+  /* Essa largura reserva um espaço igual para todos os retratos. */
+  width:38px;
+  /* Essa altura deixa os sprites altos respirarem dentro do botão. */
+  height:48px;
+  /* Esse ajuste impede que o texto comprima a imagem. */
+  flex-shrink:0;
+  /* Esse encaixe mostra o retrato inteiro. */
+  object-fit:contain;
+  /* Esse desenho mantém as bordas da pixel art nítidas. */
+  image-rendering:pixelated;
+}
+
+/* Esse grupo de texto pode encolher junto com a lista. */
+#conversas .chat-persona>span,
+#conversas .chat-persona>div {
+  /* Essa largura mínima permite quebrar nomes compridos. */
+  min-width:0;
+}
+
+/* Esse nome se destaca acima do sentimento correspondente. */
+#conversas .chat-persona strong,
+#conversas .chat-persona .chat-persona-name {
+  /* Esse comando põe o nome na própria linha. */
+  display:block;
+  /* Esse tamanho mantém a lista compacta e fácil de ler. */
+  font-size:14px;
+  /* Esse intervalo evita uma linha excessivamente alta. */
+  line-height:1.35;
+}
+
+/* Essa descrição completa o nome com o sentimento escolhido. */
+#conversas .chat-persona small,
+#conversas .chat-persona .chat-persona-emotion {
+  /* Essa linha separada evita misturar o nome e o sentimento. */
+  display:block;
+  /* Essa cor mantém a descrição legível também sobre o verde da escolha atual. */
+  color:var(--ink);
+  /* Esse tamanho diferencia a descrição do nome. */
+  font-size:11px;
+  /* Esse espaço dá uma pequena pausa entre as duas linhas. */
+  margin-top:3px;
+}
+
+/* Essa nota termina a coluna com uma explicação sobre o histórico. */
+#conversas .chat-picker-note {
+  /* Esse espaço separa a nota dos botões. */
+  margin-top:20px;
+  /* Essa linha diferencia o grupo de escolhas da informação de armazenamento. */
+  border-top:1px solid var(--line);
+  /* Esse espaço afasta o texto da linha anterior. */
+  padding-top:14px;
+}
+
+/* Essa orientação só precisa aparecer quando a lista puder deslizar no celular. */
+#conversas .chat-mobile-hint {
+  /* Esse estado esconde a orientação na disposição de computador. */
+  display:none;
+}
+
+/* Esse painel mantém o conteúdo dentro dos seus cantos retos. */
+#conversas .chat-panel {
+  /* Esse comando corta apenas o que sair das bordas do painel. */
+  overflow:hidden;
+}
+
+/* Esse cabeçalho junta o retrato e a identificação da conversa. */
+#conversas .chat-conversation-heading {
+  /* Esse comando organiza retrato, nomes e selo em colunas. */
+  display:grid;
+  /* A identificação usa o espaço restante e pode encolher. */
+  grid-template-columns:88px minmax(0,1fr) auto;
+  /* Esse alinhamento centraliza os grupos na altura. */
+  align-items:center;
+  /* Esse intervalo separa os três grupos. */
+  gap:18px;
+  /* Esse espaço afasta o cabeçalho das bordas do painel. */
+  padding:20px 24px;
+  /* Essa linha separa a identificação da preparação. */
+  border-bottom:1px solid var(--line);
+  /* Esse fundo reaproveita o verde suave do site. */
+  background:var(--mint);
+}
+
+/* Essa moldura cria um fundo discreto para o sprite existente. */
+#conversas .chat-portrait-frame {
+  /* Esse comando centraliza a imagem dentro da moldura. */
+  display:grid;
+  /* Esse alinhamento coloca o retrato no centro das duas direções. */
+  place-items:center;
+  /* Essa largura mantém a moldura igual à coluna reservada. */
+  width:88px;
+  /* Essa altura enquadra o sprite sem dominar a conversa. */
+  height:108px;
+  /* Essa linha acompanha a moldura das ilustrações do SENTIA. */
+  border:1px solid var(--line);
+  /* Esse fundo permite ver sprites claros e escuros. */
+  background:var(--paper);
+  /* Esse corte mantém qualquer efeito do sprite dentro da moldura. */
+  overflow:hidden;
+}
+
+/* O retrato principal fica inteiro dentro da moldura. */
+#conversas #chat-portrait {
+  /* Esse comando impede espaços de imagem na linha de texto. */
+  display:block;
+  /* Essa largura aproveita a moldura sem esticar o arquivo. */
+  width:100%;
+  /* Essa altura acompanha a altura da moldura. */
+  height:100%;
+  /* Esse limite permite encolher a imagem com a moldura. */
+  min-height:0;
+  /* Esse encaixe preserva a personagem inteira. */
+  object-fit:contain;
+  /* Essa borda interna separa a arte do contorno. */
+  padding:5px;
+  /* Esse ajuste mantém a pixel art nítida. */
+  image-rendering:pixelated;
+}
+
+/* Esses dois retratos têm silhuetas muito escuras. Um fundo neutro no tema escuro mantém o corpo visível sem clarear ou modificar a própria arte. */
+body.dark #conversas #chat-portrait[src*="/determinacao/"],
+body.dark #conversas #chat-portrait[src*="/ansiedade/"] {
+  /* Esse fundo claro separa a silhueta escura da personagem e a moldura do painel. */
+  background:#dce2d4;
+}
+
+/* Essa identificação pode quebrar linhas sem empurrar o selo para fora. */
+#conversas .chat-persona-heading {
+  /* Esse limite permite encolher o grupo de texto. */
+  min-width:0;
+}
+
+/* Esse nome de sentimento aparece acima do nome da personagem. */
+#conversas #chat-emotion {
+  /* Esse intervalo aproxima o sentimento do nome. */
+  margin-bottom:7px;
+  /* Esse tamanho segue o rótulo pequeno da identidade visual. */
+  font-size:10px;
+}
+
+/* Esse título identifica a personagem da conversa atual. */
+#conversas #chat-name {
+  /* Esse tamanho mantém o nome visível sem competir com o título da página. */
+  font-size:32px;
+  /* Esse intervalo deixa os nomes compridos caberem em duas linhas. */
+  line-height:1.15;
+}
+
+/* Essa descrição explica o jeito do sentimento sem competir com seu nome. */
+#conversas .chat-description {
+  /* Esse intervalo separa a descrição do título. */
+  margin-top:8px;
+  /* Essa cor preserva o contraste do texto pequeno sobre o fundo verde. */
+  color:var(--ink);
+  /* Esse tamanho preserva espaço para a identificação da conversa. */
+  font-size:12px;
+  /* Esse intervalo mantém duas linhas confortáveis quando o nome ocupa mais espaço. */
+  line-height:1.5;
+}
+
+/* Esse estado fica próximo do nome para explicar se a conversa está pronta. */
+#conversas .chat-status {
+  /* Esse espaço separa o estado do título. */
+  margin-top:9px;
+  /* Essa cor deixa o estado legível sobre o verde, inclusive quando ele explica um erro. */
+  color:var(--ink);
+  /* Esse tamanho deixa o estado fácil de ler sem pesar no cabeçalho. */
+  font-size:12px;
+  /* Esse intervalo mantém mensagens de estado longas organizadas. */
+  line-height:1.45;
+}
+
+/* Esse selo torna a presença de inteligência artificial visível no cabeçalho. */
+#conversas .chat-ai-label {
+  /* Esse alinhamento coloca o selo perto do começo do cabeçalho. */
+  align-self:start;
+  /* Essa linha mantém o detalhe parecido com uma pequena etiqueta. */
+  border:1px solid var(--line);
+  /* Esse fundo deixa a etiqueta diferente do verde em volta. */
+  background:var(--paper);
+  /* Esse espaço impede o texto de encostar na borda. */
+  padding:5px 7px;
+  /* Essa fonte acompanha os pequenos rótulos da marca. */
+  font:9px monospace;
+  /* Esse espaçamento separa as letras da etiqueta. */
+  letter-spacing:.5px;
+  /* Esse ajuste impede uma quebra no meio do selo. */
+  white-space:nowrap;
+}
+
+/* Essa parte explica a preparação antes do primeiro envio. */
+#conversas .chat-setup {
+  /* Esse espaço deixa as informações longe das bordas. */
+  padding:22px 24px;
+  /* Essa linha separa a preparação do histórico. */
+  border-bottom:1px solid var(--line);
+}
+
+/* Esse título apresenta a preparação com um tamanho menor que os títulos principais. */
+#conversas .chat-setup h3 {
+  /* Esse tamanho mantém a hierarquia dentro do painel. */
+  font-size:16px;
+  /* Esse intervalo evita que o título ocupe duas linhas muito separadas. */
+  line-height:1.4;
+}
+
+/* Essa explicação mantém os detalhes do download legíveis. */
+#conversas .chat-setup>p {
+  /* Esse espaço separa o texto do título anterior. */
+  margin-top:8px;
+  /* Essa cor diferencia a explicação dos comandos. */
+  color:var(--muted);
+  /* Esse tamanho cabe no painel sem criar um bloco dominante. */
+  font-size:13px;
+  /* Esse intervalo dá respiro ao texto do download. */
+  line-height:1.65;
+}
+
+/* Essa linha deixa os controles quebrarem quando a tela fica estreita. */
+#conversas .chat-prepare-row {
+  /* Esse comando organiza os controles lado a lado. */
+  display:flex;
+  /* Essa quebra evita controles espremidos em telas menores. */
+  flex-wrap:wrap;
+  /* Esse alinhamento aproxima a base do campo e dos botões. */
+  align-items:end;
+  /* Esse espaço separa todos os controles da linha. */
+  gap:12px;
+  /* Esse espaço separa os controles da explicação anterior. */
+  margin-top:16px;
+}
+
+/* Esse rótulo mantém o modo de preparação junto do seu campo. */
+#conversas .chat-device-label {
+  /* Esse comando coloca o rótulo acima da escolha. */
+  display:grid;
+  /* Esse espaço separa o nome do campo. */
+  gap:6px;
+  /* Esse limite permite reduzir o controle dentro da linha. */
+  min-width:0;
+  /* Esse tamanho deixa o nome do controle discreto. */
+  font-size:12px;
+  /* Esse peso mantém o rótulo fácil de identificar. */
+  font-weight:700;
+}
+
+/* Esse campo preserva a largura disponível e um alvo confortável. */
+#conversas #chat-device {
+  /* Essa altura mantém a escolha confortável para tocar. */
+  min-height:46px;
+  /* Essa largura impede que o campo passe do painel. */
+  max-width:100%;
+  /* Esse tamanho evita o zoom automático do campo no celular. */
+  font-size:16px;
+}
+
+/* Essa barra só ocupa espaço quando uma preparação está acontecendo. */
+#conversas #chat-progress {
+  /* Esse comando deixa a barra usar a linha inteira. */
+  display:block;
+  /* Essa largura acompanha a área da preparação. */
+  width:100%;
+  /* Essa altura deixa o progresso visível sem parecer outro botão. */
+  height:8px;
+  /* Esse espaço separa a barra dos controles. */
+  margin-top:18px;
+  /* Essa cor reaproveita o verde principal no progresso nativo. */
+  accent-color:var(--ink);
+}
+
+/* Esse detalhe descreve a etapa atual do download. */
+#conversas .chat-progress-text {
+  /* Essa fonte mantém números e nomes de arquivos alinhados. */
+  font-family:monospace;
+  /* Esse tamanho deixa a etapa em um segundo nível de leitura. */
+  font-size:11px;
+}
+
+/* Esses estados vazios não precisam reservar uma linha extra no painel. */
+#conversas #chat-progress-text:empty,
+#conversas #chat-note:empty,
+#conversas #chat-suggestions:empty {
+  /* Esse comando retira o espaço da caixa quando ela não tem conteúdo. */
+  display:none;
+}
+
+/* Essa área define o fundo e a posição do estado vazio da conversa. */
+#conversas .chat-transcript {
+  /* Essa posição serve de referência para o texto vazio sobre o histórico. */
+  position:relative;
+  /* Esse fundo diferencia o histórico das áreas de controle. */
+  background:var(--bg);
+}
+
+/* Esse histórico fica dentro do painel e pode ser percorrido pelo teclado ou pelo toque. */
+#conversas .chat-log {
+  /* Essa altura reserva espaço para começar a conversa sem saltos de layout. */
+  height:400px;
+  /* Esse limite acompanha telas mais baixas sem prender toda a página. */
+  max-height:62dvh;
+  /* Essa altura mínima mantém o espaço inicial utilizável em telas baixas. */
+  min-height:240px;
+  /* Esse espaço afasta as mensagens das bordas do painel. */
+  padding:22px 24px;
+  /* Esse comando permite percorrer um histórico maior que o quadro. */
+  overflow:auto;
+  /* Esse limite segura o gesto de rolagem no histórico quando ele chegar às bordas. */
+  overscroll-behavior:contain;
+  /* Esse espaço mantém a largura estável quando a barra de rolagem aparece. */
+  scrollbar-gutter:stable;
+}
+
+/* Esse texto apresenta o histórico antes da primeira mensagem. */
+#conversas .chat-empty {
+  /* Essa posição coloca o texto sobre a área vazia do histórico. */
+  position:absolute;
+  /* Esse ponto começa o texto no meio da altura do quadro. */
+  top:50%;
+  /* Essa distância mantém uma margem no lado esquerdo. */
+  left:30px;
+  /* Essa distância mantém a mesma margem no lado direito. */
+  right:30px;
+  /* Esse deslocamento centraliza o próprio bloco de texto na altura. */
+  transform:translateY(-50%);
+  /* Esse limite evita linhas longas na apresentação vazia. */
+  max-width:360px;
+  /* Essa margem centraliza o bloco entre os dois lados do painel. */
+  margin-inline:auto;
+  /* Essa cor mantém a orientação mais leve que as mensagens. */
+  color:var(--muted);
+  /* Esse alinhamento diferencia a apresentação das mensagens da conversa. */
+  text-align:center;
+  /* Esse tamanho mantém a apresentação legível. */
+  font-size:15px;
+  /* Esse intervalo separa as linhas do texto inicial. */
+  line-height:1.8;
+  /* Essa regra deixa o histórico receber cliques e rolagem mesmo sob o texto. */
+  pointer-events:none;
+}
+
+/* Cada mensagem ocupa só parte da largura para preservar uma leitura confortável. */
+#conversas .chat-message {
+  /* Essa largura permite diferenciar os dois lados da conversa. */
+  width:fit-content;
+  /* Esse limite deixa uma margem no lado oposto sem causar cortes. */
+  max-width:90%;
+  /* Esse espaço separa uma mensagem da próxima. */
+  margin:0 0 16px;
+  /* Esse espaço afasta o texto do contorno da mensagem. */
+  padding:15px 17px;
+  /* Essa linha define o cartão de cada mensagem. */
+  border:1px solid var(--line);
+  /* Esse fundo mantém a resposta do sentimento parecida com o papel do site. */
+  background:var(--paper);
+  /* Esse tamanho mantém a conversa legível em todos os aparelhos. */
+  font-size:15px;
+  /* Esse intervalo dá espaço aos parágrafos da resposta. */
+  line-height:1.75;
+  /* Essa quebra preserva linhas digitadas sem deixar palavras longas saírem do cartão. */
+  white-space:pre-wrap;
+  /* Essa regra quebra até uma palavra muito longa quando for necessário. */
+  overflow-wrap:anywhere;
+}
+
+/* As mensagens da pessoa ficam do lado direito e recebem o verde suave. */
+#conversas .chat-message[data-role="user"],
+#conversas .chat-message.user,
+#conversas .chat-message.is-user {
+  /* Essa margem empurra a mensagem para o lado direito. */
+  margin-left:auto;
+  /* Esse fundo diferencia as mensagens enviadas das respostas. */
+  background:var(--mint);
+}
+
+/* Esses nomes pequenos identificam quem enviou cada mensagem. */
+#conversas .chat-message>strong,
+#conversas .chat-message .chat-message-author {
+  /* Esse comando deixa o nome em uma linha separada. */
+  display:block;
+  /* Esse intervalo separa o nome do texto da mensagem. */
+  margin-bottom:6px;
+  /* Essa fonte acompanha os rótulos pequenos do SENTIA. */
+  font-family:monospace;
+  /* Esse tamanho evita que o nome domine a resposta. */
+  font-size:11px;
+  /* Essa cor mantém a identificação pequena legível no papel e no verde das mensagens enviadas. */
+  color:var(--ink);
+  /* Esse ajuste faz o nome seguir as quebras normais de palavras. */
+  white-space:normal;
+}
+
+/* Esse intervalo separa parágrafos quando o controlador usar mais de um. */
+#conversas .chat-message p+p {
+  /* Esse espaço cria uma pausa entre parágrafos sem duplicar a altura da linha. */
+  margin-top:10px;
+}
+
+/* Esse estado dá destaque a uma mensagem que explica uma falha de preparação ou resposta. */
+#conversas .chat-message.is-error,
+#conversas .chat-message[data-role="error"] {
+  /* Esse fundo usa o pêssego do site para diferenciar a informação. */
+  background:var(--peach);
+  /* Essa borda reforça o estado sem depender só da cor. */
+  border-color:var(--ink);
+}
+
+/* Essa área mantém o campo e seus comandos separados do histórico. */
+#conversas .chat-composer {
+  /* Esse espaço deixa os controles longe das bordas do painel. */
+  padding:20px 24px;
+  /* Essa linha marca a passagem entre leitura e escrita. */
+  border-top:1px solid var(--line);
+}
+
+/* Essas sugestões formam uma pequena linha de botões que pode quebrar. */
+#conversas .chat-suggestions {
+  /* Esse comando organiza as sugestões lado a lado. */
+  display:flex;
+  /* Essa regra deixa cada sugestão passar para outra linha quando necessário. */
+  flex-wrap:wrap;
+  /* Esse espaço separa os botões de sugestão. */
+  gap:8px;
+  /* Esse espaço separa as sugestões do rótulo do campo. */
+  margin-bottom:18px;
+}
+
+/* Cada sugestão fica discreta e mantém um alvo confortável. */
+#conversas .chat-suggestion,
+#conversas .chat-suggestions button {
+  /* Essa altura mantém o botão fácil de tocar. */
+  min-height:44px;
+  /* Esse limite impede uma sugestão longa de ultrapassar o painel. */
+  max-width:100%;
+  /* Esse espaço mantém o texto longe da borda. */
+  padding:8px 11px;
+  /* Essa linha mantém a sugestão no estilo dos controles do site. */
+  border:1px solid var(--line);
+  /* Esse fundo diferencia a sugestão do papel em volta. */
+  background:var(--bg);
+  /* Esse tamanho deixa a sugestão compacta. */
+  font-size:12px;
+  /* Esse alinhamento facilita a leitura quando houver duas linhas. */
+  text-align:left;
+}
+
+/* Esse nome do campo fica visível mesmo depois que a pessoa começa a digitar. */
+#conversas .chat-input-label {
+  /* Esse comando deixa o rótulo acima do campo. */
+  display:block;
+  /* Esse espaço separa o rótulo do campo. */
+  margin-bottom:9px;
+  /* Esse tamanho mantém o rótulo perto da escala dos controles. */
+  font-size:13px;
+  /* Esse peso ajuda a reconhecer onde escrever. */
+  font-weight:700;
+}
+
+/* Esse campo oferece espaço para uma mensagem sem prender a altura da página. */
+#conversas #chat-input {
+  /* Esse comando evita o espaço reservado a uma linha de texto ao lado do campo. */
+  display:block;
+  /* Essa largura usa todo o espaço do compositor. */
+  width:100%;
+  /* Essa altura inicial comporta algumas linhas de mensagem. */
+  min-height:104px;
+  /* Esse limite evita que o campo redimensionado esconda os comandos por muito tempo. */
+  max-height:260px;
+  /* Esse tamanho evita o zoom automático no campo de celulares. */
+  font-size:16px;
+  /* Esse intervalo deixa as linhas digitadas fáceis de acompanhar. */
+  line-height:1.6;
+  /* Esse comando permite aumentar o campo só na direção vertical. */
+  resize:vertical;
+}
+
+/* Esse estado mostra que o campo depende da preparação sem deixar seu conteúdo quase invisível. */
+#conversas #chat-input:disabled {
+  /* Essa cor mantém o texto desativado legível nos dois temas. */
+  color:var(--muted);
+  /* Esse valor evita o esmaecimento automático de alguns navegadores. */
+  opacity:1;
+  /* Esse cursor informa que o campo ainda não está disponível. */
+  cursor:not-allowed;
+}
+
+/* Essa linha junta a orientação de teclado e a contagem de caracteres. */
+#conversas .chat-compose-meta {
+  /* Esse comando organiza os dois textos lado a lado. */
+  display:flex;
+  /* Essa regra permite passar uma parte para a linha seguinte. */
+  flex-wrap:wrap;
+  /* Esse alinhamento separa as duas informações nas bordas da linha. */
+  justify-content:space-between;
+  /* Esse espaço mantém os textos separados quando precisam quebrar. */
+  gap:6px 16px;
+  /* Esse intervalo separa a orientação do campo. */
+  margin-top:8px;
+  /* Essa cor mantém as informações em um segundo nível. */
+  color:var(--muted);
+  /* Esse tamanho diferencia a orientação da própria mensagem. */
+  font-size:11px;
+}
+
+/* Essa saída usa letras com largura regular para a contagem não mudar de tamanho a cada número. */
+#conversas #chat-counter {
+  /* Essa fonte alinha os algarismos da contagem. */
+  font-family:monospace;
+  /* Essa margem empurra a contagem para a direita quando a orientação quebra. */
+  margin-left:auto;
+}
+
+/* Essa linha mantém o estado, a interrupção e o envio próximos ao campo. */
+#conversas .chat-send-actions {
+  /* Esse comando organiza os controles em uma linha. */
+  display:flex;
+  /* Essa regra permite quebrar controles em telas estreitas. */
+  flex-wrap:wrap;
+  /* Esse alinhamento centraliza o estado ao lado dos botões. */
+  align-items:center;
+  /* Esse intervalo separa texto e botões. */
+  gap:12px;
+  /* Esse espaço separa os comandos da orientação anterior. */
+  margin-top:16px;
+}
+
+/* Esse aviso usa o espaço livre antes dos comandos de envio. */
+#conversas .chat-note {
+  /* Esse crescimento permite que o aviso ocupe o espaço livre da linha. */
+  flex:1 1 180px;
+  /* Essa largura mínima deixa o texto quebrar corretamente. */
+  min-width:0;
+  /* Essa cor diferencia o aviso do comando principal. */
+  color:var(--muted);
+  /* Esse tamanho mantém o aviso secundário e legível. */
+  font-size:12px;
+}
+
+/* O envio fica do lado direito quando há espaço na linha. */
+#conversas #chat-send {
+  /* Essa margem automática empurra o envio para a borda direita. */
+  margin-left:auto;
+}
+
+/* Esse rodapé separa as escolhas de histórico dos comandos da mensagem. */
+#conversas .chat-footer {
+  /* Esse comando coloca a opção de histórico e suas ações lado a lado. */
+  display:flex;
+  /* Essa regra permite que os grupos passem para outra linha. */
+  flex-wrap:wrap;
+  /* Esse alinhamento equilibra os controles na altura. */
+  align-items:center;
+  /* Esse intervalo separa a opção dos botões. */
+  gap:14px 20px;
+  /* Esse espaço mantém o rodapé longe das bordas. */
+  padding:17px 24px;
+  /* Essa linha diferencia o rodapé do compositor. */
+  border-top:1px solid var(--line);
+}
+
+/* Essa opção pode quebrar em duas linhas sem afastar a caixa de seleção. */
+#conversas .chat-save-label {
+  /* Esse comando coloca a caixa de seleção ao lado do texto. */
+  display:flex;
+  /* Esse alinhamento mantém a caixa próxima da primeira linha do texto. */
+  align-items:flex-start;
+  /* Esse espaço separa a caixa da explicação. */
+  gap:9px;
+  /* Essa largura mínima deixa a opção caber em telas pequenas. */
+  min-width:0;
+  /* Esse tamanho mantém o rodapé compacto. */
+  font-size:12px;
+  /* Esse cursor permite reconhecer o rótulo inteiro como parte da opção. */
+  cursor:pointer;
+}
+
+/* Essa caixa usa o verde da marca e preserva seu tamanho mesmo em rótulos longos. */
+#conversas #chat-save-history {
+  /* Essa largura cria uma caixa de seleção fácil de identificar. */
+  width:18px;
+  /* Essa altura mantém a caixa quadrada. */
+  height:18px;
+  /* Esse ajuste impede que o texto comprima a caixa. */
+  flex-shrink:0;
+  /* Essa pequena margem alinha a caixa à primeira linha. */
+  margin:1px 0 0;
+  /* Essa cor reaproveita o destaque principal na seleção nativa. */
+  accent-color:var(--ink);
+}
+
+/* Esse grupo deixa os dois comandos de histórico juntos sem forçar uma linha comprida. */
+#conversas .chat-history-actions {
+  /* Esse comando organiza os botões lado a lado. */
+  display:flex;
+  /* Essa regra permite passar um botão para outra linha. */
+  flex-wrap:wrap;
+  /* Esse espaço separa os dois comandos. */
+  gap:8px 20px;
+  /* Essa margem usa o espaço restante para alinhar as ações à direita. */
+  margin-left:auto;
+}
+
+/* Esses comandos seguem a escala dos outros links de ação do SENTIA. */
+#conversas .text-link {
+  /* Essa altura deixa o comando confortável para o toque. */
+  min-height:44px;
+  /* Esse fundo mantém o comando parecido com um link de texto. */
+  background:transparent;
+  /* Esse contorno fica por conta do foco visível e não de uma borda permanente. */
+  border:0;
+  /* Esse tamanho mantém os comandos secundários discretos. */
+  font-size:12px;
+  /* Esse espaço evita que o alvo de toque fique menor que o texto. */
+  padding:8px 0;
+}
+
+/* Essa marca de foco deixa o histórico acessível para quem usa teclado. */
+#conversas #chat-log:focus-visible {
+  /* Essa linha destaca o quadro que recebe a rolagem do teclado. */
+  outline:3px solid var(--accent);
+  /* Esse deslocamento coloca o contorno para dentro sem sair do painel. */
+  outline-offset:-3px;
+}
+
+/* Essa regra mantém qualquer comando escondido fora do layout mesmo com os estilos específicos desta seção. */
+#conversas [hidden] {
+  /* Esse estado respeita a visibilidade controlada pelo JavaScript. */
+  display:none!important;
+}
+
+/* Essa consulta adapta as duas colunas quando a tela já não comporta os painéis lado a lado. */
+@media(max-width:900px) {
+  /* Essa grade reduz a coluna das escolhas sem apertar o campo principal. */
+  #conversas .chat-layout {
+    /* Essas colunas preservam uma lista compacta e uma conversa flexível. */
+    grid-template-columns:210px minmax(0,1fr);
+    /* Esse espaço menor aproveita melhor a largura de um tablet. */
+    gap:16px;
+  }
+
+  /* Essa identificação mantém retrato e nome em duas colunas. */
+  #conversas .chat-conversation-heading {
+    /* Essas colunas deixam o selo passar para uma linha própria. */
+    grid-template-columns:72px minmax(0,1fr);
+    /* Esse intervalo mantém o nome próximo do retrato menor. */
+    gap:12px;
+  }
+
+  /* Essa moldura menor preserva a proporção do retrato. */
+  #conversas .chat-portrait-frame {
+    /* Essa largura acompanha a coluna reduzida. */
+    width:72px;
+    /* Essa altura deixa a moldura proporcional. */
+    height:88px;
+  }
+
+  /* Essa etiqueta fica sob os nomes sem deixar o cabeçalho largo demais. */
+  #conversas .chat-ai-label {
+    /* Essa posição alinha a etiqueta à coluna do texto. */
+    grid-column:2;
+    /* Esse alinhamento mantém a etiqueta com a largura do próprio texto. */
+    justify-self:start;
+    /* Esse ajuste aproxima a etiqueta do estado anterior. */
+    margin-top:-5px;
+  }
+}
+
+/* Essa consulta transforma a lista em uma faixa de escolhas para celulares e tablets estreitos. */
+@media(max-width:720px) {
+  /* Essa grade deixa a lista acima da conversa. */
+  #conversas .chat-layout {
+    /* Essa coluna única acompanha a largura disponível. */
+    grid-template-columns:minmax(0,1fr);
+  }
+
+  /* Essa área fica mais baixa quando as escolhas passam a deslizar. */
+  #conversas .chat-picker {
+    /* Esse espaço mantém o painel compacto sem encostar o conteúdo nas bordas. */
+    padding:18px 16px;
+  }
+
+  /* Esse título ocupa só uma linha quando houver largura suficiente. */
+  #conversas .chat-picker h2 {
+    /* Esse tamanho dá espaço à lista no celular. */
+    font-size:24px;
+  }
+
+  /* Essa quebra não é necessária na coluna mais larga do celular. */
+  #conversas .chat-picker h2 br {
+    /* Esse comando deixa o título seguir o fluxo normal das palavras. */
+    display:none;
+  }
+
+  /* Essa faixa deixa os dez sentimentos acessíveis sem empurrar a conversa muito para baixo. */
+  #conversas .chat-personas {
+    /* Esse comando organiza as escolhas em uma linha flexível. */
+    display:flex;
+    /* Essa rolagem permite alcançar os botões além da largura inicial. */
+    overflow-x:auto;
+    /* Essa regra evita a rolagem vertical dentro da faixa. */
+    overflow-y:hidden;
+    /* Esse espaço deixa o foco e a barra de rolagem respirarem. */
+    padding:4px 4px 10px;
+    /* Esse ajuste compensa o espaço externo criado para o foco. */
+    margin-inline:-4px;
+    /* Esse limite mantém o gesto de deslizar dentro da faixa. */
+    overscroll-behavior-x:contain;
+    /* Esse encaixe ajuda a parar a rolagem em uma escolha sem prender o gesto. */
+    scroll-snap-type:x proximity;
+  }
+
+  /* Cada escolha mantém um tamanho confortável na faixa. */
+  #conversas .chat-persona {
+    /* Esse tamanho deixa o próximo botão parcialmente visível para indicar continuação. */
+    flex:0 0 165px;
+    /* Esse encaixe alinha o começo de uma escolha ao terminar de deslizar. */
+    scroll-snap-align:start;
+  }
+
+  /* Essa orientação explica o gesto de deslizar a lista. */
+  #conversas .chat-mobile-hint {
+    /* Esse comando mostra a orientação apenas na disposição pequena. */
+    display:block;
+    /* Esse intervalo separa a orientação da faixa. */
+    margin-top:5px;
+  }
+
+  /* Essa nota fica mais compacta abaixo das escolhas. */
+  #conversas .chat-picker-note {
+    /* Esse espaço reduz a altura total da apresentação das escolhas. */
+    margin-top:12px;
+    /* Esse espaço mantém a separação da linha sem alongar a nota. */
+    padding-top:12px;
+  }
+
+  /* Esse histórico aproveita uma parte maior da altura do celular. */
+  #conversas .chat-log {
+    /* Essa altura reserva espaço para uma troca curta de mensagens. */
+    height:380px;
+    /* Esse limite permite ler o histórico sem esconder todos os comandos da página. */
+    max-height:65dvh;
+  }
+}
+
+/* Essa consulta reduz os espaços em celulares pequenos mantendo os alvos de toque. */
+@media(max-width:480px) {
+  /* Esses grupos acompanham a mesma margem interna no painel estreito. */
+  #conversas .chat-conversation-heading,
+  #conversas .chat-setup,
+  #conversas .chat-composer,
+  #conversas .chat-footer {
+    /* Essas margens menores preservam espaço para os textos. */
+    padding-left:16px;
+    /* Essa margem mantém os dois lados com o mesmo espaço. */
+    padding-right:16px;
+  }
+
+  /* Esse título usa uma escala mais compacta no celular pequeno. */
+  #conversas #chat-name {
+    /* Esse tamanho evita apertar nomes maiores. */
+    font-size:29px;
+  }
+
+  /* Essa linha permite que a escolha de processamento ocupe toda a largura. */
+  #conversas .chat-device-label {
+    /* Esse tamanho deixa o rótulo e o campo em uma linha própria. */
+    flex:1 1 100%;
+  }
+
+  /* Esses controles usam a largura inteira para facilitar o toque. */
+  #conversas #chat-device,
+  #conversas #chat-load,
+  #conversas #chat-load-cancel {
+    /* Essa largura impede que o texto fique espremido em uma linha curta. */
+    width:100%;
+  }
+
+  /* Esse histórico mantém margens menores para dar espaço às mensagens. */
+  #conversas .chat-log {
+    /* Esse espaço preserva uma margem visível em telas de trezentos e vinte pixels. */
+    padding:18px 12px;
+  }
+
+  /* Essas mensagens deixam um pequeno espaço no lado oposto. */
+  #conversas .chat-message {
+    /* Esse limite mantém a indicação dos lados em uma tela estreita. */
+    max-width:95%;
+    /* Esse espaço interno evita cortar palavras em linhas muito curtas. */
+    padding:12px;
+  }
+
+  /* Esses botões continuam confortáveis quando precisam dividir ou quebrar a linha. */
+  #conversas #chat-stop,
+  #conversas #chat-send {
+    /* Esse crescimento aproveita a linha disponível sem exigir largura fixa. */
+    flex:1 1 150px;
+    /* Esse limite mantém cada botão dentro do compositor. */
+    min-width:0;
+  }
+
+  /* Essa opção usa uma linha inteira para que o texto não fique apertado. */
+  #conversas .chat-save-label {
+    /* Esse tamanho coloca a opção de histórico acima das suas ações. */
+    flex-basis:100%;
+  }
+
+  /* Essas ações voltam ao lado esquerdo quando o rodapé está empilhado. */
+  #conversas .chat-history-actions {
+    /* Essa margem retira o alinhamento automático da disposição maior. */
+    margin-left:0;
+  }
+}
+
+/* Essa consulta respeita a preferência de diminuir movimento no aparelho. */
+@media(prefers-reduced-motion:reduce) {
+  /* Esses botões mudam de estado sem transição quando o sistema pede menos movimento. */
+  #conversas .chat-persona {
+    /* Esse comando retira a suavização visual das mudanças. */
+    transition:none;
+  }
+
+  /* Essa faixa passa a deslizar sem encaixe automático quando há movimento reduzido. */
+  #conversas .chat-personas {
+    /* Esse comando deixa a posição da faixa inteiramente sob controle da pessoa. */
+    scroll-snap-type:none;
+  }
+}
+
+/* Esse estado também respeita a escolha de movimento reduzido feita dentro do SENTIA. */
+body.reduced #conversas .chat-persona {
+  /* Esse comando retira as transições da seleção. */
+  transition:none;
+}
+
+/* Essa faixa acompanha a mesma escolha de movimento reduzido do site. */
+body.reduced #conversas .chat-personas {
+  /* Esse comando desativa o encaixe automático da rolagem. */
+  scroll-snap-type:none;
+}

@@ -34,7 +34,10 @@
 --><!-- Aqui termina a área aberta pela tag script.
 -->
 <!-- Aqui termina a área aberta pela tag head.
---></head>
+-->
+<!-- Essa folha de estilos cuida só da conversa com os sentimentos no site normal. -->
+<!-- Esses arquivos preparam as personalidades e a interface. O modelo só é baixado após o clique. -->
+</head>
 <!-- GitHub público: https://github.com/oleleolalaks/SENTIA -->
 <!-- Essa tag reúne o conteúdo que a pessoa vê e usa na página.
 --><body>
@@ -64,7 +67,7 @@
 --></a><!-- Aqui essa parte cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site.
 --><a href="#convergencia">Convergência<!-- Aqui termina a área aberta pela tag a.
 --></a><!-- Essa tag cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site.
---><a href="#praticas">Meu registro<!-- Aqui termina a área aberta pela tag a.
+--><a href="#conversas">Conversas</a><!-- Esse link leva à página de conversas com IA, fora do Jardim. --><a href="#praticas">Meu registro<!-- Aqui termina a área aberta pela tag a.
 --></a><!-- Esse comando cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site.
 --><a href="#jardim">O Jardim<!-- Aqui termina a área aberta pela tag a.
 --></a><!-- Aqui essa parte cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site.
@@ -388,7 +391,9 @@
 --></p><!-- Aqui termina a área aberta pela tag div.
 --></div>
           <!-- Aqui essa parte cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button id="reflection" class="button secondary">Receber uma reflexão ✦<!-- Aqui termina a área aberta pela tag button.
+--><a class="button secondary" href="#conversas">Conversar com um sentimento ↗</a>
+<!-- Esse botão mantém o exercício de sorteio do professor separado da IA real. -->
+<button id="reflection" class="button secondary">Receber uma reflexão ✦<!-- Aqui termina a área aberta pela tag button.
 --></button>
           <!-- Essa tag abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
 --><p class="small">Frases pré-escritas, escolhidas ao acaso. Não é um atendimento ou uma IA.<!-- Aqui termina a área aberta pela tag p.
@@ -414,7 +419,144 @@
 --></section>
     <!-- Este convite pertence ao SENTIA, o jogo Jardim dos Ecos tem arquivos e salvamento próprios. -->
     <!-- Esse comando separa uma área do conteúdo com um assunto próprio para a entrada do Jardim. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O id identifica a entrada do Jardim para o CSS e o JavaScript encontrarem o lugar certo. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><section class="page" id="jardim" hidden><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
+--><!-- Essa seção entra na navegação normal do SENTIA. O id conversa com a rota e hidden mantém a página fora da tela até ela ser escolhida.
+--><section class="page" id="conversas" hidden aria-labelledby="conversas-title">
+  <!-- Esse cabeçalho usa o mesmo espaço e a mesma hierarquia das outras páginas do site.
+  --><div class="page-heading chat-page-heading">
+    <!-- Esse texto pequeno identifica a parte do site antes do título principal.
+    --><p class="eyebrow">UM ESPAÇO PARA CONVERSAR</p>
+    <!-- Esse título dá um nome acessível à seção. O ponto separado recebe a cor de destaque que já existe no site.
+    --><h1 id="conversas-title">Uma conversa.<br>Outro jeito de sentir<span>.</span></h1>
+    <!-- Esse parágrafo explica a experiência antes de qualquer mensagem ser enviada.
+    --><p>Escolha um sentimento e encontre um espaço para colocar suas ideias em palavras. As respostas são geradas por inteligência artificial, podem errar e não substituem acompanhamento profissional.</p>
+  </div>
+
+  <!-- Essa grade deixa a escolha dos sentimentos ao lado da conversa no computador. No celular as duas partes ficam uma acima da outra.
+  --><div class="chat-layout">
+    <!-- Essa área apresenta os sentimentos sem criar uma segunda navegação de páginas.
+    --><aside class="chat-picker" aria-labelledby="chat-picker-title">
+      <!-- Esse detalhe visual reaproveita os pequenos símbolos usados na identidade do SENTIA.
+      --><p class="eyebrow">COM QUEM VOCÊ QUER FALAR</p>
+      <!-- Esse título também identifica o grupo de botões que será preenchido pelo JavaScript.
+      --><h2 id="chat-picker-title">Cada sentimento,<br> uma perspectiva.</h2>
+      <!-- Esse texto explica que escolher outro sentimento continua disponível durante o uso.
+      --><p class="chat-picker-copy">Escolha um sentimento. Você pode trocar quando quiser.</p>
+      <!-- O JavaScript coloca os dez botões aqui. O grupo tem nome acessível e não interfere nos links do menu principal.
+      --><div id="chat-personas" class="chat-personas" role="group" aria-labelledby="chat-picker-title"></div>
+      <!-- Essa orientação aparece nas telas pequenas porque os botões passam a formar uma faixa que pode ser deslizada.
+      --><p class="chat-mobile-hint">Deslize a lista para conhecer os outros sentimentos.</p>
+      <!-- Essa nota explica o limite do armazenamento sem misturar as mensagens com o registro compartilhado do site.
+      --><p class="chat-picker-note">As respostas são geradas neste aparelho. O histórico só é guardado se você escolher essa opção.</p>
+    </aside>
+
+    <!-- Esse painel reúne a preparação do modelo, o histórico e os comandos da conversa.
+    --><div class="chat-panel">
+      <!-- O cabeçalho mostra o retrato aprovado e os nomes do sentimento escolhido.
+      --><header class="chat-conversation-heading">
+        <!-- Essa moldura mantém o retrato separado do texto sem precisar de uma imagem nova.
+        --><div class="chat-portrait-frame" aria-hidden="true">
+          <!-- Essa imagem usa o sprite que já existe no projeto. O texto ao lado identifica a personagem e evita repetir a descrição na leitura da tela.
+          --><img id="chat-portrait" src="assets/01-Personagens/01-Ecos/felicidade/01-Dialogo/00-base.png" alt="" width="112" height="136">
+        </div>
+        <!-- Esse grupo mantém o sentimento, o nome e o estado da conversa juntos quando a largura diminui.
+        --><div class="chat-persona-heading">
+          <!-- O JavaScript troca esse sentimento quando outro botão é escolhido.
+          --><p id="chat-emotion" class="eyebrow">Felicidade</p>
+          <!-- O nome escolhido aparece como título da conversa.
+          --><h2 id="chat-name">Sunny</h2>
+          <!-- Essa descrição apresenta a perspectiva do sentimento escolhido sem misturar a identificação com o estado do modelo.
+          --><p id="chat-description" class="chat-description">Um olhar para as pequenas coisas que fazem bem.</p>
+          <!-- Esse estado é anunciado quando a preparação começa, termina ou precisa de uma nova tentativa.
+          --><p id="chat-status" class="chat-status" role="status">Ainda não preparado</p>
+        </div>
+        <!-- Esse pequeno selo explica que essa conversa tem respostas geradas por IA.
+        --><span class="chat-ai-label">CONVERSA COM IA</span>
+      </header>
+
+      <!-- Essa parte mostra o tamanho do primeiro download e deixa a pessoa iniciar a preparação de forma consciente.
+      --><div class="chat-setup">
+        <!-- Esse título separa a preparação inicial da conversa em si.
+        --><h3>Uma primeira preparação</h3>
+        <!-- Essa explicação fica na página e não depende de abrir um guia externo.
+        --><p>O modelo é gratuito e roda no navegador, sem conta nem chave de acesso. No primeiro uso, é preciso internet para baixar cerca de 500 MB. Depois do download, as mensagens são geradas no próprio aparelho. É um modelo pequeno, com respostas mais simples e possibilidade de erro. Um computador é recomendado. Na CPU, uma resposta pode levar dezenas de segundos.</p>
+        <!-- Essa linha mantém a escolha de processamento e os botões dentro da largura disponível.
+        --><div class="chat-prepare-row">
+          <!-- Esse rótulo associa a escolha de desempenho ao campo correspondente.
+          --><label class="chat-device-label" for="chat-device">Como preparar
+            <!-- O modo automático prioriza a compatibilidade na CPU. Os outros valores permitem escolher explicitamente a CPU ou tentar a aceleração da GPU.
+            --><select id="chat-device" aria-describedby="chat-progress-text">
+              <!-- Essa opção começa pelo modo compatível para evitar baixar outro modelo sem necessidade.
+              --><option value="auto">Automático, compatível</option>
+              <!-- Essa opção usa o caminho de compatibilidade na CPU.
+              --><option value="wasm">Compatibilidade, CPU</option>
+              <!-- Essa opção permite usar a GPU quando o aparelho oferece esse recurso.
+              --><option value="webgpu">Desempenho, GPU</option>
+            </select>
+          </label>
+          <!-- Esse botão começa o download somente quando a pessoa escolhe preparar a conversa.
+          --><button id="chat-load" class="button primary" type="button">Preparar conversa</button>
+          <!-- Esse botão fica escondido até existir uma preparação que possa ser cancelada.
+          --><button id="chat-load-cancel" class="button secondary" type="button" hidden>Cancelar preparação</button>
+          <!-- Esse botão pode liberar os recursos do modelo depois do uso. Ele só aparece quando houver recursos carregados.
+          --><button id="chat-release" class="text-link" type="button" hidden>Liberar memória</button>
+        </div>
+        <!-- Essa barra acompanha o download. Ela começa escondida e o JavaScript atualiza o valor e o estado de preparação.
+        --><progress id="chat-progress" max="100" value="0" hidden aria-label="Progresso da preparação da conversa"></progress>
+        <!-- Esse texto complementa a barra com a etapa ou o arquivo que está sendo preparado.
+        --><p id="chat-progress-text" class="chat-progress-text"></p>
+      </div>
+
+      <!-- Esse quadro reúne o estado vazio e o histórico sem deixar a página inteira crescer a cada mensagem.
+      --><div class="chat-transcript">
+        <!-- Esse texto aparece enquanto a conversa ainda não tem mensagens e é escondido quando o histórico começa.
+        --><p id="chat-empty" class="chat-empty">Uma conversa pode começar com uma pergunta, uma dúvida ou só uma coisa que aconteceu no seu dia.</p>
+        <!-- O histórico aceita foco para ser percorrido pelo teclado. A leitura automática fica desligada para não repetir cada fragmento de uma resposta em preparação.
+        --><div id="chat-log" class="chat-log" role="log" aria-live="off" tabindex="0" aria-label="Histórico da conversa"></div>
+      </div>
+
+      <!-- Esse formulário reúne as sugestões, o campo de texto e os comandos de envio.
+      --><form id="chat-form" class="chat-composer">
+        <!-- Esses botões serão preenchidos com sugestões curtas e podem colocar uma primeira ideia no campo.
+        --><div id="chat-suggestions" class="chat-suggestions" role="group" aria-label="Sugestões para começar a conversa"></div>
+        <!-- Esse rótulo continua visível para que o campo não dependa de um texto provisório.
+        --><label for="chat-input" class="chat-input-label">O que você quer colocar em palavras?</label>
+        <!-- O campo começa desativado até o modelo estar pronto. O limite de mil caracteres e as instruções ficam ligados ao próprio campo.
+        --><textarea id="chat-input" rows="3" maxlength="1000" disabled placeholder="Prepare a conversa para escrever sua mensagem" aria-describedby="chat-hint chat-counter"></textarea>
+        <!-- Essa linha mantém as instruções do teclado e a contagem próximas ao campo.
+        --><div class="chat-compose-meta">
+          <!-- O JavaScript pode adaptar essa orientação quando a pessoa usa um teclado ou um aparelho de toque.
+          --><p id="chat-hint">Enter envia. Shift e Enter criam uma nova linha.</p>
+          <!-- Essa saída mostra a quantidade de caracteres sem fazer anúncios a cada letra digitada.
+          --><output id="chat-counter" for="chat-input" aria-live="off">0 / 1000</output>
+        </div>
+        <!-- Esse grupo mantém o envio e a interrupção acessíveis sem depender de um atalho de teclado.
+        --><div class="chat-send-actions">
+          <!-- Esse aviso recebe mensagens de estado da conversa sem precisar abrir outra janela.
+          --><p id="chat-note" class="chat-note" role="status"></p>
+          <!-- Esse botão aparece durante a resposta para permitir interromper a geração.
+          --><button id="chat-stop" class="button secondary" type="button" hidden>Parar resposta</button>
+          <!-- Esse botão envia o formulário e só fica disponível quando o modelo e a mensagem estiverem prontos.
+          --><button id="chat-send" class="button primary" type="submit" disabled>Enviar mensagem <span aria-hidden="true">↗</span></button>
+        </div>
+      </form>
+
+      <!-- Esse rodapé deixa as escolhas de histórico separadas da mensagem que está sendo escrita.
+      --><footer class="chat-footer">
+        <!-- Essa opção começa desmarcada. Só a escolha explícita permite guardar as conversas neste navegador.
+        --><label class="chat-save-label" for="chat-save-history"><input id="chat-save-history" type="checkbox"> Guardar conversas neste navegador</label>
+        <!-- Esse grupo oferece uma cópia em texto e a limpeza sem criar uma segunda ação de envio.
+        --><div class="chat-history-actions">
+          <!-- Esse botão baixa uma cópia da conversa atual quando o controlador preparar o arquivo.
+          --><button id="chat-export" class="text-link" type="button">Baixar conversa</button>
+          <!-- Esse botão pede a confirmação de limpeza antes de apagar o histórico escolhido.
+          --><button id="chat-clear" class="text-link" type="button">Apagar conversa</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="jardim" hidden><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
 --><div class="garden-invitation"><!-- Aqui essa parte reserva o lugar em que uma imagem será exibida. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo alt descreve o conteúdo da imagem para quem não consegue vê la.
 --><img id="garden-image" alt="Entrada de um jardim em pixel art"><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos.
 --><div><!-- Essa tag abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
