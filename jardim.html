@@ -1,37 +1,192 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#101718"><title>Jardim dos Ecos · SENTIA</title>
-  <link rel="stylesheet" href="css/jardim.css?v=1.3.2">
-  <link rel="stylesheet" href="css/polimento-jardim.css?v=1.3.2"><link rel="stylesheet" href="css/atmosfera-quartos.css?v=1.3.2"><link rel="stylesheet" href="css/perseguicao-revisada.css?v=1.3.2"><link rel="stylesheet" href="css/portal.css?v=1.3.2">
-  <link rel="stylesheet" href="css/dialogos-revisados.css?v=1.3.2">
-  <script src="js/carregamento.js?v=1.3.2" defer></script>
-  <script src="js/portal.js?v=1.3.2" defer></script><script src="js/assets.js?v=1.3.2" defer></script><script src="js/roteiro.js?v=1.3.2" defer></script><script src="js/memorias.js?v=1.3.2" defer></script><script src="js/observacao.js?v=1.3.2" defer></script><script src="js/convivencia.js?v=1.3.2" defer></script><script src="js/texturas.js?v=1.3.2" defer></script><script src="js/arena.js?v=1.3.2" defer></script><script src="js/gesto.js?v=1.3.2" defer></script><script src="js/perseguicao.js?v=1.3.2" defer></script><script src="js/audio.js?v=1.3.2" defer></script><script src="js/anata.js?v=1.3.2" defer></script><script src="js/jardim.js?v=1.3.2" defer></script>
-</head>
+<!-- Essa declaração informa que o documento usa a versão atual do HTML.
+--><!doctype html>
+<!-- Essa tag define o começo e o idioma do documento. O atributo lang informa que o conteúdo está em português do Brasil.
+--><html lang="pt-BR">
+<!-- Aqui essa parte reúne as configurações que o navegador lê antes do conteúdo visível.
+--><head>
+  <!-- Esse comando passa uma configuração do documento para o navegador. O atributo charset permite ler corretamente os acentos e os demais caracteres do texto.
+--><meta charset="UTF-8"><!-- Essa tag passa uma configuração do documento para o navegador. O atributo name escolhe qual configuração é informada ao navegador. O conteúdo dessa configuração adapta a largura da página e a escala inicial à tela do dispositivo.
+--><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <!-- Aqui essa parte passa uma configuração do documento para o navegador. O atributo name escolhe qual configuração é informada ao navegador. O conteúdo dessa configuração escolhe a cor da interface do navegador quando ele usa a cor do site.
+--><meta name="theme-color" content="#101718"><!-- Esse comando define o nome que aparece na aba do navegador.
+--><title>Jardim dos Ecos · SENTIA</title><!-- Aqui termina a área aberta pela tag title.
+-->
+  <!-- Aqui essa parte conecta o documento a um recurso externo. O atributo rel identifica esse recurso externo como uma folha de estilos. O atributo href aponta para o arquivo externo de estilos dessa página.
+--><link rel="stylesheet" href="css/jardim.css?v=1.3.2">
+  <!-- Esse comando conecta o documento a um recurso externo. O atributo rel identifica esse recurso externo como uma folha de estilos. O atributo href aponta para o arquivo externo de estilos dessa página.
+--><link rel="stylesheet" href="css/polimento-jardim.css?v=1.3.2"><!-- Essa tag conecta o documento a um recurso externo. O atributo rel identifica esse recurso externo como uma folha de estilos. O atributo href aponta para o arquivo externo de estilos dessa página.
+--><link rel="stylesheet" href="css/atmosfera-quartos.css?v=1.3.2"><!-- Aqui essa parte conecta o documento a um recurso externo. O atributo rel identifica esse recurso externo como uma folha de estilos. O atributo href aponta para o arquivo externo de estilos dessa página.
+--><link rel="stylesheet" href="css/perseguicao-revisada.css?v=1.3.2"><!-- Esse comando conecta o documento a um recurso externo. O atributo rel identifica esse recurso externo como uma folha de estilos. O atributo href aponta para o arquivo externo de estilos dessa página.
+--><link rel="stylesheet" href="css/portal.css?v=1.3.2">
+  <!-- Essa tag conecta o documento a um recurso externo. O atributo rel identifica esse recurso externo como uma folha de estilos. O atributo href aponta para o arquivo externo de estilos dessa página.
+--><link rel="stylesheet" href="css/dialogos-revisados.css?v=1.3.2">
+  <!-- Aqui essa parte carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/carregamento.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+-->
+  <!-- Essa tag carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/portal.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+--><!-- Esse comando carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/assets.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+--><!-- Aqui essa parte carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/roteiro.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+--><!-- Essa tag carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/memorias.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+--><!-- Esse comando carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/observacao.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+--><!-- Aqui essa parte carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/convivencia.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+--><!-- Essa tag carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/texturas.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+--><!-- Esse comando carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/arena.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+--><!-- Aqui essa parte carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/gesto.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+--><!-- Essa tag carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/perseguicao.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+--><!-- Esse comando carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/audio.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+--><!-- Aqui essa parte carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/anata.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+--><!-- Essa tag carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
+--><script src="js/jardim.js?v=1.3.2" defer></script><!-- Aqui termina a área aberta pela tag script.
+-->
+<!-- Aqui termina a área aberta pela tag head.
+--></head>
 <!-- GitHub público: https://github.com/oleleolalaks/SENTIA -->
-<body>
-  <aside id="loading-help" role="status"><strong>Preparando o SENTIA…</strong><p>Se a página continuar sem cores ou imagens, extraia o ZIP inteiro e abra o index.html da pasta Sentia, mantendo css, js e assets ao lado dele. O site e o Jardim abrem normalmente. Só o registro compartilhado usa o endereço do XAMPP.</p></aside>
-  <header class="game-header"><a href="index.html#jardim" aria-label="Voltar ao site SENTIA">✦ <b>SENTIA</b><span> / JARDIM DOS ECOS</span></a><div><button id="inventory-button">Bolsa <kbd>I</kbd></button><button id="journal-button">Registro <kbd>J</kbd></button><button id="gesture-l-button" hidden>Fazer o L <kbd>L</kbd></button><button id="pause-button">Pausa <kbd>Esc</kbd></button></div></header>
-  <main id="game">
-    <div id="stage" class="stage">
-      <img id="background" class="background" alt=""><div class="vignette"></div>
-      <canvas id="chase-canvas" width="640" height="400" class="chase-canvas" aria-label="Corrida em primeira pessoa" hidden></canvas>
-      <canvas id="arena" width="500" height="380" aria-label="Arena em primeira pessoa" hidden></canvas>
-      <img id="actor" class="actor" alt="" hidden><img id="actor-two" class="actor two" alt="" hidden>
-      <img id="effect" class="effect" alt="" hidden><img id="hands" class="hands" alt="" hidden>
-      <aside id="sanity-hud" class="sanity-hud" aria-label="Sanidade" hidden><label for="sanity-meter">Sanidade <output id="sanity-value">70</output></label><meter id="sanity-meter" min="0" max="100" low="25" high="60" optimum="90" value="70">70</meter><span id="sanity-trend"></span></aside><div id="room-notice" class="room-notice" role="status" hidden></div>
-      <div id="location" class="location"></div><div id="status" class="status" aria-live="polite"></div>
-      <div id="world-controls" class="world-controls"></div>
-      <div id="action-panel" class="action-panel" hidden></div>
-      <article id="dialogue" class="dialogue" hidden><div id="speaker" class="speaker"></div><div class="dialogue-body"><p id="speech" aria-live="polite"></p><div id="choices" class="choices"></div><button id="advance" class="advance">Continuar <span>↵</span></button></div></article>
-      <div id="prompt" class="prompt" hidden><p id="prompt-label"></p><div id="prompt-actions"></div><div class="timer-track"><div id="timer-fill"></div></div><p id="prompt-status"></p></div>
-      <div id="mobile-controls" class="mobile-controls" hidden></div>
-      <div id="fade" class="fade" hidden></div>
-    </div>
-    <div class="game-footer"><span id="objective">Jardim dos Ecos</span><span id="save-status" role="status">Seu progresso fica neste navegador.</span></div>
-  </main>
-  <dialog id="game-modal"><div id="modal-content"></div></dialog>
-  <noscript>Ative o JavaScript para jogar. O Jardim é uma experiência interativa.</noscript>
-</body>
-</html>
+<!-- Essa tag reúne o conteúdo que a pessoa vê e usa na página.
+--><body>
+  <!-- Aqui essa parte separa uma informação de apoio do conteúdo principal para o aviso de arquivos que não carregaram. O id identifica o aviso de arquivos que não carregaram para o CSS e o JavaScript encontrarem o lugar certo. O atributo role identifica a função acessível dessa área, como um aviso ou um estado atualizado.
+--><aside id="loading-help" role="status"><!-- Esse comando marca esse trecho como importante.
+--><strong>Preparando o SENTIA…<!-- Aqui termina a área aberta pela tag strong.
+--></strong><!-- Aqui essa parte abre um parágrafo de texto.
+--><p>Se a página continuar sem cores ou imagens, extraia o ZIP inteiro e abra o index.html da pasta Sentia, mantendo css, js e assets ao lado dele. O site e o Jardim abrem normalmente. Só o registro compartilhado usa o endereço do XAMPP.<!-- Aqui termina a área aberta pela tag p.
+--></p><!-- Aqui termina a área aberta pela tag aside.
+--></aside>
+  <!-- Aqui essa parte organiza o cabeçalho e os controles de entrada. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
+--><header class="game-header"><!-- Esse comando cria um link que leva a outro destino. O atributo href volta do Jardim para a parte educativa do SENTIA. O atributo aria label dá um nome acessível a esse elemento para os leitores de tela.
+--><a href="index.html#jardim" aria-label="Voltar ao site SENTIA">✦ <!-- Essa tag destaca visualmente esse trecho da escrita.
+--><b>SENTIA<!-- Aqui termina a área aberta pela tag b.
+--></b><!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização.
+--><span> / JARDIM DOS ECOS<!-- Aqui termina a área aberta pela tag span.
+--></span><!-- Aqui termina a área aberta pela tag a.
+--></a><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos.
+--><div><!-- Essa tag cria um botão para executar uma ação para o botão da bolsa. O id identifica o botão da bolsa para o CSS e o JavaScript encontrarem o lugar certo.
+--><button id="inventory-button">Bolsa <!-- Aqui essa parte mostra uma tecla ou um atalho usado no teclado.
+--><kbd>I<!-- Aqui termina a área aberta pela tag kbd.
+--></kbd><!-- Aqui termina a área aberta pela tag button.
+--></button><!-- Aqui essa parte cria um botão para executar uma ação para o botão do registro. O id identifica o botão do registro para o CSS e o JavaScript encontrarem o lugar certo.
+--><button id="journal-button">Registro <!-- Esse comando mostra uma tecla ou um atalho usado no teclado.
+--><kbd>J<!-- Aqui termina a área aberta pela tag kbd.
+--></kbd><!-- Aqui termina a área aberta pela tag button.
+--></button><!-- Esse comando cria um botão para executar uma ação para o botão do gesto desbloqueado. O id identifica o botão do gesto desbloqueado para o CSS e o JavaScript encontrarem o lugar certo. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><button id="gesture-l-button" hidden>Fazer o L <!-- Essa tag mostra uma tecla ou um atalho usado no teclado.
+--><kbd>L<!-- Aqui termina a área aberta pela tag kbd.
+--></kbd><!-- Aqui termina a área aberta pela tag button.
+--></button><!-- Essa tag cria um botão para executar uma ação para o botão de pausa. O id identifica o botão de pausa para o CSS e o JavaScript encontrarem o lugar certo.
+--><button id="pause-button">Pausa <!-- Aqui essa parte mostra uma tecla ou um atalho usado no teclado.
+--><kbd>Esc<!-- Aqui termina a área aberta pela tag kbd.
+--></kbd><!-- Aqui termina a área aberta pela tag button.
+--></button><!-- Aqui termina a área aberta pela tag div.
+--></div><!-- Aqui termina a área aberta pela tag header.
+--></header>
+  <!-- Essa tag identifica o conteúdo principal. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo.
+--><main id="game">
+    <!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos para a área principal do Jardim. O id identifica a área principal do Jardim para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
+--><div id="stage" class="stage">
+      <!-- Esse comando reserva o lugar em que uma imagem será exibida para a imagem de fundo do cenário. O id identifica a imagem de fundo do cenário para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo alt vazio evita repetir uma descrição quando a imagem é decorativa ou já está nomeada no controle.
+--><img id="background" class="background" alt=""><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
+--><div class="vignette"><!-- Aqui termina a área aberta pela tag div.
+--></div>
+      <!-- Esse comando cria a área em que o JavaScript desenha a cena do jogo para o desenho da perseguição. O id identifica o desenho da perseguição para o CSS e o JavaScript encontrarem o lugar certo. O atributo width define a quantidade interna de pixels usada no desenho do canvas. O atributo height define a quantidade interna de pixels usada no desenho do canvas. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo aria label dá um nome acessível a esse elemento para os leitores de tela. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><canvas id="chase-canvas" width="640" height="400" class="chase-canvas" aria-label="Corrida em primeira pessoa" hidden><!-- Aqui termina a área aberta pela tag canvas.
+--></canvas>
+      <!-- Aqui essa parte cria a área em que o JavaScript desenha a cena do jogo para o desenho da arena. O id identifica o desenho da arena para o CSS e o JavaScript encontrarem o lugar certo. O atributo width define a quantidade interna de pixels usada no desenho do canvas. O atributo height define a quantidade interna de pixels usada no desenho do canvas. O atributo aria label dá um nome acessível a esse elemento para os leitores de tela. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><canvas id="arena" width="500" height="380" aria-label="Arena em primeira pessoa" hidden><!-- Aqui termina a área aberta pela tag canvas.
+--></canvas>
+      <!-- Essa tag reserva o lugar em que uma imagem será exibida para o sprite principal do Eco. O id identifica o sprite principal do Eco para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo alt vazio evita repetir uma descrição quando a imagem é decorativa ou já está nomeada no controle. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><img id="actor" class="actor" alt="" hidden><!-- Aqui essa parte reserva o lugar em que uma imagem será exibida para o segundo Eco da cena. O id identifica o segundo Eco da cena para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo alt vazio evita repetir uma descrição quando a imagem é decorativa ou já está nomeada no controle. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><img id="actor-two" class="actor two" alt="" hidden>
+      <!-- Esse comando reserva o lugar em que uma imagem será exibida para os efeitos desenhados sobre a cena. O id identifica os efeitos desenhados sobre a cena para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo alt vazio evita repetir uma descrição quando a imagem é decorativa ou já está nomeada no controle. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><img id="effect" class="effect" alt="" hidden><!-- Essa tag reserva o lugar em que uma imagem será exibida para as mãos do protagonista. O id identifica as mãos do protagonista para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo alt vazio evita repetir uma descrição quando a imagem é decorativa ou já está nomeada no controle. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><img id="hands" class="hands" alt="" hidden>
+      <!-- Aqui essa parte separa uma informação de apoio do conteúdo principal para o indicador de sanidade. O id identifica o indicador de sanidade para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo aria label dá um nome acessível a esse elemento para os leitores de tela. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><aside id="sanity-hud" class="sanity-hud" aria-label="Sanidade" hidden><!-- Esse comando dá um nome visível ao campo ou controle. O atributo for liga esse nome ou resultado ao controle que tem o id correspondente.
+--><label for="sanity-meter">Sanidade <!-- Essa tag mostra o resultado ou o valor atualizado de um cálculo para o número da sanidade. O id identifica o número da sanidade para o CSS e o JavaScript encontrarem o lugar certo.
+--><output id="sanity-value">70<!-- Aqui termina a área aberta pela tag output.
+--></output><!-- Aqui termina a área aberta pela tag label.
+--></label><!-- Essa tag mostra uma medida dentro de um intervalo conhecido para a medida de sanidade. O id identifica a medida de sanidade para o CSS e o JavaScript encontrarem o lugar certo. O atributo min define o menor valor permitido nessa medida ou nesse campo. O atributo max define o maior valor permitido nessa medida ou nesse campo. O atributo low marca o limite abaixo do qual a medida é considerada baixa. O atributo high marca o limite acima do qual a medida é considerada alta. O atributo optimum indica o valor considerado mais adequado dentro dessa medida. O atributo value define o valor inicial ou o valor enviado por essa opção.
+--><meter id="sanity-meter" min="0" max="100" low="25" high="60" optimum="90" value="70">70<!-- Aqui termina a área aberta pela tag meter.
+--></meter><!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização para a indicação de mudança da sanidade. O id identifica a indicação de mudança da sanidade para o CSS e o JavaScript encontrarem o lugar certo.
+--><span id="sanity-trend"><!-- Aqui termina a área aberta pela tag span.
+--></span><!-- Aqui termina a área aberta pela tag aside.
+--></aside><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos para o aviso de um quarto novo. O id identifica o aviso de um quarto novo para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo role identifica a função acessível dessa área, como um aviso ou um estado atualizado. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><div id="room-notice" class="room-notice" role="status" hidden><!-- Aqui termina a área aberta pela tag div.
+--></div>
+      <!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos para o nome do lugar atual. O id identifica o nome do lugar atual para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
+--><div id="location" class="location"><!-- Aqui termina a área aberta pela tag div.
+--></div><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos para os avisos curtos da ação. O id identifica os avisos curtos da ação para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo aria live pede que as mudanças desse texto sejam anunciadas sem interromper a leitura atual.
+--><div id="status" class="status" aria-live="polite"><!-- Aqui termina a área aberta pela tag div.
+--></div>
+      <!-- Esse comando agrupa elementos para organizar a estrutura e os estilos para os controles dos objetos e das vistas do cenário. O id identifica os controles dos objetos e das vistas do cenário para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
+--><div id="world-controls" class="world-controls"><!-- Aqui termina a área aberta pela tag div.
+--></div>
+      <!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos para o painel de ações da cena. O id identifica o painel de ações da cena para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><div id="action-panel" class="action-panel" hidden><!-- Aqui termina a área aberta pela tag div.
+--></div>
+      <!-- Essa tag reúne um conteúdo que pode ser entendido como uma unidade para a caixa de diálogo. O id identifica a caixa de diálogo para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><article id="dialogue" class="dialogue" hidden><!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos para o nome de quem está falando. O id identifica o nome de quem está falando para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
+--><div id="speaker" class="speaker"><!-- Aqui termina a área aberta pela tag div.
+--></div><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
+--><div class="dialogue-body"><!-- Aqui essa parte abre um parágrafo de texto para o texto da fala. O id identifica o texto da fala para o CSS e o JavaScript encontrarem o lugar certo. O atributo aria live pede que as mudanças desse texto sejam anunciadas sem interromper a leitura atual.
+--><p id="speech" aria-live="polite"><!-- Aqui termina a área aberta pela tag p.
+--></p><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos para as opções de resposta. O id identifica as opções de resposta para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
+--><div id="choices" class="choices"><!-- Aqui termina a área aberta pela tag div.
+--></div><!-- Esse comando cria um botão para executar uma ação para o botão de continuar a fala. O id identifica o botão de continuar a fala para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
+--><button id="advance" class="advance">Continuar <!-- Essa tag separa um trecho da mesma linha para receber um estilo ou uma atualização.
+--><span>↵<!-- Aqui termina a área aberta pela tag span.
+--></span><!-- Aqui termina a área aberta pela tag button.
+--></button><!-- Aqui termina a área aberta pela tag div.
+--></div><!-- Aqui termina a área aberta pela tag article.
+--></article>
+      <!-- Esse comando agrupa elementos para organizar a estrutura e os estilos para o pedido de resposta rápida. O id identifica o pedido de resposta rápida para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><div id="prompt" class="prompt" hidden><!-- Essa tag abre um parágrafo de texto para a instrução da resposta rápida. O id identifica a instrução da resposta rápida para o CSS e o JavaScript encontrarem o lugar certo.
+--><p id="prompt-label"><!-- Aqui termina a área aberta pela tag p.
+--></p><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos para os botões da resposta rápida. O id identifica os botões da resposta rápida para o CSS e o JavaScript encontrarem o lugar certo.
+--><div id="prompt-actions"><!-- Aqui termina a área aberta pela tag div.
+--></div><!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
+--><div class="timer-track"><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos para o preenchimento da barra de tempo. O id identifica o preenchimento da barra de tempo para o CSS e o JavaScript encontrarem o lugar certo.
+--><div id="timer-fill"><!-- Aqui termina a área aberta pela tag div.
+--></div><!-- Aqui termina a área aberta pela tag div.
+--></div><!-- Esse comando abre um parágrafo de texto para o resultado da reação. O id identifica o resultado da reação para o CSS e o JavaScript encontrarem o lugar certo.
+--><p id="prompt-status"><!-- Aqui termina a área aberta pela tag p.
+--></p><!-- Aqui termina a área aberta pela tag div.
+--></div>
+      <!-- Esse comando agrupa elementos para organizar a estrutura e os estilos para os botões de toque. O id identifica os botões de toque para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><div id="mobile-controls" class="mobile-controls" hidden><!-- Aqui termina a área aberta pela tag div.
+--></div>
+      <!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos para a camada de transição. O id identifica a camada de transição para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
+--><div id="fade" class="fade" hidden><!-- Aqui termina a área aberta pela tag div.
+--></div>
+    <!-- Aqui termina a área aberta pela tag div.
+--></div>
+    <!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
+--><div class="game-footer"><!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização para o objetivo atual. O id identifica o objetivo atual para o CSS e o JavaScript encontrarem o lugar certo.
+--><span id="objective">Jardim dos Ecos<!-- Aqui termina a área aberta pela tag span.
+--></span><!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização para o aviso de salvamento. O id identifica o aviso de salvamento para o CSS e o JavaScript encontrarem o lugar certo. O atributo role identifica a função acessível dessa área, como um aviso ou um estado atualizado.
+--><span id="save-status" role="status">Seu progresso fica neste navegador.<!-- Aqui termina a área aberta pela tag span.
+--></span><!-- Aqui termina a área aberta pela tag div.
+--></div>
+  <!-- Aqui termina a área aberta pela tag main.
+--></main>
+  <!-- Esse comando cria uma janela que pode abrir sobre a página para a janela de pausa e de consulta. O id identifica a janela de pausa e de consulta para o CSS e o JavaScript encontrarem o lugar certo.
+--><dialog id="game-modal"><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos para o conteúdo da janela do Jardim. O id identifica o conteúdo da janela do Jardim para o CSS e o JavaScript encontrarem o lugar certo.
+--><div id="modal-content"><!-- Aqui termina a área aberta pela tag div.
+--></div><!-- Aqui termina a área aberta pela tag dialog.
+--></dialog>
+  <!-- Essa tag mostra uma orientação quando o JavaScript está desativado.
+--><noscript>Ative o JavaScript para jogar. O Jardim é uma experiência interativa.<!-- Aqui termina a área aberta pela tag noscript.
+--></noscript>
+<!-- Aqui termina a área aberta pela tag body.
+--></body>
+<!-- Aqui termina a área aberta pela tag html.
+--></html>

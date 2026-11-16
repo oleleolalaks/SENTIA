@@ -1,9 +1,24 @@
-/* A arte continua sendo a moldura aprovada; só o conteúdo interno pode rolar. */
-#stage > #dialogue .dialogue-body { min-width:0; touch-action:pan-y; }
-#stage > #dialogue #speech { max-width:none; overflow-wrap:anywhere; }
-#stage > #dialogue #choices { min-width:0; }
-#stage > #dialogue #choices button { max-width:100%; overflow-wrap:anywhere; }
+/* A arte continua sendo a moldura aprovada, só o conteúdo interno pode rolar. */
+/* Essa regra reúne os ajustes na área de leitura do diálogo.
+*/#stage > #dialogue .dialogue-body { /* Esse comando permite que a caixa encolha em um grupo flexível ou em uma grade sem forçar a largura da tela na área de leitura do diálogo.
+*/min-width:0; /* Essa declaração controla quais gestos de toque o navegador pode tratar diretamente na área de leitura do diálogo.
+*/touch-action:pan-y; }
+/* Essa regra reúne os ajustes no texto da fala.
+*/#stage > #dialogue #speech { /* Aqui o CSS retira o limite máximo desse tamanho no texto da fala.
+*/max-width:none; /* Esse comando permite quebrar palavras longas para o texto não escapar da caixa no texto da fala.
+*/overflow-wrap:anywhere; }
+/* Essa regra reúne os ajustes nas opções de resposta.
+*/#stage > #dialogue #choices { /* Essa declaração permite que a caixa encolha em um grupo flexível ou em uma grade sem forçar a largura da tela nas opções de resposta.
+*/min-width:0; }
+/* Essa regra reúne os ajustes nas opções de resposta.
+*/#stage > #dialogue #choices button { /* Aqui o CSS limita até onde a largura pode crescer nas opções de resposta.
+*/max-width:100%; /* Esse comando permite quebrar palavras longas para o texto não escapar da caixa nas opções de resposta.
+*/overflow-wrap:anywhere; }
 /* Uma fala curta não ocupa quase o cenário inteiro quando o celular está deitado. */
-@media(orientation:landscape) and (max-height:550px) {
-  #stage > #dialogue:not(:has(.choices:not(:empty))) { height:min(205px,58%); max-height:64%; }
+/* Essas regras ajustam a interface quando a tela está deitada, com menos altura disponível.
+*/@media(orientation:landscape) and (max-height:550px) {
+  /* Essa regra reúne os ajustes na caixa de diálogo.
+*/#stage > #dialogue:not(:has(.choices:not(:empty))) { /* Essa declaração define a altura ocupada pela caixa na caixa de diálogo.
+*/height:min(205px,58%); /* Aqui o CSS limita até onde a altura pode crescer na caixa de diálogo.
+*/max-height:64%; }
 }

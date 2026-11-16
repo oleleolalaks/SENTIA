@@ -1,1016 +1,2438 @@
-:root {
-  color-scheme:dark;
-  --ink:#f5eedc;
-  --accent:#d6c395;
-  --panel:#111a1def;
-  --line:#788476
-}
-* {
-  box-sizing:border-box
-}
-body {
-  margin:0;
-  background:#0b1113;
-  color:var(--ink);
-  font:15px/1.6 Arial,sans-serif
-}
-button,input,select {
-  font:inherit
-}
-button,a,input,select {
-  touch-action:manipulation
-}
-button {
-  color:inherit;
-  cursor:pointer;
-  border:1px solid #7e8777;
-  background:#172024;
-  padding:10px 17px;
-  border-radius:0;
-  min-height:44px
-}
-button:hover {
-  background:#384338;
-  border-color:#f5eedc
-}
-button:disabled {
-  opacity:.4;
-  cursor:not-allowed
-}
-button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible {
-  outline:3px solid #f4cf7d;
-  outline-offset:3px
-}
-a {
-  color:inherit;
-  text-decoration:none
-}
-[hidden] {
-  display:none!important
-}
-kbd {
-  font:10px monospace;
-  border:1px solid #ffffff40;
-  padding:2px 5px;
-  margin-left:5px
-}
-.game-header {
-  height:62px;
-  padding:10px 28px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  border-bottom:1px solid #ffffff18;
-  gap:12px
-}
-.game-header>a {
-  letter-spacing:2px;
-  font-size:13px
-}
-.game-header>a>span {
-  font-size:10px;
-  color:#a5b3a5
-}
-.game-header>div {
-  display:flex;
-  gap:8px
-}
-.game-header button {
-  min-height:36px;
-  padding:6px 12px;
-  font-size:12px;
-  border-color:#ffffff30
-}
-.stage {
-  position:relative;
-  max-width:1250px;
-  margin:auto;
-  height:min(calc(100dvh - 106px),850px);
-  min-height:480px;
-  overflow:hidden;
-  background:#111619;
-  isolation:isolate
-}
-.background {
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  position:absolute;
-  inset:0;
-  image-rendering:pixelated;
-  z-index:-3
-}
-.vignette {
-  position:absolute;
-  inset:0;
-  box-shadow:inset 0 0 130px 25px #0009;
-  pointer-events:none;
-  z-index:-1
-}
-.actor {
-  position:absolute;
-  left:50%;
-  bottom:10%;
-  transform:translateX(-50%);
-  height:83%;
-  width:70%;
-  object-fit:contain;
-  object-position:bottom;
-  pointer-events:none;
-  image-rendering:pixelated;
-  filter:drop-shadow(0 10px 10px #0006);
-  z-index:1
-}
-.actor.two {
-  left:75%;
-  width:40%;
-  height:72%
-}
-.actor.paired {
-  left:25%;
-  width:40%;
-  height:72%
-}
-.actor.world {
-  height:33%;
-  width:24%;
-  bottom:25%;
-}
-.actor.floating {
-  animation:breathe 5s ease-in-out infinite
-}
-.actor.ghost {
-  height:38%;
-  opacity:.2;
-  bottom:27%;
-  left:23%;
-  filter:none
-}
-.actor.closeup {
-  height:125%;
-  bottom:-25%;
-  width:100%
-}
-.effect {
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  pointer-events:none;
-  image-rendering:pixelated;
-  z-index:3
-}
-.hands {
-  position:absolute;
-  bottom:-5%;
-  left:20%;
-  width:60%;
-  height:55%;
-  object-fit:contain;
-  object-position:bottom;
-  pointer-events:none;
-  image-rendering:pixelated;
-  z-index:4
-}
-.location {
-  position:absolute;
-  top:22px;
-  left:25px;
-  font:12px monospace;
-  letter-spacing:2px;
-  text-transform:uppercase;
-  background:#0a111bd4;
-  padding:9px 13px;
-  z-index:5;
-  max-width:70%
-}
-.status {
-  position:absolute;
-  top:22px;
-  right:25px;
-  font:12px monospace;
-  background:#0a111bd4;
-  padding:9px;
-  z-index:5;
-  white-space:pre-line
-}
-.status:empty {
-  display:none
-}
-.world-controls {
-  position:absolute;
-  inset:0;
-  z-index:6;
-  pointer-events:none
-}
-.world-controls button {
-  pointer-events:auto
-}
-.room-nav {
-  position:absolute;
-  bottom:25px;
-  left:20px;
-  right:20px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px
-}
-.room-nav .group {
-  display:flex;
-  gap:8px
-}
-.talk-button {
-  position:absolute;
-  bottom:31%;
-  left:50%;
-  transform:translateX(-50%);
-  border-color:#d8b989;
-  background:#1c241ee8;
-  box-shadow:0 0 0 4px #0005
-}
-.inspect-list {
-  position:absolute;
-  top:85px;
-  left:25px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  max-width:230px
-}
-.inspect-list button {
-  text-align:left;
-  background:#132225e6;
-  font-size:13px
-}
-.inspect-list small {
-  display:block;
-  color:#b1c7bb;
-  font-size:10px;
-  letter-spacing:1px
-}
-.action-panel {
-  position:absolute;
-  z-index:7;
-  inset:12% 10%;
-  overflow:auto;
-  padding:28px;
-  background:#101a1de8;
-  border:1px solid #859785;
-  box-shadow:8px 8px 0 #0006;
-  backdrop-filter:blur(4px)
-}
-.action-panel h1 {
-  font-size:32px;
-  letter-spacing:-1px;
-  margin:0
-}
-.action-panel h2 {
-  margin-top:0
-}
-.action-panel>p {
-  color:#bfcdbf;
-  max-width:650px
-}
-.rooms {
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:12px;
-  margin-top:20px
-}
-.room-card {
-  padding:12px 7px;
-  text-align:center;
-  font-size:12px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:5px;
-  background:#202d27
-}
-.room-card img {
-  width:65px;
-  height:65px;
-  object-fit:contain;
-  image-rendering:pixelated
-}
-.room-card small {
-  font-size:10px;
-  color:#bdc8af;
-  line-height:1.4
-}
-.room-card.dead {
-  filter:grayscale(1);
-  opacity:.65
-}
-.dialogue {
-  position:absolute;
-  bottom:20px;
-  left:4%;
-  right:4%;
-  z-index:10;
-  background:#101723f5;
-  border:2px solid var(--accent);
-  box-shadow:5px 5px 0 #0008;
-  padding:18px 25px 15px;
-  min-height:170px
-}
-.dialogue:before {
-  content:'';
-  position:absolute;
-  left:5px;
-  top:5px;
-  right:5px;
-  bottom:5px;
-  border:1px solid #ffffff12;
-  pointer-events:none
-}
-.speaker {
-  font:700 14px monospace;
-  color:var(--accent);
-  letter-spacing:1px;
-  margin-bottom:9px
-}
-.dialogue p {
-  font-size:17px;
-  line-height:1.55;
-  margin:0 0 12px;
-  max-width:1000px;
-  white-space:pre-line
-}
-.advance {
-  display:block;
-  margin-left:auto;
-  font-size:12px;
-  padding:5px 15px;
-  min-height:35px;
-  background:transparent;
-  border-color:#ffffff35
-}
-.advance span {
-  margin-left:20px
-}
-.choices {
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap
-}
-.choices button {
-  font-size:14px;
-  text-align:left;
-  flex:1;
-  min-width:170px;
-  background:#17212e;
-  position:relative
-}
-.prompt {
-  position:absolute;
-  z-index:12;
-  bottom:5%;
-  left:50%;
-  transform:translateX(-50%);
-  width:min(650px,90%);
-  text-align:center;
-  background:#0e171af5;
-  border:2px solid #b6c5af;
-  padding:20px;
-  box-shadow:6px 6px 0 #0008
-}
-.prompt>p:first-child {
-  font-size:22px;
-  margin:0 0 10px
-}
-.prompt>p:last-child {
-  font-size:12px;
-  margin:10px 0 0;
-  color:#b4c8b6
-}
-.prompt button {
-  margin:4px;
-  font-size:15px
-}
-.timer-track {
-  height:6px;
-  background:#354039;
-  margin-top:14px
-}
-.timer-track>div {
-  height:100%;
-  background:#e4c88c;
-  width:100%;
-  transform-origin:left
-}
-.orbs {
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:18px;
-  margin:30px auto;
-  max-width:680px
-}
-.orb {
-  border-radius:50%;
-  aspect-ratio:1;
-  box-shadow:inset 0 0 20px #bfdac355,0 0 15px #ebfcd022;
-  background:#9fc0b922;
-  border:2px solid #d3e7cd;
-  color:#fff;
-  font-size:22px;
-  text-shadow:0 2px 3px #000
-}
-.orb.alerting {
-  border-color:#ffb68e;
-  box-shadow:0 0 20px #efb27766
-}
-.orb small {
-  display:block;
-  font-size:10px
-}
-.observation {
-  inset:10% 12%;
-  background:#101a1d80
-}
-.camera-note {
-  text-align:center
-}
-.comic {
-  inset:2% 12%;
-  background:#060606;
-  padding:10px;
-  text-align:center
-}
-.comic img {
-  max-width:100%;
-  height:calc(100% - 60px);
-  object-fit:contain;
-  display:block;
-  margin:0 auto 10px
-}
-.comic-controls {
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:15px
-}
-.game-footer {
-  max-width:1250px;
-  margin:auto;
-  min-height:44px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px 20px;
-  gap:20px;
-  font-size:11px;
-  color:#c0cabb;
-  letter-spacing:.5px
-}
-.game-footer>span:last-child {
-  color:#869586;
-  font-size:10px
-}
-.fade {
-  position:absolute;
-  inset:0;
-  z-index:18;
-  background:#000;
-  pointer-events:none
-}
-.fade.white {
-  background:#fff8e0
-}
-.mobile-controls {
-  position:absolute;
-  inset:auto 14px 15px;
-  z-index:9;
-  display:flex;
-  justify-content:space-between;
-  align-items:end;
-  pointer-events:none
-}
-.mobile-controls button {
-  pointer-events:auto;
-  min-width:48px;
-  min-height:48px;
-  background:#152023dc;
-  padding:8px
-}
-.dpad {
-  display:grid;
-  grid-template-columns:repeat(3,48px);
-  gap:5px
-}
-.dpad button:first-child {
-  grid-column:2
-}
-.dpad button:nth-child(2) {
-  grid-column:1
-}
-.combat-buttons {
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:6px
-}
-.combat-buttons button {
-  font-size:11px
-}
-.arena-canvas,#arena {
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  background:#080b0e;
-  image-rendering:pixelated;
-  z-index:0
-}
-.fps-hud {
-  position:absolute;
-  top:70px;
-  left:25px;
-  font:12px monospace;
-  background:#10171cde;
-  padding:10px;
-  pointer-events:none
-}
-.crosshair {
-  position:absolute;
-  left:50%;
-  top:50%;
-  color:#fff;
-  pointer-events:none;
-  font:20px monospace
-}
-.battle-help {
-  position:absolute;
-  bottom:25px;
-  left:25px;
-  background:#10171cd9;
-  padding:8px;
-  font-size:11px;
-  pointer-events:none
-}
-dialog {
-  background:#142023;
-  color:#eee9da;
-  border:1px solid #899a85;
-  padding:32px;
-  width:min(620px,calc(100% - 30px));
-  max-height:90dvh;
-  box-shadow:8px 8px 0 #0009
-}
-dialog::backdrop {
-  background:#040c10d9;
-  backdrop-filter:blur(6px)
-}
-dialog h1 {
-  font-size:34px;
-  line-height:1.2;
-  margin:0 0 20px
-}
-dialog h2 {
-  margin-top:0
-}
-dialog p {
-  color:#c3cebf
-}
-dialog button {
-  margin:5px 7px 5px 0
-}
-dialog label {
-  display:block;
-  margin:18px 0 5px;
-  font-size:14px
-}
-dialog select {
-  width:100%;
-  padding:10px;
-  background:#20312e;
-  color:#fff;
-  border:1px solid #83937b
-}
-.modal-actions {
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:20px
-}
-.modal-actions button {
-  flex:1
-}
-.eyebrow {
-  font:11px monospace;
-  letter-spacing:2px;
-  color:#b7cba9;
-  margin-bottom:20px
-}
-.bag-list,.journal-list {
-  display:grid;
-  gap:15px;
-  max-height:55vh;
-  overflow:auto;
-  padding-right:10px
-}
-.bag-item {
-  display:flex;
-  gap:15px;
-  align-items:center;
-  border-bottom:1px solid #ffffff26;
-  padding:10px
-}
-.bag-item img {
-  width:60px;
-  height:60px;
-  object-fit:contain;
-  image-rendering:pixelated
-}
-.bag-item p {
-  font-size:12px;
-  margin:3px 0
-}
-.journal-list article {
-  padding:14px;
-  border:1px solid #ffffff25
-}
-.journal-list h3 {
-  font-size:15px;
-  margin:0 0 7px
-}
-.journal-list p {
-  font-size:13px;
-  margin:0;
-  white-space:pre-line
-}
-.dead-text {
-  color:#c3b0ac
-}
-.hint {
-  color:#b8c9b5;
-  font-size:12px
-}
-body.mobile kbd {
-  display:none
-}
-body.mobile .battle-help {
-  display:none
-}
-body.reduced *,body.reduced *::before {
-  animation:none!important;
-  transition:none!important
-}
-@keyframes breathe {
-  0%,100% {
-    transform:translate(-50%,0)
+/* Essa regra reúne os ajustes nos valores compartilhados do tema.
+*/:root {
+  /* Esse comando informa ao navegador qual esquema de cores deve usar nos controles nativos nos valores compartilhados do tema.
+*/color-scheme:dark;
+  /* Essa declaração guarda a cor principal da escrita para usar nas outras declarações nos valores compartilhados do tema.
+*/--ink:#f5eedc;
+  /* Aqui o CSS guarda a cor de destaque usada pelos componentes para usar nas outras declarações nos valores compartilhados do tema.
+*/--accent:#d6c395;
+  /* Esse comando guarda a cor dos painéis para usar nas outras declarações nos valores compartilhados do tema.
+*/--panel:#111a1def;
+  /* Essa declaração guarda a cor dos contornos e divisórias para usar nas outras declarações nos valores compartilhados do tema.
+*/--line:#788476
+}
+/* Essa regra reúne os ajustes em todos os elementos da página.
+*/* {
+  /* Aqui o CSS inclui borda e espaço interno no tamanho total definido para a caixa em todos os elementos da página.
+*/box-sizing:border-box
+}
+/* Essa regra reúne os ajustes na página inteira.
+*/body {
+  /* Esse comando define o espaço do lado de fora da caixa na página inteira.
+*/margin:0;
+  /* Essa declaração define o preenchimento que aparece atrás do conteúdo na página inteira.
+*/background:#0b1113;
+  /* Aqui o CSS define a cor do texto e dos detalhes que usam a cor atual na página inteira.
+*/color:var(--ink);
+  /* Esse comando configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração na página inteira.
+*/font:15px/1.6 Arial,sans-serif
+}
+/* Essa regra reúne os ajustes nos campos do formulário.
+*/button,input,select {
+  /* Essa declaração configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração nos campos do formulário.
+*/font:inherit
+}
+/* Essa regra reúne os ajustes nos campos do formulário.
+*/button,a,input,select {
+  /* Aqui o CSS controla quais gestos de toque o navegador pode tratar diretamente nos campos do formulário.
+*/touch-action:manipulation
+}
+/* Essa regra reúne os ajustes nos botões e controles selecionados.
+*/button {
+  /* Esse comando define a cor do texto e dos detalhes que usam a cor atual nos botões e controles selecionados.
+*/color:inherit;
+  /* Essa declaração mostra o cursor de ação clicável nos botões e controles selecionados.
+*/cursor:pointer;
+  /* Aqui o CSS define a espessura, o estilo e a cor do contorno nos botões e controles selecionados.
+*/border:1px solid #7e8777;
+  /* Esse comando define o preenchimento que aparece atrás do conteúdo nos botões e controles selecionados.
+*/background:#172024;
+  /* Essa declaração cria espaço entre o conteúdo e a borda nos botões e controles selecionados.
+*/padding:10px 17px;
+  /* Aqui o CSS arredonda os cantos da caixa nos botões e controles selecionados.
+*/border-radius:0;
+  /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário nos botões e controles selecionados.
+*/min-height:44px
+}
+/* Essa regra reúne os ajustes nos botões e controles selecionados, quando o cursor fica sobre o elemento.
+*/button:hover {
+  /* Essa declaração define o preenchimento que aparece atrás do conteúdo nos botões e controles selecionados.
+*/background:#384338;
+  /* Aqui o CSS define a cor do contorno nos botões e controles selecionados.
+*/border-color:#f5eedc
+}
+/* Essa regra reúne os ajustes nos botões e controles selecionados, quando o controle está desativado.
+*/button:disabled {
+  /* Esse comando mistura a camada com o fundo usando transparência parcial nos botões e controles selecionados.
+*/opacity:.4;
+  /* Essa declaração indica pelo cursor que essa ação não está disponível nos botões e controles selecionados.
+*/cursor:not-allowed
+}
+/* Essa regra reúne os ajustes nos campos do formulário, quando o foco de teclado precisa ficar visível.
+*/button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible {
+  /* Aqui o CSS desenha uma marca ao redor do elemento sem alterar o tamanho da caixa nos campos do formulário.
+*/outline:3px solid #f4cf7d;
+  /* Esse comando define a distância entre a marca de foco e a borda do elemento nos campos do formulário.
+*/outline-offset:3px
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/a {
+  /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual nos elementos escolhidos por essa regra.
+*/color:inherit;
+  /* Aqui o CSS controla traços de decoração como o sublinhado nos elementos escolhidos por essa regra.
+*/text-decoration:none
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra, quando o atributo hidden está presente.
+*/[hidden] {
+  /* Esse comando escolhe como a caixa e seu conteúdo serão organizados nos elementos escolhidos por essa regra. Essa definição tem prioridade sobre as regras comuns.
+*/display:none!important
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/kbd {
+  /* Essa declaração configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração nos elementos escolhidos por essa regra.
+*/font:10px monospace;
+  /* Aqui o CSS define a espessura, o estilo e a cor do contorno nos elementos escolhidos por essa regra.
+*/border:1px solid #ffffff40;
+  /* Esse comando cria espaço entre o conteúdo e a borda nos elementos escolhidos por essa regra.
+*/padding:2px 5px;
+  /* Essa declaração ajusta a distância externa do lado esquerdo nos elementos escolhidos por essa regra.
+*/margin-left:5px
+}
+/* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header {
+  /* Aqui o CSS define a altura ocupada pela caixa no cabeçalho do Jardim.
+*/height:62px;
+  /* Esse comando cria espaço entre o conteúdo e a borda no cabeçalho do Jardim.
+*/padding:10px 28px;
+  /* Essa declaração organiza os elementos filhos em um grupo flexível no cabeçalho do Jardim.
+*/display:flex;
+  /* Aqui o CSS distribui os itens no sentido principal do grupo no cabeçalho do Jardim.
+*/justify-content:space-between;
+  /* Esse comando alinha os itens no eixo transversal do grupo no cabeçalho do Jardim.
+*/align-items:center;
+  /* Essa declaração configura a borda de baixo no cabeçalho do Jardim.
+*/border-bottom:1px solid #ffffff18;
+  /* Aqui o CSS define o espaço entre os itens de uma grade ou de um grupo flexível no cabeçalho do Jardim.
+*/gap:12px
+}
+/* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header>a {
+  /* Esse comando ajusta o espaço entre as letras no cabeçalho do Jardim.
+*/letter-spacing:2px;
+  /* Essa declaração define o tamanho das letras no cabeçalho do Jardim.
+*/font-size:13px
+}
+/* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header>a>span {
+  /* Aqui o CSS define o tamanho das letras no cabeçalho do Jardim.
+*/font-size:10px;
+  /* Esse comando define a cor do texto e dos detalhes que usam a cor atual no cabeçalho do Jardim.
+*/color:#a5b3a5
+}
+/* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header>div {
+  /* Essa declaração organiza os elementos filhos em um grupo flexível no cabeçalho do Jardim.
+*/display:flex;
+  /* Aqui o CSS define o espaço entre os itens de uma grade ou de um grupo flexível no cabeçalho do Jardim.
+*/gap:8px
+}
+/* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header button {
+  /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário no cabeçalho do Jardim.
+*/min-height:36px;
+  /* Essa declaração cria espaço entre o conteúdo e a borda no cabeçalho do Jardim.
+*/padding:6px 12px;
+  /* Aqui o CSS define o tamanho das letras no cabeçalho do Jardim.
+*/font-size:12px;
+  /* Esse comando define a cor do contorno no cabeçalho do Jardim.
+*/border-color:#ffffff30
+}
+/* Essa regra reúne os ajustes na área principal do jogo.
+*/.stage {
+  /* Essa declaração mantém o lugar da caixa e cria uma referência para as camadas posicionadas dentro dela na área principal do jogo.
+*/position:relative;
+  /* Aqui o CSS limita até onde a largura pode crescer na área principal do jogo.
+*/max-width:1250px;
+  /* Esse comando define o espaço do lado de fora da caixa na área principal do jogo.
+*/margin:auto;
+  /* Essa declaração define a altura ocupada pela caixa na área principal do jogo.
+*/height:min(calc(100dvh - 106px),850px);
+  /* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário na área principal do jogo.
+*/min-height:480px;
+  /* Esse comando controla o que acontece com o conteúdo que passa dos limites na área principal do jogo.
+*/overflow:hidden;
+  /* Essa declaração define o preenchimento que aparece atrás do conteúdo na área principal do jogo.
+*/background:#111619;
+  /* Aqui o CSS controla se essa área cria um grupo próprio de composição visual na área principal do jogo.
+*/isolation:isolate
+}
+/* Essa regra reúne os ajustes na imagem do cenário.
+*/.background {
+  /* Esse comando define a largura ocupada pela caixa na imagem do cenário.
+*/width:100%;
+  /* Essa declaração define a altura ocupada pela caixa na imagem do cenário.
+*/height:100%;
+  /* Aqui o CSS preenche a caixa mantendo a proporção da imagem, podendo cortar as bordas na imagem do cenário.
+*/object-fit:cover;
+  /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na imagem do cenário.
+*/position:absolute;
+  /* Essa declaração ajusta as distâncias das quatro bordas na área de posicionamento na imagem do cenário.
+*/inset:0;
+  /* Aqui o CSS mantém os pixels bem visíveis quando a imagem é ampliada na imagem do cenário.
+*/image-rendering:pixelated;
+  /* Esse comando define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente na imagem do cenário.
+*/z-index:-3
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.vignette {
+  /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos elementos escolhidos por essa regra.
+*/position:absolute;
+  /* Aqui o CSS ajusta as distâncias das quatro bordas na área de posicionamento nos elementos escolhidos por essa regra.
+*/inset:0;
+  /* Esse comando desenha uma sombra ou um brilho ao redor da caixa nos elementos escolhidos por essa regra.
+*/box-shadow:inset 0 0 130px 25px #0009;
+  /* Essa declaração faz os cliques atravessarem essa camada para alcançar os controles de baixo nos elementos escolhidos por essa regra.
+*/pointer-events:none;
+  /* Aqui o CSS define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nos elementos escolhidos por essa regra.
+*/z-index:-1
+}
+/* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor {
+  /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência no sprite do personagem.
+*/position:absolute;
+  /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento no sprite do personagem.
+*/left:50%;
+  /* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:10%;
+  /* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos no sprite do personagem.
+*/transform:translateX(-50%);
+  /* Essa declaração define a altura ocupada pela caixa no sprite do personagem.
+*/height:83%;
+  /* Aqui o CSS define a largura ocupada pela caixa no sprite do personagem.
+*/width:70%;
+  /* Esse comando mantém a imagem inteira dentro da caixa sem deformar a proporção no sprite do personagem.
+*/object-fit:contain;
+  /* Essa declaração escolhe qual parte da imagem fica alinhada dentro da caixa no sprite do personagem.
+*/object-position:bottom;
+  /* Aqui o CSS faz os cliques atravessarem essa camada para alcançar os controles de baixo no sprite do personagem.
+*/pointer-events:none;
+  /* Esse comando mantém os pixels bem visíveis quando a imagem é ampliada no sprite do personagem.
+*/image-rendering:pixelated;
+  /* Essa declaração ajusta a aparência da imagem com os efeitos indicados no sprite do personagem.
+*/filter:drop-shadow(0 10px 10px #0006);
+  /* Aqui o CSS define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente no sprite do personagem.
+*/z-index:1
+}
+/* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.two {
+  /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento no sprite do personagem.
+*/left:75%;
+  /* Essa declaração define a largura ocupada pela caixa no sprite do personagem.
+*/width:40%;
+  /* Aqui o CSS define a altura ocupada pela caixa no sprite do personagem.
+*/height:72%
+}
+/* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.paired {
+  /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento no sprite do personagem.
+*/left:25%;
+  /* Essa declaração define a largura ocupada pela caixa no sprite do personagem.
+*/width:40%;
+  /* Aqui o CSS define a altura ocupada pela caixa no sprite do personagem.
+*/height:72%
+}
+/* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.world {
+  /* Esse comando define a altura ocupada pela caixa no sprite do personagem.
+*/height:33%;
+  /* Essa declaração define a largura ocupada pela caixa no sprite do personagem.
+*/width:24%;
+  /* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:25%;
+}
+/* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.floating {
+  /* Esse comando liga a sequência de movimento e define seu tempo e sua repetição no sprite do personagem.
+*/animation:breathe 5s ease-in-out infinite
+}
+/* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.ghost {
+  /* Essa declaração define a altura ocupada pela caixa no sprite do personagem.
+*/height:38%;
+  /* Aqui o CSS mistura a camada com o fundo usando transparência parcial no sprite do personagem.
+*/opacity:.2;
+  /* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:27%;
+  /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento no sprite do personagem.
+*/left:23%;
+  /* Aqui o CSS ajusta a aparência da imagem com os efeitos indicados no sprite do personagem.
+*/filter:none
+}
+/* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.closeup {
+  /* Esse comando define a altura ocupada pela caixa no sprite do personagem.
+*/height:125%;
+  /* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:-25%;
+  /* Aqui o CSS define a largura ocupada pela caixa no sprite do personagem.
+*/width:100%
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.effect {
+  /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos elementos escolhidos por essa regra.
+*/position:absolute;
+  /* Essa declaração ajusta as distâncias das quatro bordas na área de posicionamento nos elementos escolhidos por essa regra.
+*/inset:0;
+  /* Aqui o CSS define a largura ocupada pela caixa nos elementos escolhidos por essa regra.
+*/width:100%;
+  /* Esse comando define a altura ocupada pela caixa nos elementos escolhidos por essa regra.
+*/height:100%;
+  /* Essa declaração mantém a imagem inteira dentro da caixa sem deformar a proporção nos elementos escolhidos por essa regra.
+*/object-fit:contain;
+  /* Aqui o CSS faz os cliques atravessarem essa camada para alcançar os controles de baixo nos elementos escolhidos por essa regra.
+*/pointer-events:none;
+  /* Esse comando mantém os pixels bem visíveis quando a imagem é ampliada nos elementos escolhidos por essa regra.
+*/image-rendering:pixelated;
+  /* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nos elementos escolhidos por essa regra.
+*/z-index:3
+}
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands {
+  /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nas mãos do protagonista.
+*/position:absolute;
+  /* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:-5%;
+  /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento nas mãos do protagonista.
+*/left:20%;
+  /* Aqui o CSS define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:60%;
+  /* Esse comando define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:55%;
+  /* Essa declaração mantém a imagem inteira dentro da caixa sem deformar a proporção nas mãos do protagonista.
+*/object-fit:contain;
+  /* Aqui o CSS escolhe qual parte da imagem fica alinhada dentro da caixa nas mãos do protagonista.
+*/object-position:bottom;
+  /* Esse comando faz os cliques atravessarem essa camada para alcançar os controles de baixo nas mãos do protagonista.
+*/pointer-events:none;
+  /* Essa declaração mantém os pixels bem visíveis quando a imagem é ampliada nas mãos do protagonista.
+*/image-rendering:pixelated;
+  /* Aqui o CSS define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nas mãos do protagonista.
+*/z-index:4
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.location {
+  /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos elementos escolhidos por essa regra.
+*/position:absolute;
+  /* Essa declaração ajusta a distância da borda de cima dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/top:22px;
+  /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/left:25px;
+  /* Esse comando configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração nos elementos escolhidos por essa regra.
+*/font:12px monospace;
+  /* Essa declaração ajusta o espaço entre as letras nos elementos escolhidos por essa regra.
+*/letter-spacing:2px;
+  /* Aqui o CSS transforma a apresentação das letras em maiúsculas ou minúsculas nos elementos escolhidos por essa regra.
+*/text-transform:uppercase;
+  /* Esse comando define o preenchimento que aparece atrás do conteúdo nos elementos escolhidos por essa regra.
+*/background:#0a111bd4;
+  /* Essa declaração cria espaço entre o conteúdo e a borda nos elementos escolhidos por essa regra.
+*/padding:9px 13px;
+  /* Aqui o CSS define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nos elementos escolhidos por essa regra.
+*/z-index:5;
+  /* Esse comando limita até onde a largura pode crescer nos elementos escolhidos por essa regra.
+*/max-width:70%
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.status {
+  /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos elementos escolhidos por essa regra.
+*/position:absolute;
+  /* Aqui o CSS ajusta a distância da borda de cima dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/top:22px;
+  /* Esse comando ajusta a distância da borda direita dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/right:25px;
+  /* Essa declaração configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração nos elementos escolhidos por essa regra.
+*/font:12px monospace;
+  /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo nos elementos escolhidos por essa regra.
+*/background:#0a111bd4;
+  /* Esse comando cria espaço entre o conteúdo e a borda nos elementos escolhidos por essa regra.
+*/padding:9px;
+  /* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nos elementos escolhidos por essa regra.
+*/z-index:5;
+  /* Aqui o CSS controla a preservação de espaços e a quebra das linhas nos elementos escolhidos por essa regra.
+*/white-space:pre-line
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.status:empty {
+  /* Esse comando esconde o elemento e retira o espaço que ele ocuparia nos elementos escolhidos por essa regra.
+*/display:none
+}
+/* Essa regra reúne os ajustes nos controles sobre o cenário.
+*/.world-controls {
+  /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos controles sobre o cenário.
+*/position:absolute;
+  /* Aqui o CSS ajusta as distâncias das quatro bordas na área de posicionamento nos controles sobre o cenário.
+*/inset:0;
+  /* Esse comando define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nos controles sobre o cenário.
+*/z-index:6;
+  /* Essa declaração faz os cliques atravessarem essa camada para alcançar os controles de baixo nos controles sobre o cenário.
+*/pointer-events:none
+}
+/* Essa regra reúne os ajustes nos controles sobre o cenário.
+*/.world-controls button {
+  /* Aqui o CSS permite que essa camada receba cliques e toques nos controles sobre o cenário.
+*/pointer-events:auto
+}
+/* Essa regra reúne os ajustes nos botões que mudam a vista do quarto.
+*/.room-nav {
+  /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos botões que mudam a vista do quarto.
+*/position:absolute;
+  /* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento nos botões que mudam a vista do quarto.
+*/bottom:25px;
+  /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento nos botões que mudam a vista do quarto.
+*/left:20px;
+  /* Esse comando ajusta a distância da borda direita dentro da área de posicionamento nos botões que mudam a vista do quarto.
+*/right:20px;
+  /* Essa declaração organiza os elementos filhos em um grupo flexível nos botões que mudam a vista do quarto.
+*/display:flex;
+  /* Aqui o CSS distribui os itens no sentido principal do grupo nos botões que mudam a vista do quarto.
+*/justify-content:space-between;
+  /* Esse comando alinha os itens no eixo transversal do grupo nos botões que mudam a vista do quarto.
+*/align-items:center;
+  /* Essa declaração define o espaço entre os itens de uma grade ou de um grupo flexível nos botões que mudam a vista do quarto.
+*/gap:10px
+}
+/* Essa regra reúne os ajustes nos botões que mudam a vista do quarto.
+*/.room-nav .group {
+  /* Aqui o CSS organiza os elementos filhos em um grupo flexível nos botões que mudam a vista do quarto.
+*/display:flex;
+  /* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível nos botões que mudam a vista do quarto.
+*/gap:8px
+}
+/* Essa regra reúne os ajustes nos botões e controles selecionados.
+*/.talk-button {
+  /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos botões e controles selecionados.
+*/position:absolute;
+  /* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento nos botões e controles selecionados.
+*/bottom:31%;
+  /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento nos botões e controles selecionados.
+*/left:50%;
+  /* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos botões e controles selecionados.
+*/transform:translateX(-50%);
+  /* Aqui o CSS define a cor do contorno nos botões e controles selecionados.
+*/border-color:#d8b989;
+  /* Esse comando define o preenchimento que aparece atrás do conteúdo nos botões e controles selecionados.
+*/background:#1c241ee8;
+  /* Essa declaração desenha uma sombra ou um brilho ao redor da caixa nos botões e controles selecionados.
+*/box-shadow:0 0 0 4px #0005
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.inspect-list {
+  /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos elementos escolhidos por essa regra.
+*/position:absolute;
+  /* Esse comando ajusta a distância da borda de cima dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/top:85px;
+  /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/left:25px;
+  /* Aqui o CSS organiza os elementos filhos em um grupo flexível nos elementos escolhidos por essa regra.
+*/display:flex;
+  /* Esse comando escolhe o sentido em que os itens flexíveis são organizados nos elementos escolhidos por essa regra.
+*/flex-direction:column;
+  /* Essa declaração define o espaço entre os itens de uma grade ou de um grupo flexível nos elementos escolhidos por essa regra.
+*/gap:10px;
+  /* Aqui o CSS limita até onde a largura pode crescer nos elementos escolhidos por essa regra.
+*/max-width:230px
+}
+/* Essa regra reúne os ajustes nos botões e controles selecionados.
+*/.inspect-list button {
+  /* Esse comando alinha o texto dentro da caixa nos botões e controles selecionados.
+*/text-align:left;
+  /* Essa declaração define o preenchimento que aparece atrás do conteúdo nos botões e controles selecionados.
+*/background:#132225e6;
+  /* Aqui o CSS define o tamanho das letras nos botões e controles selecionados.
+*/font-size:13px
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.inspect-list small {
+  /* Esse comando trata o elemento como uma caixa de bloco nos elementos escolhidos por essa regra.
+*/display:block;
+  /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual nos elementos escolhidos por essa regra.
+*/color:#b1c7bb;
+  /* Aqui o CSS define o tamanho das letras nos elementos escolhidos por essa regra.
+*/font-size:10px;
+  /* Esse comando ajusta o espaço entre as letras nos elementos escolhidos por essa regra.
+*/letter-spacing:1px
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.action-panel {
+  /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos elementos escolhidos por essa regra.
+*/position:absolute;
+  /* Aqui o CSS define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nos elementos escolhidos por essa regra.
+*/z-index:7;
+  /* Esse comando ajusta as distâncias das quatro bordas na área de posicionamento nos elementos escolhidos por essa regra.
+*/inset:12% 10%;
+  /* Essa declaração controla o que acontece com o conteúdo que passa dos limites nos elementos escolhidos por essa regra.
+*/overflow:auto;
+  /* Aqui o CSS cria espaço entre o conteúdo e a borda nos elementos escolhidos por essa regra.
+*/padding:28px;
+  /* Esse comando define o preenchimento que aparece atrás do conteúdo nos elementos escolhidos por essa regra.
+*/background:#101a1de8;
+  /* Essa declaração define a espessura, o estilo e a cor do contorno nos elementos escolhidos por essa regra.
+*/border:1px solid #859785;
+  /* Aqui o CSS desenha uma sombra ou um brilho ao redor da caixa nos elementos escolhidos por essa regra.
+*/box-shadow:8px 8px 0 #0006;
+  /* Esse comando aplica um efeito ao conteúdo que aparece atrás da caixa nos elementos escolhidos por essa regra.
+*/backdrop-filter:blur(4px)
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.action-panel h1 {
+  /* Essa declaração define o tamanho das letras nos elementos escolhidos por essa regra.
+*/font-size:32px;
+  /* Aqui o CSS ajusta o espaço entre as letras nos elementos escolhidos por essa regra.
+*/letter-spacing:-1px;
+  /* Esse comando define o espaço do lado de fora da caixa nos elementos escolhidos por essa regra.
+*/margin:0
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.action-panel h2 {
+  /* Essa declaração reserva espaço acima da caixa nos elementos escolhidos por essa regra.
+*/margin-top:0
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.action-panel>p {
+  /* Aqui o CSS define a cor do texto e dos detalhes que usam a cor atual nos elementos escolhidos por essa regra.
+*/color:#bfcdbf;
+  /* Esse comando limita até onde a largura pode crescer nos elementos escolhidos por essa regra.
+*/max-width:650px
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.rooms {
+  /* Essa declaração organiza os elementos filhos em linhas e colunas nos elementos escolhidos por essa regra.
+*/display:grid;
+  /* Aqui o CSS define a quantidade e o tamanho das colunas da grade nos elementos escolhidos por essa regra.
+*/grid-template-columns:repeat(5,1fr);
+  /* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível nos elementos escolhidos por essa regra.
+*/gap:12px;
+  /* Essa declaração reserva espaço acima da caixa nos elementos escolhidos por essa regra.
+*/margin-top:20px
+}
+/* Essa regra reúne os ajustes nos efeitos próprios de cada quarto.
+*/.room-card {
+  /* Aqui o CSS cria espaço entre o conteúdo e a borda nos efeitos próprios de cada quarto.
+*/padding:12px 7px;
+  /* Esse comando alinha o texto dentro da caixa nos efeitos próprios de cada quarto.
+*/text-align:center;
+  /* Essa declaração define o tamanho das letras nos efeitos próprios de cada quarto.
+*/font-size:12px;
+  /* Aqui o CSS organiza os elementos filhos em um grupo flexível nos efeitos próprios de cada quarto.
+*/display:flex;
+  /* Esse comando escolhe o sentido em que os itens flexíveis são organizados nos efeitos próprios de cada quarto.
+*/flex-direction:column;
+  /* Essa declaração alinha os itens no eixo transversal do grupo nos efeitos próprios de cada quarto.
+*/align-items:center;
+  /* Aqui o CSS define o espaço entre os itens de uma grade ou de um grupo flexível nos efeitos próprios de cada quarto.
+*/gap:5px;
+  /* Esse comando define o preenchimento que aparece atrás do conteúdo nos efeitos próprios de cada quarto.
+*/background:#202d27
+}
+/* Essa regra reúne os ajustes nos efeitos próprios de cada quarto.
+*/.room-card img {
+  /* Essa declaração define a largura ocupada pela caixa nos efeitos próprios de cada quarto.
+*/width:65px;
+  /* Aqui o CSS define a altura ocupada pela caixa nos efeitos próprios de cada quarto.
+*/height:65px;
+  /* Esse comando mantém a imagem inteira dentro da caixa sem deformar a proporção nos efeitos próprios de cada quarto.
+*/object-fit:contain;
+  /* Essa declaração mantém os pixels bem visíveis quando a imagem é ampliada nos efeitos próprios de cada quarto.
+*/image-rendering:pixelated
+}
+/* Essa regra reúne os ajustes nos efeitos próprios de cada quarto.
+*/.room-card small {
+  /* Aqui o CSS define o tamanho das letras nos efeitos próprios de cada quarto.
+*/font-size:10px;
+  /* Esse comando define a cor do texto e dos detalhes que usam a cor atual nos efeitos próprios de cada quarto.
+*/color:#bdc8af;
+  /* Essa declaração define a distância entre uma linha de texto e a próxima nos efeitos próprios de cada quarto.
+*/line-height:1.4
+}
+/* Essa regra reúne os ajustes nos efeitos próprios de cada quarto.
+*/.room-card.dead {
+  /* Aqui o CSS ajusta a aparência da imagem com os efeitos indicados nos efeitos próprios de cada quarto.
+*/filter:grayscale(1);
+  /* Esse comando mistura a camada com o fundo usando transparência parcial nos efeitos próprios de cada quarto.
+*/opacity:.65
+}
+/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue {
+  /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na caixa de diálogo.
+*/position:absolute;
+  /* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento na caixa de diálogo.
+*/bottom:20px;
+  /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento na caixa de diálogo.
+*/left:4%;
+  /* Essa declaração ajusta a distância da borda direita dentro da área de posicionamento na caixa de diálogo.
+*/right:4%;
+  /* Aqui o CSS define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente na caixa de diálogo.
+*/z-index:10;
+  /* Esse comando define o preenchimento que aparece atrás do conteúdo na caixa de diálogo.
+*/background:#101723f5;
+  /* Essa declaração define a espessura, o estilo e a cor do contorno na caixa de diálogo.
+*/border:2px solid var(--accent);
+  /* Aqui o CSS desenha uma sombra ou um brilho ao redor da caixa na caixa de diálogo.
+*/box-shadow:5px 5px 0 #0008;
+  /* Esse comando cria espaço entre o conteúdo e a borda na caixa de diálogo.
+*/padding:18px 25px 15px;
+  /* Essa declaração mantém uma altura mínima para a área não ficar menor que o necessário na caixa de diálogo.
+*/min-height:170px
+}
+/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue:before {
+  /* Aqui o CSS cria um conteúdo vazio para a camada do CSS poder receber um desenho na caixa de diálogo.
+*/content:'';
+  /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na caixa de diálogo.
+*/position:absolute;
+  /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento na caixa de diálogo.
+*/left:5px;
+  /* Aqui o CSS ajusta a distância da borda de cima dentro da área de posicionamento na caixa de diálogo.
+*/top:5px;
+  /* Esse comando ajusta a distância da borda direita dentro da área de posicionamento na caixa de diálogo.
+*/right:5px;
+  /* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento na caixa de diálogo.
+*/bottom:5px;
+  /* Aqui o CSS define a espessura, o estilo e a cor do contorno na caixa de diálogo.
+*/border:1px solid #ffffff12;
+  /* Esse comando faz os cliques atravessarem essa camada para alcançar os controles de baixo na caixa de diálogo.
+*/pointer-events:none
+}
+/* Essa regra reúne os ajustes no nome de quem está falando.
+*/.speaker {
+  /* Essa declaração configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração no nome de quem está falando.
+*/font:700 14px monospace;
+  /* Aqui o CSS define a cor do texto e dos detalhes que usam a cor atual no nome de quem está falando.
+*/color:var(--accent);
+  /* Esse comando ajusta o espaço entre as letras no nome de quem está falando.
+*/letter-spacing:1px;
+  /* Essa declaração reserva espaço abaixo da caixa no nome de quem está falando.
+*/margin-bottom:9px
+}
+/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue p {
+  /* Aqui o CSS define o tamanho das letras na caixa de diálogo.
+*/font-size:17px;
+  /* Esse comando define a distância entre uma linha de texto e a próxima na caixa de diálogo.
+*/line-height:1.55;
+  /* Essa declaração define o espaço do lado de fora da caixa na caixa de diálogo.
+*/margin:0 0 12px;
+  /* Aqui o CSS limita até onde a largura pode crescer na caixa de diálogo.
+*/max-width:1000px;
+  /* Esse comando controla a preservação de espaços e a quebra das linhas na caixa de diálogo.
+*/white-space:pre-line
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.advance {
+  /* Essa declaração trata o elemento como uma caixa de bloco nos elementos escolhidos por essa regra.
+*/display:block;
+  /* Aqui o CSS ajusta a distância externa do lado esquerdo nos elementos escolhidos por essa regra.
+*/margin-left:auto;
+  /* Esse comando define o tamanho das letras nos elementos escolhidos por essa regra.
+*/font-size:12px;
+  /* Essa declaração cria espaço entre o conteúdo e a borda nos elementos escolhidos por essa regra.
+*/padding:5px 15px;
+  /* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário nos elementos escolhidos por essa regra.
+*/min-height:35px;
+  /* Esse comando remove o preenchimento de fundo nos elementos escolhidos por essa regra.
+*/background:transparent;
+  /* Essa declaração define a cor do contorno nos elementos escolhidos por essa regra.
+*/border-color:#ffffff35
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.advance span {
+  /* Aqui o CSS ajusta a distância externa do lado esquerdo nos elementos escolhidos por essa regra.
+*/margin-left:20px
+}
+/* Essa regra reúne os ajustes nas opções de resposta.
+*/.choices {
+  /* Esse comando organiza os elementos filhos em um grupo flexível nas opções de resposta.
+*/display:flex;
+  /* Essa declaração define o espaço entre os itens de uma grade ou de um grupo flexível nas opções de resposta.
+*/gap:10px;
+  /* Aqui o CSS controla se os itens podem passar para outra linha nas opções de resposta.
+*/flex-wrap:wrap
+}
+/* Essa regra reúne os ajustes nas opções de resposta.
+*/.choices button {
+  /* Esse comando define o tamanho das letras nas opções de resposta.
+*/font-size:14px;
+  /* Essa declaração alinha o texto dentro da caixa nas opções de resposta.
+*/text-align:left;
+  /* Aqui o CSS define como o item cresce ou encolhe dentro de um grupo flexível nas opções de resposta.
+*/flex:1;
+  /* Esse comando impõe a menor largura permitida nas opções de resposta.
+*/min-width:170px;
+  /* Essa declaração define o preenchimento que aparece atrás do conteúdo nas opções de resposta.
+*/background:#17212e;
+  /* Aqui o CSS mantém o lugar da caixa e cria uma referência para as camadas posicionadas dentro dela nas opções de resposta.
+*/position:relative
+}
+/* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/.prompt {
+  /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência no aviso que pede uma reação rápida.
+*/position:absolute;
+  /* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente no aviso que pede uma reação rápida.
+*/z-index:12;
+  /* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento no aviso que pede uma reação rápida.
+*/bottom:5%;
+  /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento no aviso que pede uma reação rápida.
+*/left:50%;
+  /* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos no aviso que pede uma reação rápida.
+*/transform:translateX(-50%);
+  /* Aqui o CSS define a largura ocupada pela caixa no aviso que pede uma reação rápida.
+*/width:min(650px,90%);
+  /* Esse comando alinha o texto dentro da caixa no aviso que pede uma reação rápida.
+*/text-align:center;
+  /* Essa declaração define o preenchimento que aparece atrás do conteúdo no aviso que pede uma reação rápida.
+*/background:#0e171af5;
+  /* Aqui o CSS define a espessura, o estilo e a cor do contorno no aviso que pede uma reação rápida.
+*/border:2px solid #b6c5af;
+  /* Esse comando cria espaço entre o conteúdo e a borda no aviso que pede uma reação rápida.
+*/padding:20px;
+  /* Essa declaração desenha uma sombra ou um brilho ao redor da caixa no aviso que pede uma reação rápida.
+*/box-shadow:6px 6px 0 #0008
+}
+/* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/.prompt>p:first-child {
+  /* Aqui o CSS define o tamanho das letras no aviso que pede uma reação rápida.
+*/font-size:22px;
+  /* Esse comando define o espaço do lado de fora da caixa no aviso que pede uma reação rápida.
+*/margin:0 0 10px
+}
+/* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/.prompt>p:last-child {
+  /* Essa declaração define o tamanho das letras no aviso que pede uma reação rápida.
+*/font-size:12px;
+  /* Aqui o CSS define o espaço do lado de fora da caixa no aviso que pede uma reação rápida.
+*/margin:10px 0 0;
+  /* Esse comando define a cor do texto e dos detalhes que usam a cor atual no aviso que pede uma reação rápida.
+*/color:#b4c8b6
+}
+/* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/.prompt button {
+  /* Essa declaração define o espaço do lado de fora da caixa no aviso que pede uma reação rápida.
+*/margin:4px;
+  /* Aqui o CSS define o tamanho das letras no aviso que pede uma reação rápida.
+*/font-size:15px
+}
+/* Essa regra reúne os ajustes na barra de tempo.
+*/.timer-track {
+  /* Esse comando define a altura ocupada pela caixa na barra de tempo.
+*/height:6px;
+  /* Essa declaração define o preenchimento que aparece atrás do conteúdo na barra de tempo.
+*/background:#354039;
+  /* Aqui o CSS reserva espaço acima da caixa na barra de tempo.
+*/margin-top:14px
+}
+/* Essa regra reúne os ajustes na barra de tempo.
+*/.timer-track>div {
+  /* Esse comando define a altura ocupada pela caixa na barra de tempo.
+*/height:100%;
+  /* Essa declaração define o preenchimento que aparece atrás do conteúdo na barra de tempo.
+*/background:#e4c88c;
+  /* Aqui o CSS define a largura ocupada pela caixa na barra de tempo.
+*/width:100%;
+  /* Esse comando define o ponto de apoio usado nas rotações e mudanças de escala na barra de tempo.
+*/transform-origin:left
+}
+/* Essa regra reúne os ajustes nas esferas de observação.
+*/.orbs {
+  /* Essa declaração organiza os elementos filhos em linhas e colunas nas esferas de observação.
+*/display:grid;
+  /* Aqui o CSS define a quantidade e o tamanho das colunas da grade nas esferas de observação.
+*/grid-template-columns:repeat(4,1fr);
+  /* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível nas esferas de observação.
+*/gap:18px;
+  /* Essa declaração define o espaço do lado de fora da caixa nas esferas de observação.
+*/margin:30px auto;
+  /* Aqui o CSS limita até onde a largura pode crescer nas esferas de observação.
+*/max-width:680px
+}
+/* Essa regra reúne os ajustes nas esferas de observação.
+*/.orb {
+  /* Esse comando arredonda os cantos da caixa nas esferas de observação.
+*/border-radius:50%;
+  /* Essa declaração mantém a relação entre a largura e a altura da caixa nas esferas de observação.
+*/aspect-ratio:1;
+  /* Aqui o CSS desenha uma sombra ou um brilho ao redor da caixa nas esferas de observação.
+*/box-shadow:inset 0 0 20px #bfdac355,0 0 15px #ebfcd022;
+  /* Esse comando define o preenchimento que aparece atrás do conteúdo nas esferas de observação.
+*/background:#9fc0b922;
+  /* Essa declaração define a espessura, o estilo e a cor do contorno nas esferas de observação.
+*/border:2px solid #d3e7cd;
+  /* Aqui o CSS define a cor do texto e dos detalhes que usam a cor atual nas esferas de observação.
+*/color:#fff;
+  /* Esse comando define o tamanho das letras nas esferas de observação.
+*/font-size:22px;
+  /* Essa declaração desenha uma sombra junto do texto nas esferas de observação.
+*/text-shadow:0 2px 3px #000
+}
+/* Essa regra reúne os ajustes nas esferas de observação.
+*/.orb.alerting {
+  /* Aqui o CSS define a cor do contorno nas esferas de observação.
+*/border-color:#ffb68e;
+  /* Esse comando desenha uma sombra ou um brilho ao redor da caixa nas esferas de observação.
+*/box-shadow:0 0 20px #efb27766
+}
+/* Essa regra reúne os ajustes nas esferas de observação.
+*/.orb small {
+  /* Essa declaração trata o elemento como uma caixa de bloco nas esferas de observação.
+*/display:block;
+  /* Aqui o CSS define o tamanho das letras nas esferas de observação.
+*/font-size:10px
+}
+/* Essa regra reúne os ajustes na observação dos objetos.
+*/.observation {
+  /* Esse comando ajusta as distâncias das quatro bordas na área de posicionamento na observação dos objetos.
+*/inset:10% 12%;
+  /* Essa declaração define o preenchimento que aparece atrás do conteúdo na observação dos objetos.
+*/background:#101a1d80
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.camera-note {
+  /* Aqui o CSS alinha o texto dentro da caixa nos elementos escolhidos por essa regra.
+*/text-align:center
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.comic {
+  /* Esse comando ajusta as distâncias das quatro bordas na área de posicionamento nos elementos escolhidos por essa regra.
+*/inset:2% 12%;
+  /* Essa declaração define o preenchimento que aparece atrás do conteúdo nos elementos escolhidos por essa regra.
+*/background:#060606;
+  /* Aqui o CSS cria espaço entre o conteúdo e a borda nos elementos escolhidos por essa regra.
+*/padding:10px;
+  /* Esse comando alinha o texto dentro da caixa nos elementos escolhidos por essa regra.
+*/text-align:center
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.comic img {
+  /* Essa declaração limita até onde a largura pode crescer nos elementos escolhidos por essa regra.
+*/max-width:100%;
+  /* Aqui o CSS define a altura ocupada pela caixa nos elementos escolhidos por essa regra.
+*/height:calc(100% - 60px);
+  /* Esse comando mantém a imagem inteira dentro da caixa sem deformar a proporção nos elementos escolhidos por essa regra.
+*/object-fit:contain;
+  /* Essa declaração trata o elemento como uma caixa de bloco nos elementos escolhidos por essa regra.
+*/display:block;
+  /* Aqui o CSS define o espaço do lado de fora da caixa nos elementos escolhidos por essa regra.
+*/margin:0 auto 10px
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.comic-controls {
+  /* Esse comando organiza os elementos filhos em um grupo flexível nos elementos escolhidos por essa regra.
+*/display:flex;
+  /* Essa declaração distribui os itens no sentido principal do grupo nos elementos escolhidos por essa regra.
+*/justify-content:center;
+  /* Aqui o CSS alinha os itens no eixo transversal do grupo nos elementos escolhidos por essa regra.
+*/align-items:center;
+  /* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível nos elementos escolhidos por essa regra.
+*/gap:15px
+}
+/* Essa regra reúne os ajustes no rodapé.
+*/.game-footer {
+  /* Essa declaração limita até onde a largura pode crescer no rodapé.
+*/max-width:1250px;
+  /* Aqui o CSS define o espaço do lado de fora da caixa no rodapé.
+*/margin:auto;
+  /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário no rodapé.
+*/min-height:44px;
+  /* Essa declaração organiza os elementos filhos em um grupo flexível no rodapé.
+*/display:flex;
+  /* Aqui o CSS distribui os itens no sentido principal do grupo no rodapé.
+*/justify-content:space-between;
+  /* Esse comando alinha os itens no eixo transversal do grupo no rodapé.
+*/align-items:center;
+  /* Essa declaração cria espaço entre o conteúdo e a borda no rodapé.
+*/padding:10px 20px;
+  /* Aqui o CSS define o espaço entre os itens de uma grade ou de um grupo flexível no rodapé.
+*/gap:20px;
+  /* Esse comando define o tamanho das letras no rodapé.
+*/font-size:11px;
+  /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual no rodapé.
+*/color:#c0cabb;
+  /* Aqui o CSS ajusta o espaço entre as letras no rodapé.
+*/letter-spacing:.5px
+}
+/* Essa regra reúne os ajustes no rodapé.
+*/.game-footer>span:last-child {
+  /* Esse comando define a cor do texto e dos detalhes que usam a cor atual no rodapé.
+*/color:#869586;
+  /* Essa declaração define o tamanho das letras no rodapé.
+*/font-size:10px
+}
+/* Essa regra reúne os ajustes na transição de tela.
+*/.fade {
+  /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na transição de tela.
+*/position:absolute;
+  /* Esse comando ajusta as distâncias das quatro bordas na área de posicionamento na transição de tela.
+*/inset:0;
+  /* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente na transição de tela.
+*/z-index:18;
+  /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo na transição de tela.
+*/background:#000;
+  /* Esse comando faz os cliques atravessarem essa camada para alcançar os controles de baixo na transição de tela.
+*/pointer-events:none
+}
+/* Essa regra reúne os ajustes na transição de tela.
+*/.fade.white {
+  /* Essa declaração define o preenchimento que aparece atrás do conteúdo na transição de tela.
+*/background:#fff8e0
+}
+/* Essa regra reúne os ajustes nos controles de toque.
+*/.mobile-controls {
+  /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos controles de toque.
+*/position:absolute;
+  /* Esse comando ajusta as distâncias das quatro bordas na área de posicionamento nos controles de toque.
+*/inset:auto 14px 15px;
+  /* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nos controles de toque.
+*/z-index:9;
+  /* Aqui o CSS organiza os elementos filhos em um grupo flexível nos controles de toque.
+*/display:flex;
+  /* Esse comando distribui os itens no sentido principal do grupo nos controles de toque.
+*/justify-content:space-between;
+  /* Essa declaração alinha os itens no eixo transversal do grupo nos controles de toque.
+*/align-items:end;
+  /* Aqui o CSS faz os cliques atravessarem essa camada para alcançar os controles de baixo nos controles de toque.
+*/pointer-events:none
+}
+/* Essa regra reúne os ajustes nos controles de toque.
+*/.mobile-controls button {
+  /* Esse comando permite que essa camada receba cliques e toques nos controles de toque.
+*/pointer-events:auto;
+  /* Essa declaração impõe a menor largura permitida nos controles de toque.
+*/min-width:48px;
+  /* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário nos controles de toque.
+*/min-height:48px;
+  /* Esse comando define o preenchimento que aparece atrás do conteúdo nos controles de toque.
+*/background:#152023dc;
+  /* Essa declaração cria espaço entre o conteúdo e a borda nos controles de toque.
+*/padding:8px
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.dpad {
+  /* Aqui o CSS organiza os elementos filhos em linhas e colunas nos elementos escolhidos por essa regra.
+*/display:grid;
+  /* Esse comando define a quantidade e o tamanho das colunas da grade nos elementos escolhidos por essa regra.
+*/grid-template-columns:repeat(3,48px);
+  /* Essa declaração define o espaço entre os itens de uma grade ou de um grupo flexível nos elementos escolhidos por essa regra.
+*/gap:5px
+}
+/* Essa regra reúne os ajustes nos botões e controles selecionados.
+*/.dpad button:first-child {
+  /* Aqui o CSS escolhe as colunas que esse item ocupa nos botões e controles selecionados.
+*/grid-column:2
+}
+/* Essa regra reúne os ajustes nos botões e controles selecionados.
+*/.dpad button:nth-child(2) {
+  /* Esse comando escolhe as colunas que esse item ocupa nos botões e controles selecionados.
+*/grid-column:1
+}
+/* Essa regra reúne os ajustes nos botões e controles selecionados.
+*/.combat-buttons {
+  /* Essa declaração organiza os elementos filhos em linhas e colunas nos botões e controles selecionados.
+*/display:grid;
+  /* Aqui o CSS define a quantidade e o tamanho das colunas da grade nos botões e controles selecionados.
+*/grid-template-columns:repeat(2,1fr);
+  /* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível nos botões e controles selecionados.
+*/gap:6px
+}
+/* Essa regra reúne os ajustes nos botões e controles selecionados.
+*/.combat-buttons button {
+  /* Essa declaração define o tamanho das letras nos botões e controles selecionados.
+*/font-size:11px
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.arena-canvas,#arena {
+  /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos elementos escolhidos por essa regra.
+*/position:absolute;
+  /* Esse comando ajusta as distâncias das quatro bordas na área de posicionamento nos elementos escolhidos por essa regra.
+*/inset:0;
+  /* Essa declaração define a largura ocupada pela caixa nos elementos escolhidos por essa regra.
+*/width:100%;
+  /* Aqui o CSS define a altura ocupada pela caixa nos elementos escolhidos por essa regra.
+*/height:100%;
+  /* Esse comando mantém a imagem inteira dentro da caixa sem deformar a proporção nos elementos escolhidos por essa regra.
+*/object-fit:contain;
+  /* Essa declaração define o preenchimento que aparece atrás do conteúdo nos elementos escolhidos por essa regra.
+*/background:#080b0e;
+  /* Aqui o CSS mantém os pixels bem visíveis quando a imagem é ampliada nos elementos escolhidos por essa regra.
+*/image-rendering:pixelated;
+  /* Esse comando define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nos elementos escolhidos por essa regra.
+*/z-index:0
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.fps-hud {
+  /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos elementos escolhidos por essa regra.
+*/position:absolute;
+  /* Aqui o CSS ajusta a distância da borda de cima dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/top:70px;
+  /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/left:25px;
+  /* Essa declaração configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração nos elementos escolhidos por essa regra.
+*/font:12px monospace;
+  /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo nos elementos escolhidos por essa regra.
+*/background:#10171cde;
+  /* Esse comando cria espaço entre o conteúdo e a borda nos elementos escolhidos por essa regra.
+*/padding:10px;
+  /* Essa declaração faz os cliques atravessarem essa camada para alcançar os controles de baixo nos elementos escolhidos por essa regra.
+*/pointer-events:none
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.crosshair {
+  /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos elementos escolhidos por essa regra.
+*/position:absolute;
+  /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/left:50%;
+  /* Essa declaração ajusta a distância da borda de cima dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/top:50%;
+  /* Aqui o CSS define a cor do texto e dos detalhes que usam a cor atual nos elementos escolhidos por essa regra.
+*/color:#fff;
+  /* Esse comando faz os cliques atravessarem essa camada para alcançar os controles de baixo nos elementos escolhidos por essa regra.
+*/pointer-events:none;
+  /* Essa declaração configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração nos elementos escolhidos por essa regra.
+*/font:20px monospace
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.battle-help {
+  /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos elementos escolhidos por essa regra.
+*/position:absolute;
+  /* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/bottom:25px;
+  /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/left:25px;
+  /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo nos elementos escolhidos por essa regra.
+*/background:#10171cd9;
+  /* Esse comando cria espaço entre o conteúdo e a borda nos elementos escolhidos por essa regra.
+*/padding:8px;
+  /* Essa declaração define o tamanho das letras nos elementos escolhidos por essa regra.
+*/font-size:11px;
+  /* Aqui o CSS faz os cliques atravessarem essa camada para alcançar os controles de baixo nos elementos escolhidos por essa regra.
+*/pointer-events:none
+}
+/* Essa regra reúne os ajustes na janela que aparece sobre o conteúdo.
+*/dialog {
+  /* Esse comando define o preenchimento que aparece atrás do conteúdo na janela que aparece sobre o conteúdo.
+*/background:#142023;
+  /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual na janela que aparece sobre o conteúdo.
+*/color:#eee9da;
+  /* Aqui o CSS define a espessura, o estilo e a cor do contorno na janela que aparece sobre o conteúdo.
+*/border:1px solid #899a85;
+  /* Esse comando cria espaço entre o conteúdo e a borda na janela que aparece sobre o conteúdo.
+*/padding:32px;
+  /* Essa declaração define a largura ocupada pela caixa na janela que aparece sobre o conteúdo.
+*/width:min(620px,calc(100% - 30px));
+  /* Aqui o CSS limita até onde a altura pode crescer na janela que aparece sobre o conteúdo.
+*/max-height:90dvh;
+  /* Esse comando desenha uma sombra ou um brilho ao redor da caixa na janela que aparece sobre o conteúdo.
+*/box-shadow:8px 8px 0 #0009
+}
+/* Essa regra reúne os ajustes na janela que aparece sobre o conteúdo.
+*/dialog::backdrop {
+  /* Essa declaração define o preenchimento que aparece atrás do conteúdo na janela que aparece sobre o conteúdo.
+*/background:#040c10d9;
+  /* Aqui o CSS aplica um efeito ao conteúdo que aparece atrás da caixa na janela que aparece sobre o conteúdo.
+*/backdrop-filter:blur(6px)
+}
+/* Essa regra reúne os ajustes na janela que aparece sobre o conteúdo.
+*/dialog h1 {
+  /* Esse comando define o tamanho das letras na janela que aparece sobre o conteúdo.
+*/font-size:34px;
+  /* Essa declaração define a distância entre uma linha de texto e a próxima na janela que aparece sobre o conteúdo.
+*/line-height:1.2;
+  /* Aqui o CSS define o espaço do lado de fora da caixa na janela que aparece sobre o conteúdo.
+*/margin:0 0 20px
+}
+/* Essa regra reúne os ajustes na janela que aparece sobre o conteúdo.
+*/dialog h2 {
+  /* Esse comando reserva espaço acima da caixa na janela que aparece sobre o conteúdo.
+*/margin-top:0
+}
+/* Essa regra reúne os ajustes na janela que aparece sobre o conteúdo.
+*/dialog p {
+  /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual na janela que aparece sobre o conteúdo.
+*/color:#c3cebf
+}
+/* Essa regra reúne os ajustes na janela que aparece sobre o conteúdo.
+*/dialog button {
+  /* Aqui o CSS define o espaço do lado de fora da caixa na janela que aparece sobre o conteúdo.
+*/margin:5px 7px 5px 0
+}
+/* Essa regra reúne os ajustes na janela que aparece sobre o conteúdo.
+*/dialog label {
+  /* Esse comando trata o elemento como uma caixa de bloco na janela que aparece sobre o conteúdo.
+*/display:block;
+  /* Essa declaração define o espaço do lado de fora da caixa na janela que aparece sobre o conteúdo.
+*/margin:18px 0 5px;
+  /* Aqui o CSS define o tamanho das letras na janela que aparece sobre o conteúdo.
+*/font-size:14px
+}
+/* Essa regra reúne os ajustes na janela que aparece sobre o conteúdo.
+*/dialog select {
+  /* Esse comando define a largura ocupada pela caixa na janela que aparece sobre o conteúdo.
+*/width:100%;
+  /* Essa declaração cria espaço entre o conteúdo e a borda na janela que aparece sobre o conteúdo.
+*/padding:10px;
+  /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo na janela que aparece sobre o conteúdo.
+*/background:#20312e;
+  /* Esse comando define a cor do texto e dos detalhes que usam a cor atual na janela que aparece sobre o conteúdo.
+*/color:#fff;
+  /* Essa declaração define a espessura, o estilo e a cor do contorno na janela que aparece sobre o conteúdo.
+*/border:1px solid #83937b
+}
+/* Essa regra reúne os ajustes na janela aberta sobre a página.
+*/.modal-actions {
+  /* Aqui o CSS organiza os elementos filhos em um grupo flexível na janela aberta sobre a página.
+*/display:flex;
+  /* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível na janela aberta sobre a página.
+*/gap:10px;
+  /* Essa declaração controla se os itens podem passar para outra linha na janela aberta sobre a página.
+*/flex-wrap:wrap;
+  /* Aqui o CSS reserva espaço acima da caixa na janela aberta sobre a página.
+*/margin-top:20px
+}
+/* Essa regra reúne os ajustes na janela aberta sobre a página.
+*/.modal-actions button {
+  /* Esse comando define como o item cresce ou encolhe dentro de um grupo flexível na janela aberta sobre a página.
+*/flex:1
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.eyebrow {
+  /* Essa declaração configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração nos elementos escolhidos por essa regra.
+*/font:11px monospace;
+  /* Aqui o CSS ajusta o espaço entre as letras nos elementos escolhidos por essa regra.
+*/letter-spacing:2px;
+  /* Esse comando define a cor do texto e dos detalhes que usam a cor atual nos elementos escolhidos por essa regra.
+*/color:#b7cba9;
+  /* Essa declaração reserva espaço abaixo da caixa nos elementos escolhidos por essa regra.
+*/margin-bottom:20px
+}
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.bag-list,.journal-list {
+  /* Aqui o CSS organiza os elementos filhos em linhas e colunas no registro do Jardim.
+*/display:grid;
+  /* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível no registro do Jardim.
+*/gap:15px;
+  /* Essa declaração limita até onde a altura pode crescer no registro do Jardim.
+*/max-height:55vh;
+  /* Aqui o CSS controla o que acontece com o conteúdo que passa dos limites no registro do Jardim.
+*/overflow:auto;
+  /* Esse comando cria espaço interno à direita do conteúdo no registro do Jardim.
+*/padding-right:10px
+}
+/* Essa regra reúne os ajustes na bolsa de itens.
+*/.bag-item {
+  /* Essa declaração organiza os elementos filhos em um grupo flexível na bolsa de itens.
+*/display:flex;
+  /* Aqui o CSS define o espaço entre os itens de uma grade ou de um grupo flexível na bolsa de itens.
+*/gap:15px;
+  /* Esse comando alinha os itens no eixo transversal do grupo na bolsa de itens.
+*/align-items:center;
+  /* Essa declaração configura a borda de baixo na bolsa de itens.
+*/border-bottom:1px solid #ffffff26;
+  /* Aqui o CSS cria espaço entre o conteúdo e a borda na bolsa de itens.
+*/padding:10px
+}
+/* Essa regra reúne os ajustes na bolsa de itens.
+*/.bag-item img {
+  /* Esse comando define a largura ocupada pela caixa na bolsa de itens.
+*/width:60px;
+  /* Essa declaração define a altura ocupada pela caixa na bolsa de itens.
+*/height:60px;
+  /* Aqui o CSS mantém a imagem inteira dentro da caixa sem deformar a proporção na bolsa de itens.
+*/object-fit:contain;
+  /* Esse comando mantém os pixels bem visíveis quando a imagem é ampliada na bolsa de itens.
+*/image-rendering:pixelated
+}
+/* Essa regra reúne os ajustes na bolsa de itens.
+*/.bag-item p {
+  /* Essa declaração define o tamanho das letras na bolsa de itens.
+*/font-size:12px;
+  /* Aqui o CSS define o espaço do lado de fora da caixa na bolsa de itens.
+*/margin:3px 0
+}
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-list article {
+  /* Esse comando cria espaço entre o conteúdo e a borda no registro do Jardim.
+*/padding:14px;
+  /* Essa declaração define a espessura, o estilo e a cor do contorno no registro do Jardim.
+*/border:1px solid #ffffff25
+}
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-list h3 {
+  /* Aqui o CSS define o tamanho das letras no registro do Jardim.
+*/font-size:15px;
+  /* Esse comando define o espaço do lado de fora da caixa no registro do Jardim.
+*/margin:0 0 7px
+}
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-list p {
+  /* Essa declaração define o tamanho das letras no registro do Jardim.
+*/font-size:13px;
+  /* Aqui o CSS define o espaço do lado de fora da caixa no registro do Jardim.
+*/margin:0;
+  /* Esse comando controla a preservação de espaços e a quebra das linhas no registro do Jardim.
+*/white-space:pre-line
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.dead-text {
+  /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual nos elementos escolhidos por essa regra.
+*/color:#c3b0ac
+}
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.hint {
+  /* Aqui o CSS define a cor do texto e dos detalhes que usam a cor atual nos elementos escolhidos por essa regra.
+*/color:#b8c9b5;
+  /* Esse comando define o tamanho das letras nos elementos escolhidos por essa regra.
+*/font-size:12px
+}
+/* Essa regra reúne os ajustes na página inteira.
+*/body.mobile kbd {
+  /* Essa declaração esconde o elemento e retira o espaço que ele ocuparia na página inteira.
+*/display:none
+}
+/* Essa regra reúne os ajustes na página inteira.
+*/body.mobile .battle-help {
+  /* Aqui o CSS esconde o elemento e retira o espaço que ele ocuparia na página inteira.
+*/display:none
+}
+/* Essa regra reúne os ajustes na página inteira, quando a redução de movimento está ativa.
+*/body.reduced *,body.reduced *::before {
+  /* Esse comando interrompe a animação dessa camada na página inteira. Essa definição tem prioridade sobre as regras comuns.
+*/animation:none!important;
+  /* Essa declaração desativa a mudança animada entre os estados na página inteira. Essa definição tem prioridade sobre as regras comuns.
+*/transition:none!important
+}
+/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes breathe {
+  /* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/0%,100% {
+    /* Aqui o CSS muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(-50%,0)
   }
-  50% {
-    transform:translate(-50%,-8px)
+  /* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/50% {
+    /* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(-50%,-8px)
   }
 }
-@media(prefers-reduced-motion:reduce) {
-  * {
-    animation:none!important;
-    transition:none!important
+/* Esse grupo só entra quando o sistema pede menos movimento, mantendo o conteúdo sem animação desnecessária.
+*/@media(prefers-reduced-motion:reduce) {
+  /* Essa regra reúne os ajustes em todos os elementos da página.
+*/* {
+    /* Essa declaração interrompe a animação dessa camada em todos os elementos da página. Essa definição tem prioridade sobre as regras comuns.
+*/animation:none!important;
+    /* Aqui o CSS desativa a mudança animada entre os estados em todos os elementos da página. Essa definição tem prioridade sobre as regras comuns.
+*/transition:none!important
   }
 }
-@media(max-width:800px) {
-  .game-header {
-    padding:8px 12px;
-    height:55px
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:800px) {
+  /* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header {
+    /* Esse comando cria espaço entre o conteúdo e a borda no cabeçalho do Jardim.
+*/padding:8px 12px;
+    /* Essa declaração define a altura ocupada pela caixa no cabeçalho do Jardim.
+*/height:55px
   }
-  .game-header>a>span {
-    display:none
+  /* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header>a>span {
+    /* Aqui o CSS esconde o elemento e retira o espaço que ele ocuparia no cabeçalho do Jardim.
+*/display:none
   }
-  .game-header button {
-    font-size:11px;
-    padding:7px
+  /* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header button {
+    /* Esse comando define o tamanho das letras no cabeçalho do Jardim.
+*/font-size:11px;
+    /* Essa declaração cria espaço entre o conteúdo e a borda no cabeçalho do Jardim.
+*/padding:7px
   }
-  .stage {
-    height:calc(100dvh - 100px);
-    min-height:480px
+  /* Essa regra reúne os ajustes na área principal do jogo.
+*/.stage {
+    /* Aqui o CSS define a altura ocupada pela caixa na área principal do jogo.
+*/height:calc(100dvh - 100px);
+    /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário na área principal do jogo.
+*/min-height:480px
   }
-  .rooms {
-    grid-template-columns:repeat(3,1fr);
-    gap:8px
+  /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.rooms {
+    /* Essa declaração define a quantidade e o tamanho das colunas da grade nos elementos escolhidos por essa regra.
+*/grid-template-columns:repeat(3,1fr);
+    /* Aqui o CSS define o espaço entre os itens de uma grade ou de um grupo flexível nos elementos escolhidos por essa regra.
+*/gap:8px
   }
-  .action-panel {
-    inset:9% 4%;
-    padding:20px
+  /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.action-panel {
+    /* Esse comando ajusta as distâncias das quatro bordas na área de posicionamento nos elementos escolhidos por essa regra.
+*/inset:9% 4%;
+    /* Essa declaração cria espaço entre o conteúdo e a borda nos elementos escolhidos por essa regra.
+*/padding:20px
   }
-  .dialogue {
-    left:3%;
-    right:3%;
-    bottom:14px;
-    padding:16px;
-    min-height:170px
+  /* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue {
+    /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento na caixa de diálogo.
+*/left:3%;
+    /* Esse comando ajusta a distância da borda direita dentro da área de posicionamento na caixa de diálogo.
+*/right:3%;
+    /* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento na caixa de diálogo.
+*/bottom:14px;
+    /* Aqui o CSS cria espaço entre o conteúdo e a borda na caixa de diálogo.
+*/padding:16px;
+    /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário na caixa de diálogo.
+*/min-height:170px
   }
-  .dialogue p {
-    font-size:15px
+  /* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue p {
+    /* Essa declaração define o tamanho das letras na caixa de diálogo.
+*/font-size:15px
   }
-  .actor {
-    height:78%;
-    bottom:15%;
-    width:95%
+  /* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor {
+    /* Aqui o CSS define a altura ocupada pela caixa no sprite do personagem.
+*/height:78%;
+    /* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:15%;
+    /* Essa declaração define a largura ocupada pela caixa no sprite do personagem.
+*/width:95%
   }
-  .location {
-    left:12px;
-    top:15px;
-    font-size:10px;
-    letter-spacing:1px
+  /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.location {
+    /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/left:12px;
+    /* Esse comando ajusta a distância da borda de cima dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/top:15px;
+    /* Essa declaração define o tamanho das letras nos elementos escolhidos por essa regra.
+*/font-size:10px;
+    /* Aqui o CSS ajusta o espaço entre as letras nos elementos escolhidos por essa regra.
+*/letter-spacing:1px
   }
-  .status {
-    right:12px;
-    top:15px;
-    font-size:10px
+  /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.status {
+    /* Esse comando ajusta a distância da borda direita dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/right:12px;
+    /* Essa declaração ajusta a distância da borda de cima dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/top:15px;
+    /* Aqui o CSS define o tamanho das letras nos elementos escolhidos por essa regra.
+*/font-size:10px
   }
-  .inspect-list {
-    left:12px;
-    top:65px;
-    max-width:175px
+  /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.inspect-list {
+    /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/left:12px;
+    /* Essa declaração ajusta a distância da borda de cima dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/top:65px;
+    /* Aqui o CSS limita até onde a largura pode crescer nos elementos escolhidos por essa regra.
+*/max-width:175px
   }
-  .inspect-list button {
-    font-size:11px;
-    padding:8px
+  /* Essa regra reúne os ajustes nos botões e controles selecionados.
+*/.inspect-list button {
+    /* Esse comando define o tamanho das letras nos botões e controles selecionados.
+*/font-size:11px;
+    /* Essa declaração cria espaço entre o conteúdo e a borda nos botões e controles selecionados.
+*/padding:8px
   }
-  .room-nav {
-    left:12px;
-    right:12px;
-    bottom:14px
+  /* Essa regra reúne os ajustes nos botões que mudam a vista do quarto.
+*/.room-nav {
+    /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento nos botões que mudam a vista do quarto.
+*/left:12px;
+    /* Esse comando ajusta a distância da borda direita dentro da área de posicionamento nos botões que mudam a vista do quarto.
+*/right:12px;
+    /* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento nos botões que mudam a vista do quarto.
+*/bottom:14px
   }
-  .room-nav button {
-    font-size:12px;
-    padding:8px
+  /* Essa regra reúne os ajustes nos botões que mudam a vista do quarto.
+*/.room-nav button {
+    /* Aqui o CSS define o tamanho das letras nos botões que mudam a vista do quarto.
+*/font-size:12px;
+    /* Esse comando cria espaço entre o conteúdo e a borda nos botões que mudam a vista do quarto.
+*/padding:8px
   }
-  .game-footer {
-    padding:8px 12px;
-    font-size:10px
+  /* Essa regra reúne os ajustes no rodapé.
+*/.game-footer {
+    /* Essa declaração cria espaço entre o conteúdo e a borda no rodapé.
+*/padding:8px 12px;
+    /* Aqui o CSS define o tamanho das letras no rodapé.
+*/font-size:10px
   }
-  .game-footer>span:last-child {
-    display:none
+  /* Essa regra reúne os ajustes no rodapé.
+*/.game-footer>span:last-child {
+    /* Esse comando esconde o elemento e retira o espaço que ele ocuparia no rodapé.
+*/display:none
   }
-  .comic {
-    inset:3% 2%
+  /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.comic {
+    /* Essa declaração ajusta as distâncias das quatro bordas na área de posicionamento nos elementos escolhidos por essa regra.
+*/inset:3% 2%
   }
-  .prompt>p:first-child {
-    font-size:18px
+  /* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/.prompt>p:first-child {
+    /* Aqui o CSS define o tamanho das letras no aviso que pede uma reação rápida.
+*/font-size:18px
   }
-  .orbs {
-    gap:12px
+  /* Essa regra reúne os ajustes nas esferas de observação.
+*/.orbs {
+    /* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível nas esferas de observação.
+*/gap:12px
   }
-  .observation {
-    inset:12% 5%
+  /* Essa regra reúne os ajustes na observação dos objetos.
+*/.observation {
+    /* Essa declaração ajusta as distâncias das quatro bordas na área de posicionamento na observação dos objetos.
+*/inset:12% 5%
   }
-  .choices button {
-    font-size:12px;
-    min-width:130px
+  /* Essa regra reúne os ajustes nas opções de resposta.
+*/.choices button {
+    /* Aqui o CSS define o tamanho das letras nas opções de resposta.
+*/font-size:12px;
+    /* Esse comando impõe a menor largura permitida nas opções de resposta.
+*/min-width:130px
   }
-  .actor.paired,.actor.two {
-    height:65%;
-    width:55%;
-    bottom:23%
+  /* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.paired,.actor.two {
+    /* Essa declaração define a altura ocupada pela caixa no sprite do personagem.
+*/height:65%;
+    /* Aqui o CSS define a largura ocupada pela caixa no sprite do personagem.
+*/width:55%;
+    /* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:23%
   }
-  .hands {
-    width:90%;
-    left:5%
+  /* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands {
+    /* Essa declaração define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:90%;
+    /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento nas mãos do protagonista.
+*/left:5%
   }
 }
-@media(max-width:450px) {
-  .rooms {
-    grid-template-columns:repeat(2,1fr)
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:450px) {
+  /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.rooms {
+    /* Esse comando define a quantidade e o tamanho das colunas da grade nos elementos escolhidos por essa regra.
+*/grid-template-columns:repeat(2,1fr)
   }
-  .room-card {
-    padding:7px;
-    flex-direction:row;
-    flex-wrap:wrap;
-    justify-content:center
+  /* Essa regra reúne os ajustes nos efeitos próprios de cada quarto.
+*/.room-card {
+    /* Essa declaração cria espaço entre o conteúdo e a borda nos efeitos próprios de cada quarto.
+*/padding:7px;
+    /* Aqui o CSS escolhe o sentido em que os itens flexíveis são organizados nos efeitos próprios de cada quarto.
+*/flex-direction:row;
+    /* Esse comando controla se os itens podem passar para outra linha nos efeitos próprios de cada quarto.
+*/flex-wrap:wrap;
+    /* Essa declaração distribui os itens no sentido principal do grupo nos efeitos próprios de cada quarto.
+*/justify-content:center
   }
-  .room-card img {
-    height:40px;
-    width:40px
+  /* Essa regra reúne os ajustes nos efeitos próprios de cada quarto.
+*/.room-card img {
+    /* Aqui o CSS define a altura ocupada pela caixa nos efeitos próprios de cada quarto.
+*/height:40px;
+    /* Esse comando define a largura ocupada pela caixa nos efeitos próprios de cada quarto.
+*/width:40px
   }
-  .room-card small {
-    width:100%
+  /* Essa regra reúne os ajustes nos efeitos próprios de cada quarto.
+*/.room-card small {
+    /* Essa declaração define a largura ocupada pela caixa nos efeitos próprios de cada quarto.
+*/width:100%
   }
-  .action-panel h1 {
-    font-size:26px
+  /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.action-panel h1 {
+    /* Aqui o CSS define o tamanho das letras nos elementos escolhidos por essa regra.
+*/font-size:26px
   }
-  .choices {
-    gap:6px
+  /* Essa regra reúne os ajustes nas opções de resposta.
+*/.choices {
+    /* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível nas opções de resposta.
+*/gap:6px
   }
-  .choices button {
-    min-width:100%;
-    min-height:40px
+  /* Essa regra reúne os ajustes nas opções de resposta.
+*/.choices button {
+    /* Essa declaração impõe a menor largura permitida nas opções de resposta.
+*/min-width:100%;
+    /* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário nas opções de resposta.
+*/min-height:40px
   }
-  .dialogue {
-    max-height:56%;
-    overflow:auto
+  /* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue {
+    /* Esse comando limita até onde a altura pode crescer na caixa de diálogo.
+*/max-height:56%;
+    /* Essa declaração controla o que acontece com o conteúdo que passa dos limites na caixa de diálogo.
+*/overflow:auto
   }
-  .inspect-list {
-    max-width:145px
+  /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.inspect-list {
+    /* Aqui o CSS limita até onde a largura pode crescer nos elementos escolhidos por essa regra.
+*/max-width:145px
   }
-  .dpad {
-    grid-template-columns:repeat(3,42px);
-    gap:3px
+  /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.dpad {
+    /* Esse comando define a quantidade e o tamanho das colunas da grade nos elementos escolhidos por essa regra.
+*/grid-template-columns:repeat(3,42px);
+    /* Essa declaração define o espaço entre os itens de uma grade ou de um grupo flexível nos elementos escolhidos por essa regra.
+*/gap:3px
   }
-  .mobile-controls button {
-    min-width:42px;
-    min-height:42px
+  /* Essa regra reúne os ajustes nos controles de toque.
+*/.mobile-controls button {
+    /* Aqui o CSS impõe a menor largura permitida nos controles de toque.
+*/min-width:42px;
+    /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário nos controles de toque.
+*/min-height:42px
   }
-  .combat-buttons {
-    gap:3px
+  /* Essa regra reúne os ajustes nos botões e controles selecionados.
+*/.combat-buttons {
+    /* Essa declaração define o espaço entre os itens de uma grade ou de um grupo flexível nos botões e controles selecionados.
+*/gap:3px
   }
-  .actor.world {
-    width:42%;
-    height:28%;
-    left:65%
+  /* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.world {
+    /* Aqui o CSS define a largura ocupada pela caixa no sprite do personagem.
+*/width:42%;
+    /* Esse comando define a altura ocupada pela caixa no sprite do personagem.
+*/height:28%;
+    /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento no sprite do personagem.
+*/left:65%
   }
 }
-@media(orientation:landscape) and (max-height:550px) {
-  .stage {
-    min-height:300px;
-    height:calc(100dvh - 85px)
+/* Essas regras ajustam a interface quando a tela está deitada, com menos altura disponível.
+*/@media(orientation:landscape) and (max-height:550px) {
+  /* Essa regra reúne os ajustes na área principal do jogo.
+*/.stage {
+    /* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário na área principal do jogo.
+*/min-height:300px;
+    /* Esse comando define a altura ocupada pela caixa na área principal do jogo.
+*/height:calc(100dvh - 85px)
   }
-  .game-header {
-    height:45px
+  /* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header {
+    /* Essa declaração define a altura ocupada pela caixa no cabeçalho do Jardim.
+*/height:45px
   }
-  .game-footer {
-    min-height:35px
+  /* Essa regra reúne os ajustes no rodapé.
+*/.game-footer {
+    /* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário no rodapé.
+*/min-height:35px
   }
-  .dialogue {
-    min-height:115px;
-    padding:9px 18px;
-    bottom:8px
+  /* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue {
+    /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário na caixa de diálogo.
+*/min-height:115px;
+    /* Essa declaração cria espaço entre o conteúdo e a borda na caixa de diálogo.
+*/padding:9px 18px;
+    /* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento na caixa de diálogo.
+*/bottom:8px
   }
-  .dialogue p {
-    font-size:13px;
-    margin-bottom:6px
+  /* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue p {
+    /* Esse comando define o tamanho das letras na caixa de diálogo.
+*/font-size:13px;
+    /* Essa declaração reserva espaço abaixo da caixa na caixa de diálogo.
+*/margin-bottom:6px
   }
-  .rooms {
-    grid-template-columns:repeat(5,1fr)
+  /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.rooms {
+    /* Aqui o CSS define a quantidade e o tamanho das colunas da grade nos elementos escolhidos por essa regra.
+*/grid-template-columns:repeat(5,1fr)
   }
-  .room-card img {
-    height:40px;
-    width:40px
+  /* Essa regra reúne os ajustes nos efeitos próprios de cada quarto.
+*/.room-card img {
+    /* Esse comando define a altura ocupada pela caixa nos efeitos próprios de cada quarto.
+*/height:40px;
+    /* Essa declaração define a largura ocupada pela caixa nos efeitos próprios de cada quarto.
+*/width:40px
   }
-  .action-panel {
-    inset:4%
+  /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.action-panel {
+    /* Aqui o CSS ajusta as distâncias das quatro bordas na área de posicionamento nos elementos escolhidos por essa regra.
+*/inset:4%
   }
-  .actor {
-    bottom:8%;
-    height:90%
+  /* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor {
+    /* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:8%;
+    /* Essa declaração define a altura ocupada pela caixa no sprite do personagem.
+*/height:90%
   }
-  .prompt {
-    padding:10px
+  /* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/.prompt {
+    /* Aqui o CSS cria espaço entre o conteúdo e a borda no aviso que pede uma reação rápida.
+*/padding:10px
   }
-  .orbs {
-    grid-template-columns:repeat(8,1fr);
-    margin:10px 0;
-    gap:7px
+  /* Essa regra reúne os ajustes nas esferas de observação.
+*/.orbs {
+    /* Esse comando define a quantidade e o tamanho das colunas da grade nas esferas de observação.
+*/grid-template-columns:repeat(8,1fr);
+    /* Essa declaração define o espaço do lado de fora da caixa nas esferas de observação.
+*/margin:10px 0;
+    /* Aqui o CSS define o espaço entre os itens de uma grade ou de um grupo flexível nas esferas de observação.
+*/gap:7px
   }
-  .orb {
-    font-size:15px
+  /* Essa regra reúne os ajustes nas esferas de observação.
+*/.orb {
+    /* Esse comando define o tamanho das letras nas esferas de observação.
+*/font-size:15px
   }
 }
 /* Molduras aprovadas de cada Eco, com o texto separado para continuar acessível. */
-.dialogue {
-  background-color:transparent;
-  background-image:var(--dialogue-art);
-  background-size:100% 100%;
-  border:0;
-  box-shadow:none;
-  padding:22px 9% 28px;
-  min-height:205px
+/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue {
+  /* Essa declaração define a cor que fica atrás do conteúdo na caixa de diálogo.
+*/background-color:transparent;
+  /* Aqui o CSS escolhe a imagem ou o gradiente que será usado no fundo na caixa de diálogo.
+*/background-image:var(--dialogue-art);
+  /* Esse comando controla o tamanho do desenho usado no fundo na caixa de diálogo.
+*/background-size:100% 100%;
+  /* Essa declaração define a espessura, o estilo e a cor do contorno na caixa de diálogo.
+*/border:0;
+  /* Aqui o CSS desenha uma sombra ou um brilho ao redor da caixa na caixa de diálogo.
+*/box-shadow:none;
+  /* Esse comando cria espaço entre o conteúdo e a borda na caixa de diálogo.
+*/padding:22px 9% 28px;
+  /* Essa declaração mantém uma altura mínima para a área não ficar menor que o necessário na caixa de diálogo.
+*/min-height:205px
 }
-.dialogue:before {
-  display:none
+/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue:before {
+  /* Aqui o CSS esconde o elemento e retira o espaço que ele ocuparia na caixa de diálogo.
+*/display:none
 }
-.speaker {
-  margin-bottom:25px
+/* Essa regra reúne os ajustes no nome de quem está falando.
+*/.speaker {
+  /* Esse comando reserva espaço abaixo da caixa no nome de quem está falando.
+*/margin-bottom:25px
 }
-.dialogue p {
-  font-size:16px
+/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue p {
+  /* Essa declaração define o tamanho das letras na caixa de diálogo.
+*/font-size:16px
 }
-.dialogue .choices {
-  padding-bottom:4px
+/* Essa regra reúne os ajustes nas opções de resposta.
+*/.dialogue .choices {
+  /* Aqui o CSS cria espaço interno abaixo do conteúdo nas opções de resposta.
+*/padding-bottom:4px
 }
-@media(max-width:600px) {
-  .dialogue {
-    padding:20px 9% 25px;
-    min-height:200px
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px) {
+  /* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue {
+    /* Esse comando cria espaço entre o conteúdo e a borda na caixa de diálogo.
+*/padding:20px 9% 25px;
+    /* Essa declaração mantém uma altura mínima para a área não ficar menor que o necessário na caixa de diálogo.
+*/min-height:200px
   }
-  .speaker {
-    margin-bottom:24px
+  /* Essa regra reúne os ajustes no nome de quem está falando.
+*/.speaker {
+    /* Aqui o CSS reserva espaço abaixo da caixa no nome de quem está falando.
+*/margin-bottom:24px
   }
-  .dialogue p {
-    font-size:14px
+  /* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue p {
+    /* Esse comando define o tamanho das letras na caixa de diálogo.
+*/font-size:14px
   }
-  .choices button {
-    padding:8px;
-    font-size:12px
+  /* Essa regra reúne os ajustes nas opções de resposta.
+*/.choices button {
+    /* Essa declaração cria espaço entre o conteúdo e a borda nas opções de resposta.
+*/padding:8px;
+    /* Aqui o CSS define o tamanho das letras nas opções de resposta.
+*/font-size:12px
   }
 }
 
-/* Só asas e água recebem movimento de camada; os outros Ecos ficam apoiados no cenário. */
-.idle-layer{z-index:2;pointer-events:none}.idle-layer.wing.left{transform-origin:55% 48%;animation:wing-left 5s ease-in-out infinite}.idle-layer.wing.right{transform-origin:45% 48%;animation:wing-right 5s ease-in-out infinite}.idle-layer.water.left{animation:water-left 4.5s ease-in-out infinite}.idle-layer.water.right{animation:water-right 5.5s ease-in-out infinite}@keyframes wing-left{0%,100%{transform:translate(-50%,0) rotate(0deg)}50%{transform:translate(-50%,-8px) rotate(-.7deg)}}@keyframes wing-right{0%,100%{transform:translate(-50%,0) rotate(0deg)}50%{transform:translate(-50%,-8px) rotate(.7deg)}}@keyframes water-left{0%,100%{transform:translate(-50%,0)}50%{transform:translate(calc(-50% - 2px),-3px)}}@keyframes water-right{0%,100%{transform:translate(-50%,0)}50%{transform:translate(calc(-50% + 2px),2px)}}
+/* Só asas e água recebem movimento de camada, os outros Ecos ficam apoiados no cenário. */
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.idle-layer{/* Esse comando define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nos elementos escolhidos por essa regra.
+*/z-index:2;/* Essa declaração faz os cliques atravessarem essa camada para alcançar os controles de baixo nos elementos escolhidos por essa regra.
+*/pointer-events:none}/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.idle-layer.wing.left{/* Aqui o CSS define o ponto de apoio usado nas rotações e mudanças de escala nos elementos escolhidos por essa regra.
+*/transform-origin:55% 48%;/* Esse comando liga a sequência de movimento e define seu tempo e sua repetição nos elementos escolhidos por essa regra.
+*/animation:wing-left 5s ease-in-out infinite}/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.idle-layer.wing.right{/* Essa declaração define o ponto de apoio usado nas rotações e mudanças de escala nos elementos escolhidos por essa regra.
+*/transform-origin:45% 48%;/* Aqui o CSS liga a sequência de movimento e define seu tempo e sua repetição nos elementos escolhidos por essa regra.
+*/animation:wing-right 5s ease-in-out infinite}/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.idle-layer.water.left{/* Esse comando liga a sequência de movimento e define seu tempo e sua repetição nos elementos escolhidos por essa regra.
+*/animation:water-left 4.5s ease-in-out infinite}/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.idle-layer.water.right{/* Essa declaração liga a sequência de movimento e define seu tempo e sua repetição nos elementos escolhidos por essa regra.
+*/animation:water-right 5.5s ease-in-out infinite}/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes wing-left{/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/0%,100%{/* Aqui o CSS muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(-50%,0) rotate(0deg)}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/50%{/* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(-50%,-8px) rotate(-.7deg)}}/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes wing-right{/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/0%,100%{/* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(-50%,0) rotate(0deg)}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/50%{/* Aqui o CSS muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(-50%,-8px) rotate(.7deg)}}/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes water-left{/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/0%,100%{/* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(-50%,0)}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/50%{/* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(calc(-50% - 2px),-3px)}}/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes water-right{/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/0%,100%{/* Aqui o CSS muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(-50%,0)}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/50%{/* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(calc(-50% + 2px),2px)}}
 
 /* O aviso aparece só quando algum arquivo necessário não carregou. */
-#loading-help:not([hidden]) { padding: 20px; margin: 16px; background: #fff6dc; color: #342919; border: 2px solid #8d5620; font: 16px/1.5 Arial, sans-serif; overflow-wrap: anywhere; }
-#loading-help[hidden] { display: none; }
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra, quando o atributo hidden está presente.
+*/#loading-help:not([hidden]) { /* Essa declaração cria espaço entre o conteúdo e a borda nos elementos escolhidos por essa regra.
+*/padding: 20px; /* Aqui o CSS define o espaço do lado de fora da caixa nos elementos escolhidos por essa regra.
+*/margin: 16px; /* Esse comando define o preenchimento que aparece atrás do conteúdo nos elementos escolhidos por essa regra.
+*/background: #fff6dc; /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual nos elementos escolhidos por essa regra.
+*/color: #342919; /* Aqui o CSS define a espessura, o estilo e a cor do contorno nos elementos escolhidos por essa regra.
+*/border: 2px solid #8d5620; /* Esse comando configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração nos elementos escolhidos por essa regra.
+*/font: 16px/1.5 Arial, sans-serif; /* Essa declaração permite quebrar palavras longas para o texto não escapar da caixa nos elementos escolhidos por essa regra.
+*/overflow-wrap: anywhere; }
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra, quando o atributo hidden está presente.
+*/#loading-help[hidden] { /* Aqui o CSS esconde o elemento e retira o espaço que ele ocuparia nos elementos escolhidos por essa regra.
+*/display: none; }
 /* Na exploração os cliques pertencem aos objetos, na mesma posição da arte. */
-.exploring .background { object-fit:contain; }
-.room-scene { position:absolute; pointer-events:none; }
-.room-scene .inspect-list { position:absolute; inset:0; max-width:none; display:block; pointer-events:none; }
-.room-scene .scene-hotspot { position:absolute; transform:translate(-50%,-50%); width:48px; height:48px; min-height:48px; padding:0; border:0; background:transparent; text-align:center; box-shadow:none; cursor:crosshair; }
-.scene-hotspot img { width:34px; height:34px; object-fit:contain; image-rendering:pixelated; filter:drop-shadow(0 2px 2px #000); pointer-events:none; }
-.hotspot-marker { position:absolute; inset:8px; display:grid; place-items:center; color:#fff4b5; border:1px solid #fff4b5a0; border-radius:50%; background:#14201c75; font-size:16px; box-shadow:0 1px 5px #0008; }
-.scene-hotspot:has(img) .hotspot-marker { inset:auto 0 0 auto; width:18px; height:18px; font-size:10px; }
-.scene-hotspot.visited .hotspot-marker { color:#d9e7db; border-color:#d9e7db70; }
-.hotspot-label { position:absolute; left:50%; bottom:100%; width:max-content; max-width:170px; transform:translateX(-50%); padding:5px 8px; background:#101b19f5; color:#fff8e1; border:1px solid #e8d8a280; font:12px/1.4 Arial,sans-serif; opacity:0; pointer-events:none; }
-.scene-hotspot:hover .hotspot-label,.scene-hotspot:focus-visible .hotspot-label { opacity:1; }
-.scene-hotspot:focus-visible { outline:2px solid #fff4b5; outline-offset:2px; }
-.room-scene .world-eco { position:absolute; left:50%; top:75%; bottom:auto; transform:translate(-50%,-100%); width:22%; height:42%; min-width:64px; min-height:76px; padding:0; background:transparent; border:0; box-shadow:none; }
-.world-eco img { width:100%; height:100%; object-fit:contain; image-rendering:pixelated; filter:drop-shadow(0 5px 4px #0006); pointer-events:none; }
-.world-eco span { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:max-content; padding:4px 7px; font-size:11px; background:#14201ce8; opacity:0; pointer-events:none; }
-.world-eco:hover span,.world-eco:focus-visible span { opacity:1; }
-.world-eco:focus-visible { outline:2px solid #fff4b5; }
-@media(max-width:600px) { .room-scene .scene-hotspot { width:44px; height:44px; min-height:44px; padding:0; } .hotspot-label { max-width:130px; font-size:11px; } .room-nav button { min-height:44px; } }
+/* Essa regra reúne os ajustes na imagem do cenário.
+*/.exploring .background { /* Esse comando mantém a imagem inteira dentro da caixa sem deformar a proporção na imagem do cenário.
+*/object-fit:contain; }
+/* Essa regra reúne os ajustes na área clicável do cenário.
+*/.room-scene { /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na área clicável do cenário.
+*/position:absolute; /* Aqui o CSS faz os cliques atravessarem essa camada para alcançar os controles de baixo na área clicável do cenário.
+*/pointer-events:none; }
+/* Essa regra reúne os ajustes na área clicável do cenário.
+*/.room-scene .inspect-list { /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na área clicável do cenário.
+*/position:absolute; /* Essa declaração ajusta as distâncias das quatro bordas na área de posicionamento na área clicável do cenário.
+*/inset:0; /* Aqui o CSS retira o limite máximo desse tamanho na área clicável do cenário.
+*/max-width:none; /* Esse comando trata o elemento como uma caixa de bloco na área clicável do cenário.
+*/display:block; /* Essa declaração faz os cliques atravessarem essa camada para alcançar os controles de baixo na área clicável do cenário.
+*/pointer-events:none; }
+/* Essa regra reúne os ajustes nos pontos de observação.
+*/.room-scene .scene-hotspot { /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos pontos de observação.
+*/position:absolute; /* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos pontos de observação.
+*/transform:translate(-50%,-50%); /* Essa declaração define a largura ocupada pela caixa nos pontos de observação.
+*/width:48px; /* Aqui o CSS define a altura ocupada pela caixa nos pontos de observação.
+*/height:48px; /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário nos pontos de observação.
+*/min-height:48px; /* Essa declaração cria espaço entre o conteúdo e a borda nos pontos de observação.
+*/padding:0; /* Aqui o CSS define a espessura, o estilo e a cor do contorno nos pontos de observação.
+*/border:0; /* Esse comando remove o preenchimento de fundo nos pontos de observação.
+*/background:transparent; /* Essa declaração alinha o texto dentro da caixa nos pontos de observação.
+*/text-align:center; /* Aqui o CSS desenha uma sombra ou um brilho ao redor da caixa nos pontos de observação.
+*/box-shadow:none; /* Esse comando mostra uma mira para indicar uma área de observação nos pontos de observação.
+*/cursor:crosshair; }
+/* Essa regra reúne os ajustes nos pontos de observação.
+*/.scene-hotspot img { /* Essa declaração define a largura ocupada pela caixa nos pontos de observação.
+*/width:34px; /* Aqui o CSS define a altura ocupada pela caixa nos pontos de observação.
+*/height:34px; /* Esse comando mantém a imagem inteira dentro da caixa sem deformar a proporção nos pontos de observação.
+*/object-fit:contain; /* Essa declaração mantém os pixels bem visíveis quando a imagem é ampliada nos pontos de observação.
+*/image-rendering:pixelated; /* Aqui o CSS ajusta a aparência da imagem com os efeitos indicados nos pontos de observação.
+*/filter:drop-shadow(0 2px 2px #000); /* Esse comando faz os cliques atravessarem essa camada para alcançar os controles de baixo nos pontos de observação.
+*/pointer-events:none; }
+/* Essa regra reúne os ajustes nos pontos de observação.
+*/.hotspot-marker { /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos pontos de observação.
+*/position:absolute; /* Aqui o CSS ajusta as distâncias das quatro bordas na área de posicionamento nos pontos de observação.
+*/inset:8px; /* Esse comando organiza os elementos filhos em linhas e colunas nos pontos de observação.
+*/display:grid; /* Essa declaração define os alinhamentos vertical e horizontal dos itens da grade nos pontos de observação.
+*/place-items:center; /* Aqui o CSS define a cor do texto e dos detalhes que usam a cor atual nos pontos de observação.
+*/color:#fff4b5; /* Esse comando define a espessura, o estilo e a cor do contorno nos pontos de observação.
+*/border:1px solid #fff4b5a0; /* Essa declaração arredonda os cantos da caixa nos pontos de observação.
+*/border-radius:50%; /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo nos pontos de observação.
+*/background:#14201c75; /* Esse comando define o tamanho das letras nos pontos de observação.
+*/font-size:16px; /* Essa declaração desenha uma sombra ou um brilho ao redor da caixa nos pontos de observação.
+*/box-shadow:0 1px 5px #0008; }
+/* Essa regra reúne os ajustes nos pontos de observação.
+*/.scene-hotspot:has(img) .hotspot-marker { /* Aqui o CSS ajusta as distâncias das quatro bordas na área de posicionamento nos pontos de observação.
+*/inset:auto 0 0 auto; /* Esse comando define a largura ocupada pela caixa nos pontos de observação.
+*/width:18px; /* Essa declaração define a altura ocupada pela caixa nos pontos de observação.
+*/height:18px; /* Aqui o CSS define o tamanho das letras nos pontos de observação.
+*/font-size:10px; }
+/* Essa regra reúne os ajustes nos pontos de observação.
+*/.scene-hotspot.visited .hotspot-marker { /* Esse comando define a cor do texto e dos detalhes que usam a cor atual nos pontos de observação.
+*/color:#d9e7db; /* Essa declaração define a cor do contorno nos pontos de observação.
+*/border-color:#d9e7db70; }
+/* Essa regra reúne os ajustes nos pontos de observação.
+*/.hotspot-label { /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos pontos de observação.
+*/position:absolute; /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento nos pontos de observação.
+*/left:50%; /* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento nos pontos de observação.
+*/bottom:100%; /* Aqui o CSS define a largura ocupada pela caixa nos pontos de observação.
+*/width:max-content; /* Esse comando limita até onde a largura pode crescer nos pontos de observação.
+*/max-width:170px; /* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos pontos de observação.
+*/transform:translateX(-50%); /* Aqui o CSS cria espaço entre o conteúdo e a borda nos pontos de observação.
+*/padding:5px 8px; /* Esse comando define o preenchimento que aparece atrás do conteúdo nos pontos de observação.
+*/background:#101b19f5; /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual nos pontos de observação.
+*/color:#fff8e1; /* Aqui o CSS define a espessura, o estilo e a cor do contorno nos pontos de observação.
+*/border:1px solid #e8d8a280; /* Esse comando configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração nos pontos de observação.
+*/font:12px/1.4 Arial,sans-serif; /* Essa declaração deixa o desenho invisível sem remover a caixa da página nos pontos de observação.
+*/opacity:0; /* Aqui o CSS faz os cliques atravessarem essa camada para alcançar os controles de baixo nos pontos de observação.
+*/pointer-events:none; }
+/* Essa regra reúne os ajustes nos pontos de observação, quando o cursor fica sobre o elemento.
+*/.scene-hotspot:hover .hotspot-label,.scene-hotspot:focus-visible .hotspot-label { /* Esse comando deixa a camada totalmente visível nos pontos de observação.
+*/opacity:1; }
+/* Essa regra reúne os ajustes nos pontos de observação, quando o foco de teclado precisa ficar visível.
+*/.scene-hotspot:focus-visible { /* Essa declaração desenha uma marca ao redor do elemento sem alterar o tamanho da caixa nos pontos de observação.
+*/outline:2px solid #fff4b5; /* Aqui o CSS define a distância entre a marca de foco e a borda do elemento nos pontos de observação.
+*/outline-offset:2px; }
+/* Essa regra reúne os ajustes no personagem dentro do cenário.
+*/.room-scene .world-eco { /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência no personagem dentro do cenário.
+*/position:absolute; /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento no personagem dentro do cenário.
+*/left:50%; /* Aqui o CSS ajusta a distância da borda de cima dentro da área de posicionamento no personagem dentro do cenário.
+*/top:75%; /* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no personagem dentro do cenário.
+*/bottom:auto; /* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos no personagem dentro do cenário.
+*/transform:translate(-50%,-100%); /* Aqui o CSS define a largura ocupada pela caixa no personagem dentro do cenário.
+*/width:22%; /* Esse comando define a altura ocupada pela caixa no personagem dentro do cenário.
+*/height:42%; /* Essa declaração impõe a menor largura permitida no personagem dentro do cenário.
+*/min-width:64px; /* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário no personagem dentro do cenário.
+*/min-height:76px; /* Esse comando cria espaço entre o conteúdo e a borda no personagem dentro do cenário.
+*/padding:0; /* Essa declaração remove o preenchimento de fundo no personagem dentro do cenário.
+*/background:transparent; /* Aqui o CSS define a espessura, o estilo e a cor do contorno no personagem dentro do cenário.
+*/border:0; /* Esse comando desenha uma sombra ou um brilho ao redor da caixa no personagem dentro do cenário.
+*/box-shadow:none; }
+/* Essa regra reúne os ajustes no personagem dentro do cenário.
+*/.world-eco img { /* Essa declaração define a largura ocupada pela caixa no personagem dentro do cenário.
+*/width:100%; /* Aqui o CSS define a altura ocupada pela caixa no personagem dentro do cenário.
+*/height:100%; /* Esse comando mantém a imagem inteira dentro da caixa sem deformar a proporção no personagem dentro do cenário.
+*/object-fit:contain; /* Essa declaração mantém os pixels bem visíveis quando a imagem é ampliada no personagem dentro do cenário.
+*/image-rendering:pixelated; /* Aqui o CSS ajusta a aparência da imagem com os efeitos indicados no personagem dentro do cenário.
+*/filter:drop-shadow(0 5px 4px #0006); /* Esse comando faz os cliques atravessarem essa camada para alcançar os controles de baixo no personagem dentro do cenário.
+*/pointer-events:none; }
+/* Essa regra reúne os ajustes no personagem dentro do cenário.
+*/.world-eco span { /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência no personagem dentro do cenário.
+*/position:absolute; /* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento no personagem dentro do cenário.
+*/bottom:0; /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento no personagem dentro do cenário.
+*/left:50%; /* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos no personagem dentro do cenário.
+*/transform:translateX(-50%); /* Aqui o CSS define a largura ocupada pela caixa no personagem dentro do cenário.
+*/width:max-content; /* Esse comando cria espaço entre o conteúdo e a borda no personagem dentro do cenário.
+*/padding:4px 7px; /* Essa declaração define o tamanho das letras no personagem dentro do cenário.
+*/font-size:11px; /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo no personagem dentro do cenário.
+*/background:#14201ce8; /* Esse comando deixa o desenho invisível sem remover a caixa da página no personagem dentro do cenário.
+*/opacity:0; /* Essa declaração faz os cliques atravessarem essa camada para alcançar os controles de baixo no personagem dentro do cenário.
+*/pointer-events:none; }
+/* Essa regra reúne os ajustes no personagem dentro do cenário, quando o cursor fica sobre o elemento.
+*/.world-eco:hover span,.world-eco:focus-visible span { /* Aqui o CSS deixa a camada totalmente visível no personagem dentro do cenário.
+*/opacity:1; }
+/* Essa regra reúne os ajustes no personagem dentro do cenário, quando o foco de teclado precisa ficar visível.
+*/.world-eco:focus-visible { /* Esse comando desenha uma marca ao redor do elemento sem alterar o tamanho da caixa no personagem dentro do cenário.
+*/outline:2px solid #fff4b5; }
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px) { /* Essa regra reúne os ajustes nos pontos de observação.
+*/.room-scene .scene-hotspot { /* Essa declaração define a largura ocupada pela caixa nos pontos de observação.
+*/width:44px; /* Aqui o CSS define a altura ocupada pela caixa nos pontos de observação.
+*/height:44px; /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário nos pontos de observação.
+*/min-height:44px; /* Essa declaração cria espaço entre o conteúdo e a borda nos pontos de observação.
+*/padding:0; } /* Essa regra reúne os ajustes nos pontos de observação.
+*/.hotspot-label { /* Aqui o CSS limita até onde a largura pode crescer nos pontos de observação.
+*/max-width:130px; /* Esse comando define o tamanho das letras nos pontos de observação.
+*/font-size:11px; } /* Essa regra reúne os ajustes nos botões que mudam a vista do quarto.
+*/.room-nav button { /* Essa declaração mantém uma altura mínima para a área não ficar menor que o necessário nos botões que mudam a vista do quarto.
+*/min-height:44px; } }
 /* Conversas longas rolam dentro da moldura, inclusive quando há vários assuntos. */
-.dialogue { max-height:82%; overflow-y:auto; overscroll-behavior:contain; }
-.dialogue .choices { flex-direction:column; }
-.dialogue .choices button { flex:none; min-width:0; min-height:44px; }
-.sanity-hud { position:absolute; z-index:5; right:18px; top:16px; width:210px; padding:9px 12px; background:#101b1de8; border:1px solid #bac6a680; font:12px/1.5 monospace; pointer-events:none; }
-.sanity-hud label { display:flex; justify-content:space-between; }.sanity-hud meter { display:block; width:100%; height:16px; accent-color:#b3db9c; }.sanity-hud span { display:block; font-size:10px; color:#c5d9b7; }.sanity-hud.draining span { color:#e8aca9; }
-.room-notice { position:absolute; top:75px; left:50%; transform:translateX(-50%); width:min(90%,650px); max-height:180px; overflow:auto; white-space:pre-line; z-index:20; background:#14261ff5; border:1px solid #dfce8b; padding:12px; color:#fff4d1; box-shadow:0 5px 15px #0008; font-size:13px; }.room-notice button { margin-left:12px; padding:4px 12px; min-height:36px; }
-.scene-hotspot .pedestal-sword { position:absolute; left:0; top:-8px; height:60px; width:28px; }.scene-hotspot .pedestal-shield { position:absolute; right:-14px; top:4px; height:42px; width:34px; }
-.hands.exploration-hands { bottom:-3%; left:10%; width:80%; height:42%; opacity:.95; }
-.false-battle { background:#050505; border:4px solid #eee; color:white; font-family:monospace; display:flex; flex-wrap:wrap; align-content:end; align-items:center; gap:20px; }
-.false-battle h1,.false-battle>p { width:100%; color:white; }.false-battle-status { border:2px solid white; padding:24px; }.false-battle>button { border:2px solid #f3a13c; color:#f3a13c; font:bold 24px monospace; background:#050505; min-height:56px; }
-@media(max-width:600px) { .sanity-hud { top:8px; right:8px; width:155px; padding:7px; font-size:11px; }.sanity-hud span { font-size:9px; }.location { max-width:45%; left:8px; font-size:10px; }.room-notice { top:85px; font-size:12px; }.dialogue .choices button { min-height:44px; }.false-battle { inset:12% 4%; }.false-battle>button { font-size:19px; }.hands.exploration-hands { width:100%; left:0; height:35%; } }
+/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue { /* Aqui o CSS limita até onde a altura pode crescer na caixa de diálogo.
+*/max-height:82%; /* Esse comando controla o conteúdo que passa do limite vertical na caixa de diálogo.
+*/overflow-y:auto; /* Essa declaração controla se a rolagem continua na área de fora ao chegar ao fim na caixa de diálogo.
+*/overscroll-behavior:contain; }
+/* Essa regra reúne os ajustes nas opções de resposta.
+*/.dialogue .choices { /* Aqui o CSS escolhe o sentido em que os itens flexíveis são organizados nas opções de resposta.
+*/flex-direction:column; }
+/* Essa regra reúne os ajustes nas opções de resposta.
+*/.dialogue .choices button { /* Esse comando define como o item cresce ou encolhe dentro de um grupo flexível nas opções de resposta.
+*/flex:none; /* Essa declaração permite que a caixa encolha em um grupo flexível ou em uma grade sem forçar a largura da tela nas opções de resposta.
+*/min-width:0; /* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário nas opções de resposta.
+*/min-height:44px; }
+/* Essa regra reúne os ajustes no indicador de sanidade.
+*/.sanity-hud { /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência no indicador de sanidade.
+*/position:absolute; /* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente no indicador de sanidade.
+*/z-index:5; /* Aqui o CSS ajusta a distância da borda direita dentro da área de posicionamento no indicador de sanidade.
+*/right:18px; /* Esse comando ajusta a distância da borda de cima dentro da área de posicionamento no indicador de sanidade.
+*/top:16px; /* Essa declaração define a largura ocupada pela caixa no indicador de sanidade.
+*/width:210px; /* Aqui o CSS cria espaço entre o conteúdo e a borda no indicador de sanidade.
+*/padding:9px 12px; /* Esse comando define o preenchimento que aparece atrás do conteúdo no indicador de sanidade.
+*/background:#101b1de8; /* Essa declaração define a espessura, o estilo e a cor do contorno no indicador de sanidade.
+*/border:1px solid #bac6a680; /* Aqui o CSS configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração no indicador de sanidade.
+*/font:12px/1.5 monospace; /* Esse comando faz os cliques atravessarem essa camada para alcançar os controles de baixo no indicador de sanidade.
+*/pointer-events:none; }
+/* Essa regra reúne os ajustes no indicador de sanidade.
+*/.sanity-hud label { /* Essa declaração organiza os elementos filhos em um grupo flexível no indicador de sanidade.
+*/display:flex; /* Aqui o CSS distribui os itens no sentido principal do grupo no indicador de sanidade.
+*/justify-content:space-between; }/* Essa regra reúne os ajustes no indicador de sanidade.
+*/.sanity-hud meter { /* Esse comando trata o elemento como uma caixa de bloco no indicador de sanidade.
+*/display:block; /* Essa declaração define a largura ocupada pela caixa no indicador de sanidade.
+*/width:100%; /* Aqui o CSS define a altura ocupada pela caixa no indicador de sanidade.
+*/height:16px; /* Esse comando define a cor usada pelo navegador nos controles de seleção no indicador de sanidade.
+*/accent-color:#b3db9c; }/* Essa regra reúne os ajustes no indicador de sanidade.
+*/.sanity-hud span { /* Essa declaração trata o elemento como uma caixa de bloco no indicador de sanidade.
+*/display:block; /* Aqui o CSS define o tamanho das letras no indicador de sanidade.
+*/font-size:10px; /* Esse comando define a cor do texto e dos detalhes que usam a cor atual no indicador de sanidade.
+*/color:#c5d9b7; }/* Essa regra reúne os ajustes no indicador de sanidade.
+*/.sanity-hud.draining span { /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual no indicador de sanidade.
+*/color:#e8aca9; }
+/* Essa regra reúne os ajustes no aviso de quarto desbloqueado.
+*/.room-notice { /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência no aviso de quarto desbloqueado.
+*/position:absolute; /* Esse comando ajusta a distância da borda de cima dentro da área de posicionamento no aviso de quarto desbloqueado.
+*/top:75px; /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento no aviso de quarto desbloqueado.
+*/left:50%; /* Aqui o CSS muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos no aviso de quarto desbloqueado.
+*/transform:translateX(-50%); /* Esse comando define a largura ocupada pela caixa no aviso de quarto desbloqueado.
+*/width:min(90%,650px); /* Essa declaração limita até onde a altura pode crescer no aviso de quarto desbloqueado.
+*/max-height:180px; /* Aqui o CSS controla o que acontece com o conteúdo que passa dos limites no aviso de quarto desbloqueado.
+*/overflow:auto; /* Esse comando controla a preservação de espaços e a quebra das linhas no aviso de quarto desbloqueado.
+*/white-space:pre-line; /* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente no aviso de quarto desbloqueado.
+*/z-index:20; /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo no aviso de quarto desbloqueado.
+*/background:#14261ff5; /* Esse comando define a espessura, o estilo e a cor do contorno no aviso de quarto desbloqueado.
+*/border:1px solid #dfce8b; /* Essa declaração cria espaço entre o conteúdo e a borda no aviso de quarto desbloqueado.
+*/padding:12px; /* Aqui o CSS define a cor do texto e dos detalhes que usam a cor atual no aviso de quarto desbloqueado.
+*/color:#fff4d1; /* Esse comando desenha uma sombra ou um brilho ao redor da caixa no aviso de quarto desbloqueado.
+*/box-shadow:0 5px 15px #0008; /* Essa declaração define o tamanho das letras no aviso de quarto desbloqueado.
+*/font-size:13px; }/* Essa regra reúne os ajustes no aviso de quarto desbloqueado.
+*/.room-notice button { /* Aqui o CSS ajusta a distância externa do lado esquerdo no aviso de quarto desbloqueado.
+*/margin-left:12px; /* Esse comando cria espaço entre o conteúdo e a borda no aviso de quarto desbloqueado.
+*/padding:4px 12px; /* Essa declaração mantém uma altura mínima para a área não ficar menor que o necessário no aviso de quarto desbloqueado.
+*/min-height:36px; }
+/* Essa regra reúne os ajustes nos pontos de observação.
+*/.scene-hotspot .pedestal-sword { /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos pontos de observação.
+*/position:absolute; /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento nos pontos de observação.
+*/left:0; /* Essa declaração ajusta a distância da borda de cima dentro da área de posicionamento nos pontos de observação.
+*/top:-8px; /* Aqui o CSS define a altura ocupada pela caixa nos pontos de observação.
+*/height:60px; /* Esse comando define a largura ocupada pela caixa nos pontos de observação.
+*/width:28px; }/* Essa regra reúne os ajustes nos pontos de observação.
+*/.scene-hotspot .pedestal-shield { /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos pontos de observação.
+*/position:absolute; /* Aqui o CSS ajusta a distância da borda direita dentro da área de posicionamento nos pontos de observação.
+*/right:-14px; /* Esse comando ajusta a distância da borda de cima dentro da área de posicionamento nos pontos de observação.
+*/top:4px; /* Essa declaração define a altura ocupada pela caixa nos pontos de observação.
+*/height:42px; /* Aqui o CSS define a largura ocupada pela caixa nos pontos de observação.
+*/width:34px; }
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands.exploration-hands { /* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:-3%; /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento nas mãos do protagonista.
+*/left:10%; /* Aqui o CSS define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:80%; /* Esse comando define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:42%; /* Essa declaração mistura a camada com o fundo usando transparência parcial nas mãos do protagonista.
+*/opacity:.95; }
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.false-battle { /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo nos elementos escolhidos por essa regra.
+*/background:#050505; /* Esse comando define a espessura, o estilo e a cor do contorno nos elementos escolhidos por essa regra.
+*/border:4px solid #eee; /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual nos elementos escolhidos por essa regra.
+*/color:white; /* Aqui o CSS escolhe a família de letras usada no texto nos elementos escolhidos por essa regra.
+*/font-family:monospace; /* Esse comando organiza os elementos filhos em um grupo flexível nos elementos escolhidos por essa regra.
+*/display:flex; /* Essa declaração controla se os itens podem passar para outra linha nos elementos escolhidos por essa regra.
+*/flex-wrap:wrap; /* Aqui o CSS distribui as linhas no eixo transversal quando há espaço sobrando nos elementos escolhidos por essa regra.
+*/align-content:end; /* Esse comando alinha os itens no eixo transversal do grupo nos elementos escolhidos por essa regra.
+*/align-items:center; /* Essa declaração define o espaço entre os itens de uma grade ou de um grupo flexível nos elementos escolhidos por essa regra.
+*/gap:20px; }
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.false-battle h1,.false-battle>p { /* Aqui o CSS define a largura ocupada pela caixa nos elementos escolhidos por essa regra.
+*/width:100%; /* Esse comando define a cor do texto e dos detalhes que usam a cor atual nos elementos escolhidos por essa regra.
+*/color:white; }/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.false-battle-status { /* Essa declaração define a espessura, o estilo e a cor do contorno nos elementos escolhidos por essa regra.
+*/border:2px solid white; /* Aqui o CSS cria espaço entre o conteúdo e a borda nos elementos escolhidos por essa regra.
+*/padding:24px; }/* Essa regra reúne os ajustes nos botões e controles selecionados.
+*/.false-battle>button { /* Esse comando define a espessura, o estilo e a cor do contorno nos botões e controles selecionados.
+*/border:2px solid #f3a13c; /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual nos botões e controles selecionados.
+*/color:#f3a13c; /* Aqui o CSS configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração nos botões e controles selecionados.
+*/font:bold 24px monospace; /* Esse comando define o preenchimento que aparece atrás do conteúdo nos botões e controles selecionados.
+*/background:#050505; /* Essa declaração mantém uma altura mínima para a área não ficar menor que o necessário nos botões e controles selecionados.
+*/min-height:56px; }
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px) { /* Essa regra reúne os ajustes no indicador de sanidade.
+*/.sanity-hud { /* Aqui o CSS ajusta a distância da borda de cima dentro da área de posicionamento no indicador de sanidade.
+*/top:8px; /* Esse comando ajusta a distância da borda direita dentro da área de posicionamento no indicador de sanidade.
+*/right:8px; /* Essa declaração define a largura ocupada pela caixa no indicador de sanidade.
+*/width:155px; /* Aqui o CSS cria espaço entre o conteúdo e a borda no indicador de sanidade.
+*/padding:7px; /* Esse comando define o tamanho das letras no indicador de sanidade.
+*/font-size:11px; }/* Essa regra reúne os ajustes no indicador de sanidade.
+*/.sanity-hud span { /* Essa declaração define o tamanho das letras no indicador de sanidade.
+*/font-size:9px; }/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.location { /* Aqui o CSS limita até onde a largura pode crescer nos elementos escolhidos por essa regra.
+*/max-width:45%; /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento nos elementos escolhidos por essa regra.
+*/left:8px; /* Essa declaração define o tamanho das letras nos elementos escolhidos por essa regra.
+*/font-size:10px; }/* Essa regra reúne os ajustes no aviso de quarto desbloqueado.
+*/.room-notice { /* Aqui o CSS ajusta a distância da borda de cima dentro da área de posicionamento no aviso de quarto desbloqueado.
+*/top:85px; /* Esse comando define o tamanho das letras no aviso de quarto desbloqueado.
+*/font-size:12px; }/* Essa regra reúne os ajustes nas opções de resposta.
+*/.dialogue .choices button { /* Essa declaração mantém uma altura mínima para a área não ficar menor que o necessário nas opções de resposta.
+*/min-height:44px; }/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.false-battle { /* Aqui o CSS ajusta as distâncias das quatro bordas na área de posicionamento nos elementos escolhidos por essa regra.
+*/inset:12% 4%; }/* Essa regra reúne os ajustes nos botões e controles selecionados.
+*/.false-battle>button { /* Esse comando define o tamanho das letras nos botões e controles selecionados.
+*/font-size:19px; }/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands.exploration-hands { /* Essa declaração define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:100%; /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento nas mãos do protagonista.
+*/left:0; /* Esse comando define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:35%; } }
 /* O título e o corpo seguem áreas distintas da moldura PNG, mesmo com texto longo. */
-.dialogue { height:min(260px,80%); min-height:0; max-height:82%; padding:0; overflow:visible; }
-.dialogue:has(.choices:not(:empty)) { height:min(65dvh,82%); }
-.dialogue .speaker { position:absolute; left:7.5%; top:8%; width:20%; margin:0; font-size:clamp(10px,1.2vw,14px); line-height:1.4; letter-spacing:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-.dialogue-body { position:absolute; top:28%; bottom:12%; left:8.5%; right:8.5%; overflow:auto; overflow-wrap:anywhere; scrollbar-width:thin; scrollbar-color:#b5b3a9 #111720; overscroll-behavior:contain; padding:0 5px 3px 0; }
-.dialogue-body .choices { padding-bottom:6px; }.dialogue-body .advance { min-height:44px; }
-@media(orientation:landscape) and (max-height:550px) { .dialogue { height:80%; min-height:0; }.dialogue:has(.choices:not(:empty)) { height:82%; }.dialogue-body p { font-size:13px; }.dialogue .speaker { top:8%;font-size:11px; } }
-.dialogue:has(.choices:not(:empty)) { height:min(360px,80%); }
-.dialogue:has(.choices > button:nth-child(4)) { height:min(540px,82%); }
-@media(orientation:landscape) and (max-height:550px) { .dialogue:has(.choices:not(:empty)) { height:82%; } }
+/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue { /* Essa declaração define a altura ocupada pela caixa na caixa de diálogo.
+*/height:min(260px,80%); /* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário na caixa de diálogo.
+*/min-height:0; /* Esse comando limita até onde a altura pode crescer na caixa de diálogo.
+*/max-height:82%; /* Essa declaração cria espaço entre o conteúdo e a borda na caixa de diálogo.
+*/padding:0; /* Aqui o CSS controla o que acontece com o conteúdo que passa dos limites na caixa de diálogo.
+*/overflow:visible; }
+/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue:has(.choices:not(:empty)) { /* Esse comando define a altura ocupada pela caixa na caixa de diálogo.
+*/height:min(65dvh,82%); }
+/* Essa regra reúne os ajustes no nome de quem está falando.
+*/.dialogue .speaker { /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência no nome de quem está falando.
+*/position:absolute; /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento no nome de quem está falando.
+*/left:7.5%; /* Esse comando ajusta a distância da borda de cima dentro da área de posicionamento no nome de quem está falando.
+*/top:8%; /* Essa declaração define a largura ocupada pela caixa no nome de quem está falando.
+*/width:20%; /* Aqui o CSS define o espaço do lado de fora da caixa no nome de quem está falando.
+*/margin:0; /* Esse comando define o tamanho das letras no nome de quem está falando.
+*/font-size:clamp(10px,1.2vw,14px); /* Essa declaração define a distância entre uma linha de texto e a próxima no nome de quem está falando.
+*/line-height:1.4; /* Aqui o CSS ajusta o espaço entre as letras no nome de quem está falando.
+*/letter-spacing:0; /* Esse comando controla o que acontece com o conteúdo que passa dos limites no nome de quem está falando.
+*/overflow:hidden; /* Essa declaração controla a preservação de espaços e a quebra das linhas no nome de quem está falando.
+*/white-space:nowrap; /* Aqui o CSS escolhe como sinalizar o texto que foi cortado no nome de quem está falando.
+*/text-overflow:ellipsis; }
+/* Essa regra reúne os ajustes na área de leitura do diálogo.
+*/.dialogue-body { /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na área de leitura do diálogo.
+*/position:absolute; /* Essa declaração ajusta a distância da borda de cima dentro da área de posicionamento na área de leitura do diálogo.
+*/top:28%; /* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento na área de leitura do diálogo.
+*/bottom:12%; /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento na área de leitura do diálogo.
+*/left:8.5%; /* Essa declaração ajusta a distância da borda direita dentro da área de posicionamento na área de leitura do diálogo.
+*/right:8.5%; /* Aqui o CSS controla o que acontece com o conteúdo que passa dos limites na área de leitura do diálogo.
+*/overflow:auto; /* Esse comando permite quebrar palavras longas para o texto não escapar da caixa na área de leitura do diálogo.
+*/overflow-wrap:anywhere; /* Essa declaração ajusta a largura visual da barra de rolagem na área de leitura do diálogo.
+*/scrollbar-width:thin; /* Aqui o CSS define as cores da barra e do trilho de rolagem na área de leitura do diálogo.
+*/scrollbar-color:#b5b3a9 #111720; /* Esse comando controla se a rolagem continua na área de fora ao chegar ao fim na área de leitura do diálogo.
+*/overscroll-behavior:contain; /* Essa declaração cria espaço entre o conteúdo e a borda na área de leitura do diálogo.
+*/padding:0 5px 3px 0; }
+/* Essa regra reúne os ajustes nas opções de resposta.
+*/.dialogue-body .choices { /* Aqui o CSS cria espaço interno abaixo do conteúdo nas opções de resposta.
+*/padding-bottom:6px; }/* Essa regra reúne os ajustes na área de leitura do diálogo.
+*/.dialogue-body .advance { /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário na área de leitura do diálogo.
+*/min-height:44px; }
+/* Essas regras ajustam a interface quando a tela está deitada, com menos altura disponível.
+*/@media(orientation:landscape) and (max-height:550px) { /* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue { /* Essa declaração define a altura ocupada pela caixa na caixa de diálogo.
+*/height:80%; /* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário na caixa de diálogo.
+*/min-height:0; }/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue:has(.choices:not(:empty)) { /* Esse comando define a altura ocupada pela caixa na caixa de diálogo.
+*/height:82%; }/* Essa regra reúne os ajustes na área de leitura do diálogo.
+*/.dialogue-body p { /* Essa declaração define o tamanho das letras na área de leitura do diálogo.
+*/font-size:13px; }/* Essa regra reúne os ajustes no nome de quem está falando.
+*/.dialogue .speaker { /* Aqui o CSS ajusta a distância da borda de cima dentro da área de posicionamento no nome de quem está falando.
+*/top:8%;/* Esse comando define o tamanho das letras no nome de quem está falando.
+*/font-size:11px; } }
+/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue:has(.choices:not(:empty)) { /* Essa declaração define a altura ocupada pela caixa na caixa de diálogo.
+*/height:min(360px,80%); }
+/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue:has(.choices > button:nth-child(4)) { /* Aqui o CSS define a altura ocupada pela caixa na caixa de diálogo.
+*/height:min(540px,82%); }
+/* Essas regras ajustam a interface quando a tela está deitada, com menos altura disponível.
+*/@media(orientation:landscape) and (max-height:550px) { /* Essa regra reúne os ajustes na caixa de diálogo.
+*/.dialogue:has(.choices:not(:empty)) { /* Esse comando define a altura ocupada pela caixa na caixa de diálogo.
+*/height:82%; } }
 /* O alvo não anuncia o conteúdo que libera. O foco continua acessível pelo teclado. */
-.quiet-interaction { position:absolute; right:0; bottom:10%; width:44px; height:44px; min-height:44px; padding:0; opacity:0; border:0; background:transparent; }
-.quiet-interaction:focus-visible { opacity:.45; outline:1px solid #fff8d5; }
-@media(max-width:600px) { .game-header { gap:6px; }.game-header>div { gap:4px; }.game-header button { padding:7px 5px; font-size:10px; }.game-header kbd { display:none; } }
-.held-object { position:absolute; z-index:5; left:45%; bottom:41%; width:12%; height:19%; object-fit:contain; image-rendering:pixelated; pointer-events:none; filter:drop-shadow(0 3px 4px #0008); }
-.hands.exploration-hands.inspecting-hands { bottom:9%; left:5%; width:90%; height:64%; }
-.actor.chase-presence { left:75%; width:40%; height:42%; bottom:24%; opacity:.85; }
-.idle-layer.sway { animation:cloth-idle 5s ease-in-out infinite; }.idle-layer.glow { animation:core-idle 3s ease-in-out infinite; }
-@keyframes cloth-idle { 0%,100% { transform:translate(-50%,0); } 50% { transform:translate(calc(-50% + 1px),-1px); } }
-@keyframes core-idle { 0%,100% { opacity:.82; } 50% { opacity:1; } }
-@media(max-width:600px) { .held-object { left:40%;width:20%;height:17%;bottom:43%; }.hands.exploration-hands.inspecting-hands { width:100%;left:0;bottom:14%;height:55%; } }
-.hands.exploration-hands.gesture-hands { width:100%;height:85%;left:0;bottom:0; }
-@media(max-width:600px) { .hands.exploration-hands.gesture-hands { bottom:13%;height:70%; } }
-.sprite-control::before { content:''; display:inline-block; width:20px; height:20px; margin-right:7px; vertical-align:middle; background:var(--control-normal) center/contain no-repeat; image-rendering:pixelated; pointer-events:none; }
-.sprite-control:active::before { background-image:var(--control-pressed); }.sprite-control:disabled::before { background-image:var(--control-disabled); }.bag-icon { width:52px;height:52px;object-fit:contain;image-rendering:pixelated; }
-@media(max-width:600px) { .sprite-control::before { width:16px;height:16px;margin-right:4px; }.game-header .sprite-control::before { display:none; } }
-/* Polimento: cada camada cabe na câmera; corrida usa perspectiva e ações rápidas. */
-.chase-canvas { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated;z-index:0;pointer-events:none; }
-.chasing .background { opacity:0; }.chasing .actor { display:none; }
-.chase-nav { bottom:16px; justify-content:center; }.chase-nav button { min-width:140px;min-height:48px;touch-action:manipulation; }.chase-nav button[aria-pressed="true"] { border-color:#ffe497;background:#695528; }
-.prompt.chase-prompt { left:18%;right:18%;top:auto;bottom:95px;transform:none;max-width:none;padding:12px;background:#080b10eb; }.chase-prompt>p:first-child { font-size:18px; }.chase-prompt #prompt-actions { flex-wrap:wrap; }
-.hands,.hands.exploration-hands { left:50%;transform:translateX(-50%);bottom:0;width:min(100%,800px);height:auto;max-height:none;object-fit:contain;object-position:center bottom; }
-.hands.exploration-hands.inspecting-hands { left:50%;bottom:16%;width:min(96%,760px);height:auto; }
-.hands.exploration-hands.gesture-hands { left:50%;bottom:14%;width:min(100%,680px);height:auto; }
-.actor.combat { left:50%;bottom:37%;width:34%;height:34%;object-fit:contain;object-position:center; }
-.actor.closeup { left:50%;bottom:18%;width:min(88%,820px);height:74%;object-fit:contain;object-position:center; }
-.shared-scene .actor:not(.two),.shared-scene .idle-layer { left:28%;width:43%;height:68%;bottom:20%; }
-.shared-scene .actor.two { left:73%;width:43%;height:68%;bottom:20%;object-fit:contain; }
-.guest-eco { position:absolute;left:24%;top:72%;width:20%;height:35%;min-width:60px;min-height:76px;transform:translate(-50%,-100%);border:0;background:transparent;padding:0; }
-.guest-eco img { width:100%;height:100%;object-fit:contain;image-rendering:pixelated; }.guest-eco span { display:block;background:#101b19dc;color:#f7edce;font-size:11px;white-space:nowrap;padding:3px; }
-.quiet-interaction { opacity:1;bottom:10%;right:0; }.quiet-interaction img { position:absolute;right:3px;bottom:3px;width:14px;height:14px;object-fit:contain;image-rendering:pixelated;opacity:.32; }.quiet-interaction:hover img,.quiet-interaction:focus-visible img { opacity:.85; }
-.impact { animation:impact-shake .3s linear; }@keyframes impact-shake { 0%,100%{filter:none;}25%{filter:brightness(.6) saturate(1.5);transform:translateX(-3px);}70%{transform:translateX(3px);} }
-#modal-content fieldset { margin:18px 0;padding:12px;border:1px solid #788476; }#modal-content input[type="range"] { display:block;width:100%; }#modal-content details p { font-size:12px; }
-@media(max-width:600px) { .hands.exploration-hands.inspecting-hands { bottom:20%;width:100%;height:auto; }.hands.exploration-hands.gesture-hands { bottom:26%;width:100%;height:auto; }.actor.combat { width:43%;height:28%;bottom:44%; }.actor.closeup { width:92%;height:70%;bottom:23%; }.prompt.chase-prompt { left:4%;right:4%;bottom:90px; }.chase-nav { left:8px;right:8px;gap:6px; }.chase-nav button { min-width:0;flex:1;font-size:11px; }.guest-eco span { font-size:9px;white-space:normal; } }
-@media(orientation:landscape) and (max-height:550px) { .actor.closeup { height:80%;bottom:12%; }.actor.combat { height:43%;bottom:35%; }.hands.exploration-hands { width:min(72%,520px); }.prompt.chase-prompt { bottom:65px;padding:7px; }.chase-prompt>p:first-child { font-size:14px; }.chase-nav { bottom:6px; }.chase-nav button { min-height:38px; }.chase-prompt #prompt-actions button { min-height:34px;padding:6px; } }
-.hands,.hands.exploration-hands { max-height:90%; }
-.hands.exploration-hands.inspecting-hands { max-height:75%; }
-.hands.exploration-hands.gesture-hands { max-height:78%; }
-.guest-eco { left:50%;z-index:1; }.room-scene .scene-hotspot { z-index:2; }
+/* Essa regra reúne os ajustes no ponto discreto do quarto da Candy.
+*/.quiet-interaction { /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência no ponto discreto do quarto da Candy.
+*/position:absolute; /* Aqui o CSS ajusta a distância da borda direita dentro da área de posicionamento no ponto discreto do quarto da Candy.
+*/right:0; /* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no ponto discreto do quarto da Candy.
+*/bottom:10%; /* Essa declaração define a largura ocupada pela caixa no ponto discreto do quarto da Candy.
+*/width:44px; /* Aqui o CSS define a altura ocupada pela caixa no ponto discreto do quarto da Candy.
+*/height:44px; /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário no ponto discreto do quarto da Candy.
+*/min-height:44px; /* Essa declaração cria espaço entre o conteúdo e a borda no ponto discreto do quarto da Candy.
+*/padding:0; /* Aqui o CSS deixa o desenho invisível sem remover a caixa da página no ponto discreto do quarto da Candy.
+*/opacity:0; /* Esse comando define a espessura, o estilo e a cor do contorno no ponto discreto do quarto da Candy.
+*/border:0; /* Essa declaração remove o preenchimento de fundo no ponto discreto do quarto da Candy.
+*/background:transparent; }
+/* Essa regra reúne os ajustes no ponto discreto do quarto da Candy, quando o foco de teclado precisa ficar visível.
+*/.quiet-interaction:focus-visible { /* Aqui o CSS mistura a camada com o fundo usando transparência parcial no ponto discreto do quarto da Candy.
+*/opacity:.45; /* Esse comando desenha uma marca ao redor do elemento sem alterar o tamanho da caixa no ponto discreto do quarto da Candy.
+*/outline:1px solid #fff8d5; }
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px) { /* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header { /* Essa declaração define o espaço entre os itens de uma grade ou de um grupo flexível no cabeçalho do Jardim.
+*/gap:6px; }/* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header>div { /* Aqui o CSS define o espaço entre os itens de uma grade ou de um grupo flexível no cabeçalho do Jardim.
+*/gap:4px; }/* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header button { /* Esse comando cria espaço entre o conteúdo e a borda no cabeçalho do Jardim.
+*/padding:7px 5px; /* Essa declaração define o tamanho das letras no cabeçalho do Jardim.
+*/font-size:10px; }/* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header kbd { /* Aqui o CSS esconde o elemento e retira o espaço que ele ocuparia no cabeçalho do Jardim.
+*/display:none; } }
+/* Essa regra reúne os ajustes no objeto que o protagonista segura.
+*/.held-object { /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência no objeto que o protagonista segura.
+*/position:absolute; /* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente no objeto que o protagonista segura.
+*/z-index:5; /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento no objeto que o protagonista segura.
+*/left:45%; /* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no objeto que o protagonista segura.
+*/bottom:41%; /* Essa declaração define a largura ocupada pela caixa no objeto que o protagonista segura.
+*/width:12%; /* Aqui o CSS define a altura ocupada pela caixa no objeto que o protagonista segura.
+*/height:19%; /* Esse comando mantém a imagem inteira dentro da caixa sem deformar a proporção no objeto que o protagonista segura.
+*/object-fit:contain; /* Essa declaração mantém os pixels bem visíveis quando a imagem é ampliada no objeto que o protagonista segura.
+*/image-rendering:pixelated; /* Aqui o CSS faz os cliques atravessarem essa camada para alcançar os controles de baixo no objeto que o protagonista segura.
+*/pointer-events:none; /* Esse comando ajusta a aparência da imagem com os efeitos indicados no objeto que o protagonista segura.
+*/filter:drop-shadow(0 3px 4px #0008); }
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands.exploration-hands.inspecting-hands { /* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:9%; /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento nas mãos do protagonista.
+*/left:5%; /* Esse comando define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:90%; /* Essa declaração define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:64%; }
+/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/.actor.chase-presence { /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento nos controles e imagens da perseguição.
+*/left:75%; /* Esse comando define a largura ocupada pela caixa nos controles e imagens da perseguição.
+*/width:40%; /* Essa declaração define a altura ocupada pela caixa nos controles e imagens da perseguição.
+*/height:42%; /* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento nos controles e imagens da perseguição.
+*/bottom:24%; /* Esse comando mistura a camada com o fundo usando transparência parcial nos controles e imagens da perseguição.
+*/opacity:.85; }
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.idle-layer.sway { /* Essa declaração liga a sequência de movimento e define seu tempo e sua repetição nos elementos escolhidos por essa regra.
+*/animation:cloth-idle 5s ease-in-out infinite; }/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.idle-layer.glow { /* Aqui o CSS liga a sequência de movimento e define seu tempo e sua repetição nos elementos escolhidos por essa regra.
+*/animation:core-idle 3s ease-in-out infinite; }
+/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes cloth-idle { /* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/0%,100% { /* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(-50%,0); } /* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/50% { /* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(calc(-50% + 1px),-1px); } }
+/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes core-idle { /* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/0%,100% { /* Aqui o CSS mistura a camada com o fundo usando transparência parcial nos elementos escolhidos por essa regra.
+*/opacity:.82; } /* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/50% { /* Esse comando deixa a camada totalmente visível nos elementos escolhidos por essa regra.
+*/opacity:1; } }
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px) { /* Essa regra reúne os ajustes no objeto que o protagonista segura.
+*/.held-object { /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento no objeto que o protagonista segura.
+*/left:40%;/* Aqui o CSS define a largura ocupada pela caixa no objeto que o protagonista segura.
+*/width:20%;/* Esse comando define a altura ocupada pela caixa no objeto que o protagonista segura.
+*/height:17%;/* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento no objeto que o protagonista segura.
+*/bottom:43%; }/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands.exploration-hands.inspecting-hands { /* Aqui o CSS define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:100%;/* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento nas mãos do protagonista.
+*/left:0;/* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:14%;/* Aqui o CSS define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:55%; } }
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands.exploration-hands.gesture-hands { /* Esse comando define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:100%;/* Essa declaração define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:85%;/* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento nas mãos do protagonista.
+*/left:0;/* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:0; }
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px) { /* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands.exploration-hands.gesture-hands { /* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:13%;/* Aqui o CSS define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:70%; } }
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra, usando uma camada criada pelo próprio CSS.
+*/.sprite-control::before { /* Esse comando cria um conteúdo vazio para a camada do CSS poder receber um desenho nos elementos escolhidos por essa regra.
+*/content:''; /* Essa declaração mantém a caixa na linha e permite definir seus tamanhos nos elementos escolhidos por essa regra.
+*/display:inline-block; /* Aqui o CSS define a largura ocupada pela caixa nos elementos escolhidos por essa regra.
+*/width:20px; /* Esse comando define a altura ocupada pela caixa nos elementos escolhidos por essa regra.
+*/height:20px; /* Essa declaração ajusta a distância externa do lado direito nos elementos escolhidos por essa regra.
+*/margin-right:7px; /* Aqui o CSS alinha esse conteúdo em relação à linha de texto nos elementos escolhidos por essa regra.
+*/vertical-align:middle; /* Esse comando define o preenchimento que aparece atrás do conteúdo nos elementos escolhidos por essa regra.
+*/background:var(--control-normal) center/contain no-repeat; /* Essa declaração mantém os pixels bem visíveis quando a imagem é ampliada nos elementos escolhidos por essa regra.
+*/image-rendering:pixelated; /* Aqui o CSS faz os cliques atravessarem essa camada para alcançar os controles de baixo nos elementos escolhidos por essa regra.
+*/pointer-events:none; }
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra, usando uma camada criada pelo próprio CSS.
+*/.sprite-control:active::before { /* Esse comando escolhe a imagem ou o gradiente que será usado no fundo nos elementos escolhidos por essa regra.
+*/background-image:var(--control-pressed); }/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra, quando o controle está desativado.
+*/.sprite-control:disabled::before { /* Essa declaração escolhe a imagem ou o gradiente que será usado no fundo nos elementos escolhidos por essa regra.
+*/background-image:var(--control-disabled); }/* Essa regra reúne os ajustes na bolsa de itens.
+*/.bag-icon { /* Aqui o CSS define a largura ocupada pela caixa na bolsa de itens.
+*/width:52px;/* Esse comando define a altura ocupada pela caixa na bolsa de itens.
+*/height:52px;/* Essa declaração mantém a imagem inteira dentro da caixa sem deformar a proporção na bolsa de itens.
+*/object-fit:contain;/* Aqui o CSS mantém os pixels bem visíveis quando a imagem é ampliada na bolsa de itens.
+*/image-rendering:pixelated; }
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px) { /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra, usando uma camada criada pelo próprio CSS.
+*/.sprite-control::before { /* Esse comando define a largura ocupada pela caixa nos elementos escolhidos por essa regra.
+*/width:16px;/* Essa declaração define a altura ocupada pela caixa nos elementos escolhidos por essa regra.
+*/height:16px;/* Aqui o CSS ajusta a distância externa do lado direito nos elementos escolhidos por essa regra.
+*/margin-right:4px; }/* Essa regra reúne os ajustes no cabeçalho do Jardim, usando uma camada criada pelo próprio CSS.
+*/.game-header .sprite-control::before { /* Esse comando esconde o elemento e retira o espaço que ele ocuparia no cabeçalho do Jardim.
+*/display:none; } }
+/* Polimento, cada camada cabe na câmera, corrida usa perspectiva e ações rápidas. */
+/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/.chase-canvas { /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos controles e imagens da perseguição.
+*/position:absolute;/* Aqui o CSS ajusta as distâncias das quatro bordas na área de posicionamento nos controles e imagens da perseguição.
+*/inset:0;/* Esse comando define a largura ocupada pela caixa nos controles e imagens da perseguição.
+*/width:100%;/* Essa declaração define a altura ocupada pela caixa nos controles e imagens da perseguição.
+*/height:100%;/* Aqui o CSS preenche a caixa mantendo a proporção da imagem, podendo cortar as bordas nos controles e imagens da perseguição.
+*/object-fit:cover;/* Esse comando mantém os pixels bem visíveis quando a imagem é ampliada nos controles e imagens da perseguição.
+*/image-rendering:pixelated;/* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nos controles e imagens da perseguição.
+*/z-index:0;/* Aqui o CSS faz os cliques atravessarem essa camada para alcançar os controles de baixo nos controles e imagens da perseguição.
+*/pointer-events:none; }
+/* Essa regra reúne os ajustes na imagem do cenário.
+*/.chasing .background { /* Esse comando deixa o desenho invisível sem remover a caixa da página na imagem do cenário.
+*/opacity:0; }/* Essa regra reúne os ajustes no sprite do personagem.
+*/.chasing .actor { /* Essa declaração esconde o elemento e retira o espaço que ele ocuparia no sprite do personagem.
+*/display:none; }
+/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/.chase-nav { /* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento nos controles e imagens da perseguição.
+*/bottom:16px; /* Esse comando distribui os itens no sentido principal do grupo nos controles e imagens da perseguição.
+*/justify-content:center; }/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/.chase-nav button { /* Essa declaração impõe a menor largura permitida nos controles e imagens da perseguição.
+*/min-width:140px;/* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário nos controles e imagens da perseguição.
+*/min-height:48px;/* Esse comando controla quais gestos de toque o navegador pode tratar diretamente nos controles e imagens da perseguição.
+*/touch-action:manipulation; }/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/.chase-nav button[aria-pressed="true"] { /* Essa declaração define a cor do contorno nos controles e imagens da perseguição.
+*/border-color:#ffe497;/* Aqui o CSS define o preenchimento que aparece atrás do conteúdo nos controles e imagens da perseguição.
+*/background:#695528; }
+/* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/.prompt.chase-prompt { /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento no aviso que pede uma reação rápida.
+*/left:18%;/* Essa declaração ajusta a distância da borda direita dentro da área de posicionamento no aviso que pede uma reação rápida.
+*/right:18%;/* Aqui o CSS ajusta a distância da borda de cima dentro da área de posicionamento no aviso que pede uma reação rápida.
+*/top:auto;/* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no aviso que pede uma reação rápida.
+*/bottom:95px;/* Essa declaração retira as mudanças de escala, posição e rotação no aviso que pede uma reação rápida.
+*/transform:none;/* Aqui o CSS retira o limite máximo desse tamanho no aviso que pede uma reação rápida.
+*/max-width:none;/* Esse comando cria espaço entre o conteúdo e a borda no aviso que pede uma reação rápida.
+*/padding:12px;/* Essa declaração define o preenchimento que aparece atrás do conteúdo no aviso que pede uma reação rápida.
+*/background:#080b10eb; }/* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/.chase-prompt>p:first-child { /* Aqui o CSS define o tamanho das letras no aviso que pede uma reação rápida.
+*/font-size:18px; }/* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/.chase-prompt #prompt-actions { /* Esse comando controla se os itens podem passar para outra linha no aviso que pede uma reação rápida.
+*/flex-wrap:wrap; }
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands,.hands.exploration-hands { /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento nas mãos do protagonista.
+*/left:50%;/* Aqui o CSS muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nas mãos do protagonista.
+*/transform:translateX(-50%);/* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:0;/* Essa declaração define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:min(100%,800px);/* Aqui o CSS deixa esse tamanho acompanhar o conteúdo e os outros limites da caixa nas mãos do protagonista.
+*/height:auto;/* Esse comando retira o limite máximo desse tamanho nas mãos do protagonista.
+*/max-height:none;/* Essa declaração mantém a imagem inteira dentro da caixa sem deformar a proporção nas mãos do protagonista.
+*/object-fit:contain;/* Aqui o CSS escolhe qual parte da imagem fica alinhada dentro da caixa nas mãos do protagonista.
+*/object-position:center bottom; }
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands.exploration-hands.inspecting-hands { /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento nas mãos do protagonista.
+*/left:50%;/* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:16%;/* Aqui o CSS define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:min(96%,760px);/* Esse comando deixa esse tamanho acompanhar o conteúdo e os outros limites da caixa nas mãos do protagonista.
+*/height:auto; }
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands.exploration-hands.gesture-hands { /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento nas mãos do protagonista.
+*/left:50%;/* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:14%;/* Esse comando define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:min(100%,680px);/* Essa declaração deixa esse tamanho acompanhar o conteúdo e os outros limites da caixa nas mãos do protagonista.
+*/height:auto; }
+/* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.combat { /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento no sprite do personagem.
+*/left:50%;/* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:37%;/* Essa declaração define a largura ocupada pela caixa no sprite do personagem.
+*/width:34%;/* Aqui o CSS define a altura ocupada pela caixa no sprite do personagem.
+*/height:34%;/* Esse comando mantém a imagem inteira dentro da caixa sem deformar a proporção no sprite do personagem.
+*/object-fit:contain;/* Essa declaração escolhe qual parte da imagem fica alinhada dentro da caixa no sprite do personagem.
+*/object-position:center; }
+/* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.closeup { /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento no sprite do personagem.
+*/left:50%;/* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:18%;/* Essa declaração define a largura ocupada pela caixa no sprite do personagem.
+*/width:min(88%,820px);/* Aqui o CSS define a altura ocupada pela caixa no sprite do personagem.
+*/height:74%;/* Esse comando mantém a imagem inteira dentro da caixa sem deformar a proporção no sprite do personagem.
+*/object-fit:contain;/* Essa declaração escolhe qual parte da imagem fica alinhada dentro da caixa no sprite do personagem.
+*/object-position:center; }
+/* Essa regra reúne os ajustes no sprite do personagem.
+*/.shared-scene .actor:not(.two),.shared-scene .idle-layer { /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento no sprite do personagem.
+*/left:28%;/* Esse comando define a largura ocupada pela caixa no sprite do personagem.
+*/width:43%;/* Essa declaração define a altura ocupada pela caixa no sprite do personagem.
+*/height:68%;/* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:20%; }
+/* Essa regra reúne os ajustes no sprite do personagem.
+*/.shared-scene .actor.two { /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento no sprite do personagem.
+*/left:73%;/* Essa declaração define a largura ocupada pela caixa no sprite do personagem.
+*/width:43%;/* Aqui o CSS define a altura ocupada pela caixa no sprite do personagem.
+*/height:68%;/* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:20%;/* Essa declaração mantém a imagem inteira dentro da caixa sem deformar a proporção no sprite do personagem.
+*/object-fit:contain; }
+/* Essa regra reúne os ajustes no Eco que está visitando outro quarto.
+*/.guest-eco { /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência no Eco que está visitando outro quarto.
+*/position:absolute;/* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento no Eco que está visitando outro quarto.
+*/left:24%;/* Essa declaração ajusta a distância da borda de cima dentro da área de posicionamento no Eco que está visitando outro quarto.
+*/top:72%;/* Aqui o CSS define a largura ocupada pela caixa no Eco que está visitando outro quarto.
+*/width:20%;/* Esse comando define a altura ocupada pela caixa no Eco que está visitando outro quarto.
+*/height:35%;/* Essa declaração impõe a menor largura permitida no Eco que está visitando outro quarto.
+*/min-width:60px;/* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário no Eco que está visitando outro quarto.
+*/min-height:76px;/* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos no Eco que está visitando outro quarto.
+*/transform:translate(-50%,-100%);/* Essa declaração define a espessura, o estilo e a cor do contorno no Eco que está visitando outro quarto.
+*/border:0;/* Aqui o CSS remove o preenchimento de fundo no Eco que está visitando outro quarto.
+*/background:transparent;/* Esse comando cria espaço entre o conteúdo e a borda no Eco que está visitando outro quarto.
+*/padding:0; }
+/* Essa regra reúne os ajustes no Eco que está visitando outro quarto.
+*/.guest-eco img { /* Essa declaração define a largura ocupada pela caixa no Eco que está visitando outro quarto.
+*/width:100%;/* Aqui o CSS define a altura ocupada pela caixa no Eco que está visitando outro quarto.
+*/height:100%;/* Esse comando mantém a imagem inteira dentro da caixa sem deformar a proporção no Eco que está visitando outro quarto.
+*/object-fit:contain;/* Essa declaração mantém os pixels bem visíveis quando a imagem é ampliada no Eco que está visitando outro quarto.
+*/image-rendering:pixelated; }/* Essa regra reúne os ajustes no Eco que está visitando outro quarto.
+*/.guest-eco span { /* Aqui o CSS trata o elemento como uma caixa de bloco no Eco que está visitando outro quarto.
+*/display:block;/* Esse comando define o preenchimento que aparece atrás do conteúdo no Eco que está visitando outro quarto.
+*/background:#101b19dc;/* Essa declaração define a cor do texto e dos detalhes que usam a cor atual no Eco que está visitando outro quarto.
+*/color:#f7edce;/* Aqui o CSS define o tamanho das letras no Eco que está visitando outro quarto.
+*/font-size:11px;/* Esse comando controla a preservação de espaços e a quebra das linhas no Eco que está visitando outro quarto.
+*/white-space:nowrap;/* Essa declaração cria espaço entre o conteúdo e a borda no Eco que está visitando outro quarto.
+*/padding:3px; }
+/* Essa regra reúne os ajustes no ponto discreto do quarto da Candy.
+*/.quiet-interaction { /* Aqui o CSS deixa a camada totalmente visível no ponto discreto do quarto da Candy.
+*/opacity:1;/* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no ponto discreto do quarto da Candy.
+*/bottom:10%;/* Essa declaração ajusta a distância da borda direita dentro da área de posicionamento no ponto discreto do quarto da Candy.
+*/right:0; }/* Essa regra reúne os ajustes no ponto discreto do quarto da Candy.
+*/.quiet-interaction img { /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência no ponto discreto do quarto da Candy.
+*/position:absolute;/* Esse comando ajusta a distância da borda direita dentro da área de posicionamento no ponto discreto do quarto da Candy.
+*/right:3px;/* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento no ponto discreto do quarto da Candy.
+*/bottom:3px;/* Aqui o CSS define a largura ocupada pela caixa no ponto discreto do quarto da Candy.
+*/width:14px;/* Esse comando define a altura ocupada pela caixa no ponto discreto do quarto da Candy.
+*/height:14px;/* Essa declaração mantém a imagem inteira dentro da caixa sem deformar a proporção no ponto discreto do quarto da Candy.
+*/object-fit:contain;/* Aqui o CSS mantém os pixels bem visíveis quando a imagem é ampliada no ponto discreto do quarto da Candy.
+*/image-rendering:pixelated;/* Esse comando mistura a camada com o fundo usando transparência parcial no ponto discreto do quarto da Candy.
+*/opacity:.32; }/* Essa regra reúne os ajustes no ponto discreto do quarto da Candy, quando o cursor fica sobre o elemento.
+*/.quiet-interaction:hover img,.quiet-interaction:focus-visible img { /* Essa declaração mistura a camada com o fundo usando transparência parcial no ponto discreto do quarto da Candy.
+*/opacity:.85; }
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.impact { /* Aqui o CSS liga a sequência de movimento e define seu tempo e sua repetição nos elementos escolhidos por essa regra.
+*/animation:impact-shake .3s linear; }/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes impact-shake { /* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/0%,100%{/* Esse comando ajusta a aparência da imagem com os efeitos indicados nos elementos escolhidos por essa regra.
+*/filter:none;}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/25%{/* Essa declaração ajusta a aparência da imagem com os efeitos indicados nos elementos escolhidos por essa regra.
+*/filter:brightness(.6) saturate(1.5);/* Aqui o CSS muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translateX(-3px);}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/70%{/* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translateX(3px);} }
+/* Essa regra reúne os ajustes na janela aberta sobre a página.
+*/#modal-content fieldset { /* Essa declaração define o espaço do lado de fora da caixa na janela aberta sobre a página.
+*/margin:18px 0;/* Aqui o CSS cria espaço entre o conteúdo e a borda na janela aberta sobre a página.
+*/padding:12px;/* Esse comando define a espessura, o estilo e a cor do contorno na janela aberta sobre a página.
+*/border:1px solid #788476; }/* Essa regra reúne os ajustes na janela aberta sobre a página.
+*/#modal-content input[type="range"] { /* Essa declaração trata o elemento como uma caixa de bloco na janela aberta sobre a página.
+*/display:block;/* Aqui o CSS define a largura ocupada pela caixa na janela aberta sobre a página.
+*/width:100%; }/* Essa regra reúne os ajustes na janela aberta sobre a página.
+*/#modal-content details p { /* Esse comando define o tamanho das letras na janela aberta sobre a página.
+*/font-size:12px; }
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px) { /* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands.exploration-hands.inspecting-hands { /* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:20%;/* Aqui o CSS define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:100%;/* Esse comando deixa esse tamanho acompanhar o conteúdo e os outros limites da caixa nas mãos do protagonista.
+*/height:auto; }/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands.exploration-hands.gesture-hands { /* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:26%;/* Aqui o CSS define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:100%;/* Esse comando deixa esse tamanho acompanhar o conteúdo e os outros limites da caixa nas mãos do protagonista.
+*/height:auto; }/* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.combat { /* Essa declaração define a largura ocupada pela caixa no sprite do personagem.
+*/width:43%;/* Aqui o CSS define a altura ocupada pela caixa no sprite do personagem.
+*/height:28%;/* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:44%; }/* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.closeup { /* Essa declaração define a largura ocupada pela caixa no sprite do personagem.
+*/width:92%;/* Aqui o CSS define a altura ocupada pela caixa no sprite do personagem.
+*/height:70%;/* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:23%; }/* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/.prompt.chase-prompt { /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento no aviso que pede uma reação rápida.
+*/left:4%;/* Aqui o CSS ajusta a distância da borda direita dentro da área de posicionamento no aviso que pede uma reação rápida.
+*/right:4%;/* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no aviso que pede uma reação rápida.
+*/bottom:90px; }/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/.chase-nav { /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento nos controles e imagens da perseguição.
+*/left:8px;/* Aqui o CSS ajusta a distância da borda direita dentro da área de posicionamento nos controles e imagens da perseguição.
+*/right:8px;/* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível nos controles e imagens da perseguição.
+*/gap:6px; }/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/.chase-nav button { /* Essa declaração permite que a caixa encolha em um grupo flexível ou em uma grade sem forçar a largura da tela nos controles e imagens da perseguição.
+*/min-width:0;/* Aqui o CSS define como o item cresce ou encolhe dentro de um grupo flexível nos controles e imagens da perseguição.
+*/flex:1;/* Esse comando define o tamanho das letras nos controles e imagens da perseguição.
+*/font-size:11px; }/* Essa regra reúne os ajustes no Eco que está visitando outro quarto.
+*/.guest-eco span { /* Essa declaração define o tamanho das letras no Eco que está visitando outro quarto.
+*/font-size:9px;/* Aqui o CSS controla a preservação de espaços e a quebra das linhas no Eco que está visitando outro quarto.
+*/white-space:normal; } }
+/* Essas regras ajustam a interface quando a tela está deitada, com menos altura disponível.
+*/@media(orientation:landscape) and (max-height:550px) { /* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.closeup { /* Esse comando define a altura ocupada pela caixa no sprite do personagem.
+*/height:80%;/* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:12%; }/* Essa regra reúne os ajustes no sprite do personagem.
+*/.actor.combat { /* Aqui o CSS define a altura ocupada pela caixa no sprite do personagem.
+*/height:43%;/* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no sprite do personagem.
+*/bottom:35%; }/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands.exploration-hands { /* Essa declaração define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:min(72%,520px); }/* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/.prompt.chase-prompt { /* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento no aviso que pede uma reação rápida.
+*/bottom:65px;/* Esse comando cria espaço entre o conteúdo e a borda no aviso que pede uma reação rápida.
+*/padding:7px; }/* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/.chase-prompt>p:first-child { /* Essa declaração define o tamanho das letras no aviso que pede uma reação rápida.
+*/font-size:14px; }/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/.chase-nav { /* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento nos controles e imagens da perseguição.
+*/bottom:6px; }/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/.chase-nav button { /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário nos controles e imagens da perseguição.
+*/min-height:38px; }/* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/.chase-prompt #prompt-actions button { /* Essa declaração mantém uma altura mínima para a área não ficar menor que o necessário no aviso que pede uma reação rápida.
+*/min-height:34px;/* Aqui o CSS cria espaço entre o conteúdo e a borda no aviso que pede uma reação rápida.
+*/padding:6px; } }
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands,.hands.exploration-hands { /* Esse comando limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:90%; }
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands.exploration-hands.inspecting-hands { /* Essa declaração limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:75%; }
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.hands.exploration-hands.gesture-hands { /* Aqui o CSS limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:78%; }
+/* Essa regra reúne os ajustes no Eco que está visitando outro quarto.
+*/.guest-eco { /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento no Eco que está visitando outro quarto.
+*/left:50%;/* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente no Eco que está visitando outro quarto.
+*/z-index:1; }/* Essa regra reúne os ajustes nos pontos de observação.
+*/.room-scene .scene-hotspot { /* Aqui o CSS define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nos pontos de observação.
+*/z-index:2; }
 
 /* Pequenos cuidados para tocar nos menus e ler em telas estreitas. */
-.scene-controls { margin-top:18px; padding:12px; border:1px solid #788476; }
-#game-modal summary { cursor:pointer; min-height:32px; }
-#game-modal summary:focus-visible { outline:3px solid #f4cf7d; outline-offset:3px; }
-.scene-controls p { margin-bottom:0; }
-#game-modal { overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:#899a85 #142023; }
-#game-modal output { color:#f4cf7d; font-variant-numeric:tabular-nums; }
-.game-footer { overflow-wrap:anywhere; }
-@media(max-width:600px) {
-  .game-header { height:auto; min-height:60px; padding:8px max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left)); flex-wrap:wrap; }
-  .game-header>div { margin-left:auto; flex-wrap:wrap; justify-content:flex-end; }
-  .game-header button { min-height:44px; min-width:44px; }
-  .game-footer { padding-bottom:max(8px,env(safe-area-inset-bottom)); }
-  dialog { padding:22px 18px; }
-  .bag-item { flex-wrap:wrap; gap:10px; padding:8px 0; }
-  .bag-item>div { min-width:0; flex:1; }
-  .bag-item h3 { overflow-wrap:anywhere; }
-  .bag-item button { margin-left:auto; }
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.scene-controls { /* Esse comando reserva espaço acima da caixa nos elementos escolhidos por essa regra.
+*/margin-top:18px; /* Essa declaração cria espaço entre o conteúdo e a borda nos elementos escolhidos por essa regra.
+*/padding:12px; /* Aqui o CSS define a espessura, o estilo e a cor do contorno nos elementos escolhidos por essa regra.
+*/border:1px solid #788476; }
+/* Essa regra reúne os ajustes na janela aberta sobre a página.
+*/#game-modal summary { /* Esse comando mostra o cursor de ação clicável na janela aberta sobre a página.
+*/cursor:pointer; /* Essa declaração mantém uma altura mínima para a área não ficar menor que o necessário na janela aberta sobre a página.
+*/min-height:32px; }
+/* Essa regra reúne os ajustes na janela aberta sobre a página, quando o foco de teclado precisa ficar visível.
+*/#game-modal summary:focus-visible { /* Aqui o CSS desenha uma marca ao redor do elemento sem alterar o tamanho da caixa na janela aberta sobre a página.
+*/outline:3px solid #f4cf7d; /* Esse comando define a distância entre a marca de foco e a borda do elemento na janela aberta sobre a página.
+*/outline-offset:3px; }
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.scene-controls p { /* Essa declaração reserva espaço abaixo da caixa nos elementos escolhidos por essa regra.
+*/margin-bottom:0; }
+/* Essa regra reúne os ajustes na janela aberta sobre a página.
+*/#game-modal { /* Aqui o CSS controla se a rolagem continua na área de fora ao chegar ao fim na janela aberta sobre a página.
+*/overscroll-behavior:contain; /* Esse comando ajusta a largura visual da barra de rolagem na janela aberta sobre a página.
+*/scrollbar-width:thin; /* Essa declaração define as cores da barra e do trilho de rolagem na janela aberta sobre a página.
+*/scrollbar-color:#899a85 #142023; }
+/* Essa regra reúne os ajustes na janela aberta sobre a página.
+*/#game-modal output { /* Aqui o CSS define a cor do texto e dos detalhes que usam a cor atual na janela aberta sobre a página.
+*/color:#f4cf7d; /* Esse comando mantém os números com o formato definido para facilitar a comparação na janela aberta sobre a página.
+*/font-variant-numeric:tabular-nums; }
+/* Essa regra reúne os ajustes no rodapé.
+*/.game-footer { /* Essa declaração permite quebrar palavras longas para o texto não escapar da caixa no rodapé.
+*/overflow-wrap:anywhere; }
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px) {
+  /* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header { /* Aqui o CSS deixa esse tamanho acompanhar o conteúdo e os outros limites da caixa no cabeçalho do Jardim.
+*/height:auto; /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário no cabeçalho do Jardim.
+*/min-height:60px; /* Essa declaração cria espaço entre o conteúdo e a borda no cabeçalho do Jardim.
+*/padding:8px max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left)); /* Aqui o CSS controla se os itens podem passar para outra linha no cabeçalho do Jardim.
+*/flex-wrap:wrap; }
+  /* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header>div { /* Esse comando ajusta a distância externa do lado esquerdo no cabeçalho do Jardim.
+*/margin-left:auto; /* Essa declaração controla se os itens podem passar para outra linha no cabeçalho do Jardim.
+*/flex-wrap:wrap; /* Aqui o CSS distribui os itens no sentido principal do grupo no cabeçalho do Jardim.
+*/justify-content:flex-end; }
+  /* Essa regra reúne os ajustes no cabeçalho do Jardim.
+*/.game-header button { /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário no cabeçalho do Jardim.
+*/min-height:44px; /* Essa declaração impõe a menor largura permitida no cabeçalho do Jardim.
+*/min-width:44px; }
+  /* Essa regra reúne os ajustes no rodapé.
+*/.game-footer { /* Aqui o CSS cria espaço interno abaixo do conteúdo no rodapé.
+*/padding-bottom:max(8px,env(safe-area-inset-bottom)); }
+  /* Essa regra reúne os ajustes na janela que aparece sobre o conteúdo.
+*/dialog { /* Esse comando cria espaço entre o conteúdo e a borda na janela que aparece sobre o conteúdo.
+*/padding:22px 18px; }
+  /* Essa regra reúne os ajustes na bolsa de itens.
+*/.bag-item { /* Essa declaração controla se os itens podem passar para outra linha na bolsa de itens.
+*/flex-wrap:wrap; /* Aqui o CSS define o espaço entre os itens de uma grade ou de um grupo flexível na bolsa de itens.
+*/gap:10px; /* Esse comando cria espaço entre o conteúdo e a borda na bolsa de itens.
+*/padding:8px 0; }
+  /* Essa regra reúne os ajustes na bolsa de itens.
+*/.bag-item>div { /* Essa declaração permite que a caixa encolha em um grupo flexível ou em uma grade sem forçar a largura da tela na bolsa de itens.
+*/min-width:0; /* Aqui o CSS define como o item cresce ou encolhe dentro de um grupo flexível na bolsa de itens.
+*/flex:1; }
+  /* Essa regra reúne os ajustes na bolsa de itens.
+*/.bag-item h3 { /* Esse comando permite quebrar palavras longas para o texto não escapar da caixa na bolsa de itens.
+*/overflow-wrap:anywhere; }
+  /* Essa regra reúne os ajustes na bolsa de itens.
+*/.bag-item button { /* Essa declaração ajusta a distância externa do lado esquerdo na bolsa de itens.
+*/margin-left:auto; }
 }

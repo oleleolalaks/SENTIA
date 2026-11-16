@@ -1,13 +1,67 @@
-/* A saída segura faz parte do corredor; a lanterna revela a placa da xícara. */
-.chase-refuge {position:absolute;right:9%;top:35%;width:24%;max-width:270px;min-height:76px;padding:12px;border:2px solid #d7efb9;background:#15271de8;color:#efffd9;box-shadow:0 0 25px #c7eda655;font:700 clamp(11px,1.3vw,17px)/1.5 monospace;touch-action:manipulation;}
-#chase-lamp[aria-pressed="false"] {border-color:#f5c778;color:#ffe4a0;background:#372614;}
-.stage.lamp-out > #hands {filter:brightness(.09) saturate(.25);}
-#prompt[data-input="keyboard"] #prompt-actions button {cursor:default;border-style:dashed;}
-#prompt[data-input="keyboard"] #prompt-actions button:hover {transform:none;background:inherit;}
-@media(max-width:600px){.chase-refuge{right:7%;top:36%;width:40%;min-height:70px;padding:7px;}.chase-nav button{font-size:10px;padding:6px;}}
-@media(orientation:landscape) and (max-height:550px){.chase-refuge{top:25%;min-height:60px;}}
+/* A saída segura faz parte do corredor, a lanterna revela a placa da xícara. */
+/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/.chase-refuge {/* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos controles e imagens da perseguição.
+*/position:absolute;/* Essa declaração ajusta a distância da borda direita dentro da área de posicionamento nos controles e imagens da perseguição.
+*/right:9%;/* Aqui o CSS ajusta a distância da borda de cima dentro da área de posicionamento nos controles e imagens da perseguição.
+*/top:35%;/* Esse comando define a largura ocupada pela caixa nos controles e imagens da perseguição.
+*/width:24%;/* Essa declaração limita até onde a largura pode crescer nos controles e imagens da perseguição.
+*/max-width:270px;/* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário nos controles e imagens da perseguição.
+*/min-height:76px;/* Esse comando cria espaço entre o conteúdo e a borda nos controles e imagens da perseguição.
+*/padding:12px;/* Essa declaração define a espessura, o estilo e a cor do contorno nos controles e imagens da perseguição.
+*/border:2px solid #d7efb9;/* Aqui o CSS define o preenchimento que aparece atrás do conteúdo nos controles e imagens da perseguição.
+*/background:#15271de8;/* Esse comando define a cor do texto e dos detalhes que usam a cor atual nos controles e imagens da perseguição.
+*/color:#efffd9;/* Essa declaração desenha uma sombra ou um brilho ao redor da caixa nos controles e imagens da perseguição.
+*/box-shadow:0 0 25px #c7eda655;/* Aqui o CSS configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração nos controles e imagens da perseguição.
+*/font:700 clamp(11px,1.3vw,17px)/1.5 monospace;/* Esse comando controla quais gestos de toque o navegador pode tratar diretamente nos controles e imagens da perseguição.
+*/touch-action:manipulation;}
+/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/#chase-lamp[aria-pressed="false"] {/* Essa declaração define a cor do contorno nos controles e imagens da perseguição.
+*/border-color:#f5c778;/* Aqui o CSS define a cor do texto e dos detalhes que usam a cor atual nos controles e imagens da perseguição.
+*/color:#ffe4a0;/* Esse comando define o preenchimento que aparece atrás do conteúdo nos controles e imagens da perseguição.
+*/background:#372614;}
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/.stage.lamp-out > #hands {/* Essa declaração ajusta a aparência da imagem com os efeitos indicados nas mãos do protagonista.
+*/filter:brightness(.09) saturate(.25);}
+/* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/#prompt[data-input="keyboard"] #prompt-actions button {/* Aqui o CSS mantém o cursor comum do navegador no aviso que pede uma reação rápida.
+*/cursor:default;/* Esse comando escolhe o desenho do contorno no aviso que pede uma reação rápida.
+*/border-style:dashed;}
+/* Essa regra reúne os ajustes no aviso que pede uma reação rápida, quando o cursor fica sobre o elemento.
+*/#prompt[data-input="keyboard"] #prompt-actions button:hover {/* Essa declaração retira as mudanças de escala, posição e rotação no aviso que pede uma reação rápida.
+*/transform:none;/* Aqui o CSS define o preenchimento que aparece atrás do conteúdo no aviso que pede uma reação rápida.
+*/background:inherit;}
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px){/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/.chase-refuge{/* Esse comando ajusta a distância da borda direita dentro da área de posicionamento nos controles e imagens da perseguição.
+*/right:7%;/* Essa declaração ajusta a distância da borda de cima dentro da área de posicionamento nos controles e imagens da perseguição.
+*/top:36%;/* Aqui o CSS define a largura ocupada pela caixa nos controles e imagens da perseguição.
+*/width:40%;/* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário nos controles e imagens da perseguição.
+*/min-height:70px;/* Essa declaração cria espaço entre o conteúdo e a borda nos controles e imagens da perseguição.
+*/padding:7px;}/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/.chase-nav button{/* Aqui o CSS define o tamanho das letras nos controles e imagens da perseguição.
+*/font-size:10px;/* Esse comando cria espaço entre o conteúdo e a borda nos controles e imagens da perseguição.
+*/padding:6px;}}
+/* Essas regras ajustam a interface quando a tela está deitada, com menos altura disponível.
+*/@media(orientation:landscape) and (max-height:550px){/* Essa regra reúne os ajustes nos controles e imagens da perseguição.
+*/.chase-refuge{/* Essa declaração ajusta a distância da borda de cima dentro da área de posicionamento nos controles e imagens da perseguição.
+*/top:25%;/* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário nos controles e imagens da perseguição.
+*/min-height:60px;}}
 /* No celular, o nome do corredor e o alerta ocupam linhas diferentes. */
-@media(max-width:600px){
-  .stage.chasing #location{top:12px;left:12px;max-width:calc(100% - 24px);font-size:9px;}
-  .stage.chasing #status{top:44px;left:12px;right:12px;text-align:left;white-space:normal;font-size:9px;line-height:1.5;}
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px){
+  /* Essa regra reúne os ajustes na área principal do jogo.
+*/.stage.chasing #location{/* Esse comando ajusta a distância da borda de cima dentro da área de posicionamento na área principal do jogo.
+*/top:12px;/* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento na área principal do jogo.
+*/left:12px;/* Aqui o CSS limita até onde a largura pode crescer na área principal do jogo.
+*/max-width:calc(100% - 24px);/* Esse comando define o tamanho das letras na área principal do jogo.
+*/font-size:9px;}
+  /* Essa regra reúne os ajustes na área principal do jogo.
+*/.stage.chasing #status{/* Essa declaração ajusta a distância da borda de cima dentro da área de posicionamento na área principal do jogo.
+*/top:44px;/* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento na área principal do jogo.
+*/left:12px;/* Esse comando ajusta a distância da borda direita dentro da área de posicionamento na área principal do jogo.
+*/right:12px;/* Essa declaração alinha o texto dentro da caixa na área principal do jogo.
+*/text-align:left;/* Aqui o CSS controla a preservação de espaços e a quebra das linhas na área principal do jogo.
+*/white-space:normal;/* Esse comando define o tamanho das letras na área principal do jogo.
+*/font-size:9px;/* Essa declaração define a distância entre uma linha de texto e a próxima na área principal do jogo.
+*/line-height:1.5;}
 }

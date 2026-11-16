@@ -1,9 +1,43 @@
 /* O clarão atravessa as duas páginas, com uma versão suave para movimentos reduzidos. */
-#portal-light { position:fixed;inset:0;z-index:2147483647;pointer-events:auto;background:#fffbe9;opacity:0;transition:opacity .48s ease-in; }
-#portal-light.bright { opacity:1; }
-#portal-light::backdrop { background:transparent;backdrop-filter:none; }
-dialog#portal-light { width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;box-shadow:none; }
-.portal-arriving #game-modal { visibility:hidden; }
-.portal-arriving #game-modal::backdrop { background:transparent;backdrop-filter:none; }
-#portal-light.gentle { background:#e7e0cd;transition-duration:.2s; }
-@media(prefers-reduced-motion:reduce) { #portal-light { background:#e7e0cd;transition-duration:.2s; } }
+/* Essa regra reúne os ajustes na passagem para o Jardim.
+*/#portal-light { /* Esse comando prende a caixa à tela mesmo quando a página é rolada na passagem para o Jardim.
+*/position:fixed;/* Essa declaração ajusta as distâncias das quatro bordas na área de posicionamento na passagem para o Jardim.
+*/inset:0;/* Aqui o CSS define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente na passagem para o Jardim.
+*/z-index:2147483647;/* Esse comando permite que essa camada receba cliques e toques na passagem para o Jardim.
+*/pointer-events:auto;/* Essa declaração define o preenchimento que aparece atrás do conteúdo na passagem para o Jardim.
+*/background:#fffbe9;/* Aqui o CSS deixa o desenho invisível sem remover a caixa da página na passagem para o Jardim.
+*/opacity:0;/* Esse comando suaviza as mudanças nas propriedades citadas quando o estado do elemento troca na passagem para o Jardim.
+*/transition:opacity .48s ease-in; }
+/* Essa regra reúne os ajustes na passagem para o Jardim.
+*/#portal-light.bright { /* Essa declaração deixa a camada totalmente visível na passagem para o Jardim.
+*/opacity:1; }
+/* Essa regra reúne os ajustes na passagem para o Jardim.
+*/#portal-light::backdrop { /* Aqui o CSS remove o preenchimento de fundo na passagem para o Jardim.
+*/background:transparent;/* Esse comando aplica um efeito ao conteúdo que aparece atrás da caixa na passagem para o Jardim.
+*/backdrop-filter:none; }
+/* Essa regra reúne os ajustes na passagem para o Jardim.
+*/dialog#portal-light { /* Essa declaração define a largura ocupada pela caixa na passagem para o Jardim.
+*/width:100vw;/* Aqui o CSS define a altura ocupada pela caixa na passagem para o Jardim.
+*/height:100dvh;/* Esse comando retira o limite máximo desse tamanho na passagem para o Jardim.
+*/max-width:none;/* Essa declaração retira o limite máximo desse tamanho na passagem para o Jardim.
+*/max-height:none;/* Aqui o CSS define o espaço do lado de fora da caixa na passagem para o Jardim.
+*/margin:0;/* Esse comando cria espaço entre o conteúdo e a borda na passagem para o Jardim.
+*/padding:0;/* Essa declaração define a espessura, o estilo e a cor do contorno na passagem para o Jardim.
+*/border:0;/* Aqui o CSS desenha uma sombra ou um brilho ao redor da caixa na passagem para o Jardim.
+*/box-shadow:none; }
+/* Essa regra reúne os ajustes na janela aberta sobre a página.
+*/.portal-arriving #game-modal { /* Esse comando esconde a caixa mantendo o espaço dela na composição na janela aberta sobre a página.
+*/visibility:hidden; }
+/* Essa regra reúne os ajustes na janela aberta sobre a página.
+*/.portal-arriving #game-modal::backdrop { /* Essa declaração remove o preenchimento de fundo na janela aberta sobre a página.
+*/background:transparent;/* Aqui o CSS aplica um efeito ao conteúdo que aparece atrás da caixa na janela aberta sobre a página.
+*/backdrop-filter:none; }
+/* Essa regra reúne os ajustes na passagem para o Jardim.
+*/#portal-light.gentle { /* Esse comando define o preenchimento que aparece atrás do conteúdo na passagem para o Jardim.
+*/background:#e7e0cd;/* Essa declaração define quanto tempo dura a mudança suave entre dois valores na passagem para o Jardim.
+*/transition-duration:.2s; }
+/* Esse grupo só entra quando o sistema pede menos movimento, mantendo o conteúdo sem animação desnecessária.
+*/@media(prefers-reduced-motion:reduce) { /* Essa regra reúne os ajustes na passagem para o Jardim.
+*/#portal-light { /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo na passagem para o Jardim.
+*/background:#e7e0cd;/* Esse comando define quanto tempo dura a mudança suave entre dois valores na passagem para o Jardim.
+*/transition-duration:.2s; } }

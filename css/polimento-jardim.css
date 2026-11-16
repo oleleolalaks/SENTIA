@@ -1,182 +1,819 @@
-/* Camada de leitura: a arte aprovada continua sendo a própria moldura. */
-.dialogue .speaker { font-weight:700; font-variant-numeric:tabular-nums; text-shadow:0 1px 2px #0009; }
-.dialogue-body { scrollbar-gutter:stable; scroll-padding:8px; padding-right:7px; -webkit-overflow-scrolling:touch; }
-.dialogue-body #speech { min-height:1.65em; font-size:clamp(14px,1.35vw,17px); line-height:1.62; letter-spacing:.005em; white-space:pre-wrap; text-wrap:pretty; }
-.dialogue-body .choices { gap:8px; padding:4px 4px 8px; }
-.dialogue-body .choices button { min-height:46px; padding:10px 12px; line-height:1.45; border-color:#bac6ae70; transition:background-color .12s,border-color .12s; }
-.dialogue-body .choices button:hover { background:#253b40; border-color:var(--accent); }
-.dialogue-body .choices button:focus-visible,.dialogue-body .advance:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
-.dialogue-body .choices button:disabled { opacity:.5; }
-.dialogue-body .choices button.chosen,.dialogue-body .choices button[aria-pressed="true"] { border-color:var(--accent); background:#344536; }
-.dialogue-body .advance { max-width:100%; min-height:44px; margin-top:8px; padding:7px 12px; white-space:normal; line-height:1.4; }
-.dialogue.is-writing #speech::after,.dialogue[data-writing="true"] #speech::after { content:''; display:inline-block; width:6px; height:1em; margin-left:4px; vertical-align:-.12em; background:var(--accent); animation:speech-caret 1s steps(1,end) infinite; }
-.dialogue.is-writing .advance::after { content:' · · ·'; letter-spacing:2px; color:var(--accent); }
-.writing-indicator,#writing-indicator { color:var(--accent); font:11px/1.5 monospace; letter-spacing:1px; }
-@keyframes speech-caret { 0%,54%{opacity:.9;}55%,100%{opacity:.2;} }
+/* Camada de leitura, a arte aprovada continua sendo a própria moldura. */
+/* Essa regra reúne os ajustes no nome de quem está falando.
+*/.dialogue .speaker { /* Esse comando ajusta a espessura das letras no nome de quem está falando.
+*/font-weight:700; /* Essa declaração mantém os números com o formato definido para facilitar a comparação no nome de quem está falando.
+*/font-variant-numeric:tabular-nums; /* Aqui o CSS desenha uma sombra junto do texto no nome de quem está falando.
+*/text-shadow:0 1px 2px #0009; }
+/* Essa regra reúne os ajustes na área de leitura do diálogo.
+*/.dialogue-body { /* Esse comando reserva o espaço da barra para ela não deslocar o conteúdo ao aparecer na área de leitura do diálogo.
+*/scrollbar-gutter:stable; /* Essa declaração reserva espaço interno para os alvos da rolagem na área de leitura do diálogo.
+*/scroll-padding:8px; /* Aqui o CSS cria espaço interno à direita do conteúdo na área de leitura do diálogo.
+*/padding-right:7px; /* Esse comando ativa o comportamento de rolagem indicado nos navegadores que reconhecem essa opção na área de leitura do diálogo.
+*/-webkit-overflow-scrolling:touch; }
+/* Essa regra reúne os ajustes no texto da fala.
+*/.dialogue-body #speech { /* Essa declaração mantém uma altura mínima para a área não ficar menor que o necessário no texto da fala.
+*/min-height:1.65em; /* Aqui o CSS define o tamanho das letras no texto da fala.
+*/font-size:clamp(14px,1.35vw,17px); /* Esse comando define a distância entre uma linha de texto e a próxima no texto da fala.
+*/line-height:1.62; /* Essa declaração ajusta o espaço entre as letras no texto da fala.
+*/letter-spacing:.005em; /* Aqui o CSS controla a preservação de espaços e a quebra das linhas no texto da fala.
+*/white-space:pre-wrap; /* Esse comando ajusta como o navegador distribui as palavras nas linhas no texto da fala.
+*/text-wrap:pretty; }
+/* Essa regra reúne os ajustes nas opções de resposta.
+*/.dialogue-body .choices { /* Essa declaração define o espaço entre os itens de uma grade ou de um grupo flexível nas opções de resposta.
+*/gap:8px; /* Aqui o CSS cria espaço entre o conteúdo e a borda nas opções de resposta.
+*/padding:4px 4px 8px; }
+/* Essa regra reúne os ajustes nas opções de resposta.
+*/.dialogue-body .choices button { /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário nas opções de resposta.
+*/min-height:46px; /* Essa declaração cria espaço entre o conteúdo e a borda nas opções de resposta.
+*/padding:10px 12px; /* Aqui o CSS define a distância entre uma linha de texto e a próxima nas opções de resposta.
+*/line-height:1.45; /* Esse comando define a cor do contorno nas opções de resposta.
+*/border-color:#bac6ae70; /* Essa declaração suaviza as mudanças nas propriedades citadas quando o estado do elemento troca nas opções de resposta.
+*/transition:background-color .12s,border-color .12s; }
+/* Essa regra reúne os ajustes nas opções de resposta, quando o cursor fica sobre o elemento.
+*/.dialogue-body .choices button:hover { /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo nas opções de resposta.
+*/background:#253b40; /* Esse comando define a cor do contorno nas opções de resposta.
+*/border-color:var(--accent); }
+/* Essa regra reúne os ajustes na área de leitura do diálogo, quando o foco de teclado precisa ficar visível.
+*/.dialogue-body .choices button:focus-visible,.dialogue-body .advance:focus-visible { /* Essa declaração desenha uma marca ao redor do elemento sem alterar o tamanho da caixa na área de leitura do diálogo.
+*/outline:2px solid var(--accent); /* Aqui o CSS define a distância entre a marca de foco e a borda do elemento na área de leitura do diálogo.
+*/outline-offset:2px; }
+/* Essa regra reúne os ajustes nas opções de resposta, quando o controle está desativado.
+*/.dialogue-body .choices button:disabled { /* Esse comando mistura a camada com o fundo usando transparência parcial nas opções de resposta.
+*/opacity:.5; }
+/* Essa regra reúne os ajustes nas opções de resposta.
+*/.dialogue-body .choices button.chosen,.dialogue-body .choices button[aria-pressed="true"] { /* Essa declaração define a cor do contorno nas opções de resposta.
+*/border-color:var(--accent); /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo nas opções de resposta.
+*/background:#344536; }
+/* Essa regra reúne os ajustes na área de leitura do diálogo.
+*/.dialogue-body .advance { /* Esse comando limita até onde a largura pode crescer na área de leitura do diálogo.
+*/max-width:100%; /* Essa declaração mantém uma altura mínima para a área não ficar menor que o necessário na área de leitura do diálogo.
+*/min-height:44px; /* Aqui o CSS reserva espaço acima da caixa na área de leitura do diálogo.
+*/margin-top:8px; /* Esse comando cria espaço entre o conteúdo e a borda na área de leitura do diálogo.
+*/padding:7px 12px; /* Essa declaração controla a preservação de espaços e a quebra das linhas na área de leitura do diálogo.
+*/white-space:normal; /* Aqui o CSS define a distância entre uma linha de texto e a próxima na área de leitura do diálogo.
+*/line-height:1.4; }
+/* Essa regra reúne os ajustes no texto da fala, usando uma camada criada pelo próprio CSS.
+*/.dialogue.is-writing #speech::after,.dialogue[data-writing="true"] #speech::after { /* Esse comando cria um conteúdo vazio para a camada do CSS poder receber um desenho no texto da fala.
+*/content:''; /* Essa declaração mantém a caixa na linha e permite definir seus tamanhos no texto da fala.
+*/display:inline-block; /* Aqui o CSS define a largura ocupada pela caixa no texto da fala.
+*/width:6px; /* Esse comando define a altura ocupada pela caixa no texto da fala.
+*/height:1em; /* Essa declaração ajusta a distância externa do lado esquerdo no texto da fala.
+*/margin-left:4px; /* Aqui o CSS alinha esse conteúdo em relação à linha de texto no texto da fala.
+*/vertical-align:-.12em; /* Esse comando define o preenchimento que aparece atrás do conteúdo no texto da fala.
+*/background:var(--accent); /* Essa declaração liga a sequência de movimento e define seu tempo e sua repetição no texto da fala.
+*/animation:speech-caret 1s steps(1,end) infinite; }
+/* Essa regra reúne os ajustes na caixa de diálogo, usando uma camada criada pelo próprio CSS.
+*/.dialogue.is-writing .advance::after { /* Aqui o CSS define o conteúdo gerado pela camada extra do CSS na caixa de diálogo.
+*/content:' · · ·'; /* Esse comando ajusta o espaço entre as letras na caixa de diálogo.
+*/letter-spacing:2px; /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual na caixa de diálogo.
+*/color:var(--accent); }
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.writing-indicator,#writing-indicator { /* Aqui o CSS define a cor do texto e dos detalhes que usam a cor atual nos elementos escolhidos por essa regra.
+*/color:var(--accent); /* Esse comando configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração nos elementos escolhidos por essa regra.
+*/font:11px/1.5 monospace; /* Essa declaração ajusta o espaço entre as letras nos elementos escolhidos por essa regra.
+*/letter-spacing:1px; }
+/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes speech-caret { /* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/0%,54%{/* Aqui o CSS mistura a camada com o fundo usando transparência parcial nos elementos escolhidos por essa regra.
+*/opacity:.9;}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/55%,100%{/* Esse comando mistura a camada com o fundo usando transparência parcial nos elementos escolhidos por essa regra.
+*/opacity:.2;} }
 /* O relógio da vigilância fica separado dos oito pontos de visão. */
-.watch-hud { display:grid; gap:5px; min-width:0; padding:12px 14px; border:1px solid #a6ba9b80; background:#0a1213ed; color:#eef3df; text-align:left; }
-.watch-deadline { display:block; color:#f2d59a; font:700 clamp(13px,1.5vw,17px)/1.4 monospace; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
-.watch-progress { display:block; font:11px/1.5 monospace; color:#baccb8; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
-.stage:has(.orb.alerting) .watch-deadline { color:#ffd0bd; }
-.watch-hud.camera-hud { position:absolute; z-index:8; top:76px; left:50%; transform:translateX(-50%); width:min(90%,680px); pointer-events:none; }
-.orbs.watch-switches { gap:12px; grid-template-columns:repeat(4,minmax(0,1fr)); margin:20px auto; max-width:560px; }
-.watch-switches .orb { justify-self:center; width:64px; max-width:100%; min-width:44px; min-height:44px; padding:6px; border:2px solid #c6debd99; background:#a5c8b320; color:#f4efda; font:700 18px/1 monospace; touch-action:manipulation; transition:border-color .12s,background-color .12s,box-shadow .12s; }
-.watch-switches .orb:hover { border-color:#eaf4d9; background:#aecbb32e; }
-.watch-switches .orb.active { border-color:#fff0b6; box-shadow:0 0 0 2px #fff0b666,inset 0 0 20px #e4f2ce44; background:#d9e3bf2e; }
-.watch-switches .orb.alerting { border-color:#f8bc80; box-shadow:0 0 0 2px #ef93634d,inset 0 0 24px #e7cf8c66,0 0 18px #e8ac5655; background:#e2c37430; animation:orb-presence 1.3s ease-in-out infinite; }
-.watch-switches .orb.active.alerting { border-color:#fff2d1; box-shadow:0 0 0 3px #eacb8b99,inset 0 0 24px #f3db9d88; }
-.watch-switches .orb:focus-visible { outline:3px solid #fff4c1; outline-offset:4px; }
-#world-controls>.watch-switches { position:absolute; z-index:8; left:18px; right:18px; bottom:85px; max-width:680px; margin:0 auto; grid-template-columns:repeat(8,minmax(0,1fr)); pointer-events:auto; }
-#world-controls>.watch-switches .orb { width:56px; }
-@keyframes orb-presence { 0%,100%{background-color:#e2c37430;}50%{background-color:#e2c37460;} }
-@media(max-width:600px) {
-  .dialogue-body #speech { font-size:14px; line-height:1.6; }
-  .dialogue-body .choices button { padding:9px 10px; font-size:13px; }
-  .watch-hud { padding:10px; }
-  .watch-hud.camera-hud { top:78px; width:calc(100% - 24px); }
-  .watch-deadline { font-size:12px; }.watch-progress { font-size:10px; }
-  #world-controls>.watch-switches { left:12px;right:12px;bottom:82px;grid-template-columns:repeat(4,minmax(44px,1fr));gap:8px; }
-  #world-controls>.watch-switches .orb { width:48px;min-height:44px; }
-  .orbs.watch-switches { gap:10px; }.watch-switches .orb { width:56px; }
+/* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.watch-hud { /* Essa declaração organiza os elementos filhos em linhas e colunas na interface das esferas de vigilância.
+*/display:grid; /* Aqui o CSS define o espaço entre os itens de uma grade ou de um grupo flexível na interface das esferas de vigilância.
+*/gap:5px; /* Esse comando permite que a caixa encolha em um grupo flexível ou em uma grade sem forçar a largura da tela na interface das esferas de vigilância.
+*/min-width:0; /* Essa declaração cria espaço entre o conteúdo e a borda na interface das esferas de vigilância.
+*/padding:12px 14px; /* Aqui o CSS define a espessura, o estilo e a cor do contorno na interface das esferas de vigilância.
+*/border:1px solid #a6ba9b80; /* Esse comando define o preenchimento que aparece atrás do conteúdo na interface das esferas de vigilância.
+*/background:#0a1213ed; /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual na interface das esferas de vigilância.
+*/color:#eef3df; /* Aqui o CSS alinha o texto dentro da caixa na interface das esferas de vigilância.
+*/text-align:left; }
+/* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.watch-deadline { /* Esse comando trata o elemento como uma caixa de bloco na interface das esferas de vigilância.
+*/display:block; /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual na interface das esferas de vigilância.
+*/color:#f2d59a; /* Aqui o CSS configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração na interface das esferas de vigilância.
+*/font:700 clamp(13px,1.5vw,17px)/1.4 monospace; /* Esse comando mantém os números com o formato definido para facilitar a comparação na interface das esferas de vigilância.
+*/font-variant-numeric:tabular-nums; /* Essa declaração permite quebrar palavras longas para o texto não escapar da caixa na interface das esferas de vigilância.
+*/overflow-wrap:anywhere; }
+/* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.watch-progress { /* Aqui o CSS trata o elemento como uma caixa de bloco na interface das esferas de vigilância.
+*/display:block; /* Esse comando configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração na interface das esferas de vigilância.
+*/font:11px/1.5 monospace; /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual na interface das esferas de vigilância.
+*/color:#baccb8; /* Aqui o CSS mantém os números com o formato definido para facilitar a comparação na interface das esferas de vigilância.
+*/font-variant-numeric:tabular-nums; /* Esse comando permite quebrar palavras longas para o texto não escapar da caixa na interface das esferas de vigilância.
+*/overflow-wrap:anywhere; }
+/* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.stage:has(.orb.alerting) .watch-deadline { /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual na interface das esferas de vigilância.
+*/color:#ffd0bd; }
+/* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.watch-hud.camera-hud { /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na interface das esferas de vigilância.
+*/position:absolute; /* Esse comando define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente na interface das esferas de vigilância.
+*/z-index:8; /* Essa declaração ajusta a distância da borda de cima dentro da área de posicionamento na interface das esferas de vigilância.
+*/top:76px; /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento na interface das esferas de vigilância.
+*/left:50%; /* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos na interface das esferas de vigilância.
+*/transform:translateX(-50%); /* Essa declaração define a largura ocupada pela caixa na interface das esferas de vigilância.
+*/width:min(90%,680px); /* Aqui o CSS faz os cliques atravessarem essa camada para alcançar os controles de baixo na interface das esferas de vigilância.
+*/pointer-events:none; }
+/* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.orbs.watch-switches { /* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível na interface das esferas de vigilância.
+*/gap:12px; /* Essa declaração define a quantidade e o tamanho das colunas da grade na interface das esferas de vigilância.
+*/grid-template-columns:repeat(4,minmax(0,1fr)); /* Aqui o CSS define o espaço do lado de fora da caixa na interface das esferas de vigilância.
+*/margin:20px auto; /* Esse comando limita até onde a largura pode crescer na interface das esferas de vigilância.
+*/max-width:560px; }
+/* Essa regra reúne os ajustes nas esferas de observação.
+*/.watch-switches .orb { /* Essa declaração alinha esse item dentro da célula da grade nas esferas de observação.
+*/justify-self:center; /* Aqui o CSS define a largura ocupada pela caixa nas esferas de observação.
+*/width:64px; /* Esse comando limita até onde a largura pode crescer nas esferas de observação.
+*/max-width:100%; /* Essa declaração impõe a menor largura permitida nas esferas de observação.
+*/min-width:44px; /* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário nas esferas de observação.
+*/min-height:44px; /* Esse comando cria espaço entre o conteúdo e a borda nas esferas de observação.
+*/padding:6px; /* Essa declaração define a espessura, o estilo e a cor do contorno nas esferas de observação.
+*/border:2px solid #c6debd99; /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo nas esferas de observação.
+*/background:#a5c8b320; /* Esse comando define a cor do texto e dos detalhes que usam a cor atual nas esferas de observação.
+*/color:#f4efda; /* Essa declaração configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração nas esferas de observação.
+*/font:700 18px/1 monospace; /* Aqui o CSS controla quais gestos de toque o navegador pode tratar diretamente nas esferas de observação.
+*/touch-action:manipulation; /* Esse comando suaviza as mudanças nas propriedades citadas quando o estado do elemento troca nas esferas de observação.
+*/transition:border-color .12s,background-color .12s,box-shadow .12s; }
+/* Essa regra reúne os ajustes nas esferas de observação, quando o cursor fica sobre o elemento.
+*/.watch-switches .orb:hover { /* Essa declaração define a cor do contorno nas esferas de observação.
+*/border-color:#eaf4d9; /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo nas esferas de observação.
+*/background:#aecbb32e; }
+/* Essa regra reúne os ajustes nas esferas de observação.
+*/.watch-switches .orb.active { /* Esse comando define a cor do contorno nas esferas de observação.
+*/border-color:#fff0b6; /* Essa declaração desenha uma sombra ou um brilho ao redor da caixa nas esferas de observação.
+*/box-shadow:0 0 0 2px #fff0b666,inset 0 0 20px #e4f2ce44; /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo nas esferas de observação.
+*/background:#d9e3bf2e; }
+/* Essa regra reúne os ajustes nas esferas de observação.
+*/.watch-switches .orb.alerting { /* Esse comando define a cor do contorno nas esferas de observação.
+*/border-color:#f8bc80; /* Essa declaração desenha uma sombra ou um brilho ao redor da caixa nas esferas de observação.
+*/box-shadow:0 0 0 2px #ef93634d,inset 0 0 24px #e7cf8c66,0 0 18px #e8ac5655; /* Aqui o CSS define o preenchimento que aparece atrás do conteúdo nas esferas de observação.
+*/background:#e2c37430; /* Esse comando liga a sequência de movimento e define seu tempo e sua repetição nas esferas de observação.
+*/animation:orb-presence 1.3s ease-in-out infinite; }
+/* Essa regra reúne os ajustes nas esferas de observação.
+*/.watch-switches .orb.active.alerting { /* Essa declaração define a cor do contorno nas esferas de observação.
+*/border-color:#fff2d1; /* Aqui o CSS desenha uma sombra ou um brilho ao redor da caixa nas esferas de observação.
+*/box-shadow:0 0 0 3px #eacb8b99,inset 0 0 24px #f3db9d88; }
+/* Essa regra reúne os ajustes nas esferas de observação, quando o foco de teclado precisa ficar visível.
+*/.watch-switches .orb:focus-visible { /* Esse comando desenha uma marca ao redor do elemento sem alterar o tamanho da caixa nas esferas de observação.
+*/outline:3px solid #fff4c1; /* Essa declaração define a distância entre a marca de foco e a borda do elemento nas esferas de observação.
+*/outline-offset:4px; }
+/* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/#world-controls>.watch-switches { /* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na interface das esferas de vigilância.
+*/position:absolute; /* Esse comando define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente na interface das esferas de vigilância.
+*/z-index:8; /* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento na interface das esferas de vigilância.
+*/left:18px; /* Aqui o CSS ajusta a distância da borda direita dentro da área de posicionamento na interface das esferas de vigilância.
+*/right:18px; /* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento na interface das esferas de vigilância.
+*/bottom:85px; /* Essa declaração limita até onde a largura pode crescer na interface das esferas de vigilância.
+*/max-width:680px; /* Aqui o CSS define o espaço do lado de fora da caixa na interface das esferas de vigilância.
+*/margin:0 auto; /* Esse comando define a quantidade e o tamanho das colunas da grade na interface das esferas de vigilância.
+*/grid-template-columns:repeat(8,minmax(0,1fr)); /* Essa declaração permite que essa camada receba cliques e toques na interface das esferas de vigilância.
+*/pointer-events:auto; }
+/* Essa regra reúne os ajustes nas esferas de observação.
+*/#world-controls>.watch-switches .orb { /* Aqui o CSS define a largura ocupada pela caixa nas esferas de observação.
+*/width:56px; }
+/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes orb-presence { /* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/0%,100%{/* Esse comando define a cor que fica atrás do conteúdo nos elementos escolhidos por essa regra.
+*/background-color:#e2c37430;}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/50%{/* Essa declaração define a cor que fica atrás do conteúdo nos elementos escolhidos por essa regra.
+*/background-color:#e2c37460;} }
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px) {
+  /* Essa regra reúne os ajustes no texto da fala.
+*/.dialogue-body #speech { /* Aqui o CSS define o tamanho das letras no texto da fala.
+*/font-size:14px; /* Esse comando define a distância entre uma linha de texto e a próxima no texto da fala.
+*/line-height:1.6; }
+  /* Essa regra reúne os ajustes nas opções de resposta.
+*/.dialogue-body .choices button { /* Essa declaração cria espaço entre o conteúdo e a borda nas opções de resposta.
+*/padding:9px 10px; /* Aqui o CSS define o tamanho das letras nas opções de resposta.
+*/font-size:13px; }
+  /* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.watch-hud { /* Esse comando cria espaço entre o conteúdo e a borda na interface das esferas de vigilância.
+*/padding:10px; }
+  /* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.watch-hud.camera-hud { /* Essa declaração ajusta a distância da borda de cima dentro da área de posicionamento na interface das esferas de vigilância.
+*/top:78px; /* Aqui o CSS define a largura ocupada pela caixa na interface das esferas de vigilância.
+*/width:calc(100% - 24px); }
+  /* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.watch-deadline { /* Esse comando define o tamanho das letras na interface das esferas de vigilância.
+*/font-size:12px; }/* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.watch-progress { /* Essa declaração define o tamanho das letras na interface das esferas de vigilância.
+*/font-size:10px; }
+  /* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/#world-controls>.watch-switches { /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento na interface das esferas de vigilância.
+*/left:12px;/* Esse comando ajusta a distância da borda direita dentro da área de posicionamento na interface das esferas de vigilância.
+*/right:12px;/* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento na interface das esferas de vigilância.
+*/bottom:82px;/* Aqui o CSS define a quantidade e o tamanho das colunas da grade na interface das esferas de vigilância.
+*/grid-template-columns:repeat(4,minmax(44px,1fr));/* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível na interface das esferas de vigilância.
+*/gap:8px; }
+  /* Essa regra reúne os ajustes nas esferas de observação.
+*/#world-controls>.watch-switches .orb { /* Essa declaração define a largura ocupada pela caixa nas esferas de observação.
+*/width:48px;/* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário nas esferas de observação.
+*/min-height:44px; }
+  /* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.orbs.watch-switches { /* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível na interface das esferas de vigilância.
+*/gap:10px; }/* Essa regra reúne os ajustes nas esferas de observação.
+*/.watch-switches .orb { /* Essa declaração define a largura ocupada pela caixa nas esferas de observação.
+*/width:56px; }
 }
-@media(orientation:landscape) and (max-height:550px) {
-  .dialogue-body #speech { font-size:13px;line-height:1.5; }
-  .dialogue-body .choices button { font-size:12px; padding:8px; }
-  .watch-hud.camera-hud { top:12px;left:15%;width:70%;transform:none;padding:7px 10px; }
-  .watch-hud.camera-hud .watch-progress { font-size:9px; }
-  #world-controls>.watch-switches { left:10px;right:10px;bottom:52px;grid-template-columns:repeat(8,minmax(44px,1fr));gap:6px; }
-  #world-controls>.watch-switches .orb { width:44px;min-height:40px;font-size:15px; }
+/* Essas regras ajustam a interface quando a tela está deitada, com menos altura disponível.
+*/@media(orientation:landscape) and (max-height:550px) {
+  /* Essa regra reúne os ajustes no texto da fala.
+*/.dialogue-body #speech { /* Aqui o CSS define o tamanho das letras no texto da fala.
+*/font-size:13px;/* Esse comando define a distância entre uma linha de texto e a próxima no texto da fala.
+*/line-height:1.5; }
+  /* Essa regra reúne os ajustes nas opções de resposta.
+*/.dialogue-body .choices button { /* Essa declaração define o tamanho das letras nas opções de resposta.
+*/font-size:12px; /* Aqui o CSS cria espaço entre o conteúdo e a borda nas opções de resposta.
+*/padding:8px; }
+  /* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.watch-hud.camera-hud { /* Esse comando ajusta a distância da borda de cima dentro da área de posicionamento na interface das esferas de vigilância.
+*/top:12px;/* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento na interface das esferas de vigilância.
+*/left:15%;/* Aqui o CSS define a largura ocupada pela caixa na interface das esferas de vigilância.
+*/width:70%;/* Esse comando retira as mudanças de escala, posição e rotação na interface das esferas de vigilância.
+*/transform:none;/* Essa declaração cria espaço entre o conteúdo e a borda na interface das esferas de vigilância.
+*/padding:7px 10px; }
+  /* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.watch-hud.camera-hud .watch-progress { /* Aqui o CSS define o tamanho das letras na interface das esferas de vigilância.
+*/font-size:9px; }
+  /* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/#world-controls>.watch-switches { /* Esse comando ajusta a distância da borda esquerda dentro da área de posicionamento na interface das esferas de vigilância.
+*/left:10px;/* Essa declaração ajusta a distância da borda direita dentro da área de posicionamento na interface das esferas de vigilância.
+*/right:10px;/* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento na interface das esferas de vigilância.
+*/bottom:52px;/* Esse comando define a quantidade e o tamanho das colunas da grade na interface das esferas de vigilância.
+*/grid-template-columns:repeat(8,minmax(44px,1fr));/* Essa declaração define o espaço entre os itens de uma grade ou de um grupo flexível na interface das esferas de vigilância.
+*/gap:6px; }
+  /* Essa regra reúne os ajustes nas esferas de observação.
+*/#world-controls>.watch-switches .orb { /* Aqui o CSS define a largura ocupada pela caixa nas esferas de observação.
+*/width:44px;/* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário nas esferas de observação.
+*/min-height:40px;/* Essa declaração define o tamanho das letras nas esferas de observação.
+*/font-size:15px; }
 }
-@media(prefers-reduced-motion:reduce) {
-  .dialogue.is-writing #speech::after,.dialogue[data-writing="true"] #speech::after { animation:none;opacity:.7; }
-  .watch-switches .orb { animation:none;transition:none; }
+/* Esse grupo só entra quando o sistema pede menos movimento, mantendo o conteúdo sem animação desnecessária.
+*/@media(prefers-reduced-motion:reduce) {
+  /* Essa regra reúne os ajustes no texto da fala, usando uma camada criada pelo próprio CSS.
+*/.dialogue.is-writing #speech::after,.dialogue[data-writing="true"] #speech::after { /* Aqui o CSS interrompe a animação dessa camada no texto da fala.
+*/animation:none;/* Esse comando mistura a camada com o fundo usando transparência parcial no texto da fala.
+*/opacity:.7; }
+  /* Essa regra reúne os ajustes nas esferas de observação.
+*/.watch-switches .orb { /* Essa declaração interrompe a animação dessa camada nas esferas de observação.
+*/animation:none;/* Aqui o CSS desativa a mudança animada entre os estados nas esferas de observação.
+*/transition:none; }
 }
-body.reduced .dialogue.is-writing #speech::after,body.reduced .dialogue[data-writing="true"] #speech::after { animation:none;opacity:.7; }
-body.reduced .watch-switches .orb { animation:none;transition:none; }
-/* A água ocupa as bordas durante a investida; os comandos permanecem acima dela. */
-.stage.ninfa-pressure::after { content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(0deg,#072d45b0,transparent 42%),linear-gradient(90deg,#0215239c,transparent 25%,transparent 75%,#0215239c);opacity:var(--wave-pressure,.3); }
-.ninfa-pressure #effect { transform:scale(var(--orb-scale,1));opacity:.86; }
-.ninfa-pressure .timer-track { border-color:#8cd3e8; }
-.ninfa-pressure[data-urgency="critical"] .timer-track { box-shadow:0 0 0 1px #c6f0ff; }
-.ninfa-pressure[data-urgency="critical"] #timer-fill { background:#e7f8ff; }
-body.reduced .ninfa-pressure #effect { transform:none; }
-@media(prefers-reduced-motion:reduce) { .ninfa-pressure #effect {transform:none;} }
+/* Essa regra reúne os ajustes no texto da fala, quando a redução de movimento está ativa.
+*/body.reduced .dialogue.is-writing #speech::after,body.reduced .dialogue[data-writing="true"] #speech::after { /* Esse comando interrompe a animação dessa camada no texto da fala.
+*/animation:none;/* Essa declaração mistura a camada com o fundo usando transparência parcial no texto da fala.
+*/opacity:.7; }
+/* Essa regra reúne os ajustes nas esferas de observação, quando a redução de movimento está ativa.
+*/body.reduced .watch-switches .orb { /* Aqui o CSS interrompe a animação dessa camada nas esferas de observação.
+*/animation:none;/* Esse comando desativa a mudança animada entre os estados nas esferas de observação.
+*/transition:none; }
+/* A água ocupa as bordas durante a investida, os comandos permanecem acima dela. */
+/* Essa regra reúne os ajustes na área principal do jogo, usando uma camada criada pelo próprio CSS.
+*/.stage.ninfa-pressure::after { /* Essa declaração cria um conteúdo vazio para a camada do CSS poder receber um desenho na área principal do jogo.
+*/content:'';/* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na área principal do jogo.
+*/position:absolute;/* Esse comando ajusta as distâncias das quatro bordas na área de posicionamento na área principal do jogo.
+*/inset:0;/* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente na área principal do jogo.
+*/z-index:0;/* Aqui o CSS faz os cliques atravessarem essa camada para alcançar os controles de baixo na área principal do jogo.
+*/pointer-events:none;/* Esse comando monta o fundo com gradientes de cor em vez de usar outra imagem na área principal do jogo.
+*/background:linear-gradient(0deg,#072d45b0,transparent 42%),linear-gradient(90deg,#0215239c,transparent 25%,transparent 75%,#0215239c);/* Essa declaração mistura a camada com o fundo usando transparência parcial na área principal do jogo.
+*/opacity:var(--wave-pressure,.3); }
+/* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.ninfa-pressure #effect { /* Aqui o CSS muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:scale(var(--orb-scale,1));/* Esse comando mistura a camada com o fundo usando transparência parcial nos elementos escolhidos por essa regra.
+*/opacity:.86; }
+/* Essa regra reúne os ajustes na barra de tempo.
+*/.ninfa-pressure .timer-track { /* Essa declaração define a cor do contorno na barra de tempo.
+*/border-color:#8cd3e8; }
+/* Essa regra reúne os ajustes na barra de tempo.
+*/.ninfa-pressure[data-urgency="critical"] .timer-track { /* Aqui o CSS desenha uma sombra ou um brilho ao redor da caixa na barra de tempo.
+*/box-shadow:0 0 0 1px #c6f0ff; }
+/* Essa regra reúne os ajustes na barra de tempo.
+*/.ninfa-pressure[data-urgency="critical"] #timer-fill { /* Esse comando define o preenchimento que aparece atrás do conteúdo na barra de tempo.
+*/background:#e7f8ff; }
+/* Essa regra reúne os ajustes na página inteira, quando a redução de movimento está ativa.
+*/body.reduced .ninfa-pressure #effect { /* Essa declaração retira as mudanças de escala, posição e rotação na página inteira.
+*/transform:none; }
+/* Esse grupo só entra quando o sistema pede menos movimento, mantendo o conteúdo sem animação desnecessária.
+*/@media(prefers-reduced-motion:reduce) { /* Essa regra reúne os ajustes nos elementos escolhidos por essa regra.
+*/.ninfa-pressure #effect {/* Aqui o CSS retira as mudanças de escala, posição e rotação nos elementos escolhidos por essa regra.
+*/transform:none;} }
 /* A atmosfera acompanha a área da arte, sem cobrir alvos ou alterar os sprites aprovados. */
-.room-atmosphere { position:absolute;inset:0;overflow:hidden;pointer-events:none;isolation:isolate; }
-.room-atmosphere.spent { opacity:.25; }
-.ambient-light { position:absolute;inset:0;background:radial-gradient(ellipse at 75% 20%,var(--room-color),transparent 58%);opacity:.09; }
-.ambient-pixel { position:absolute;width:3px;height:3px;background:var(--room-color);opacity:.28;box-shadow:3px 0 0 #ffffff22;animation:room-drift 20s ease-in-out infinite; }
-.petals .ambient-pixel,.leaves .ambient-pixel { width:5px;height:3px;clip-path:polygon(25% 0,100% 0,100% 60%,50% 100%,0 100%,0 40%); }
-.embers .ambient-pixel { box-shadow:0 0 6px var(--room-color);animation-name:room-ember;opacity:.45; }
-.rain .ambient-pixel { width:2px;height:9px;opacity:.23;animation-name:room-droplet; }
-.electric .ambient-pixel { box-shadow:3px 2px 0 var(--room-color),5px 4px 0 #b7e8ed55;animation-name:room-electric; }
-.mist .ambient-pixel { width:32px;height:2px;opacity:.08;box-shadow:8px 3px 0 var(--room-color),17px 6px 0 var(--room-color); }
-.ambient-ripple { position:absolute;width:52px;height:12px;border:1px solid var(--room-color);opacity:.18;clip-path:polygon(15% 0,85% 0,100% 30%,100% 70%,85% 100%,15% 100%,0 70%,0 30%);animation:room-ripple 11s ease-out infinite; }
-@keyframes room-drift { 0%,100% {transform:translate(0,0);opacity:.14;}50% {transform:translate(var(--drift),-16px);opacity:.36;} }
-@keyframes room-ember { 0% {transform:translate(0,12px);opacity:0;}25%,70% {opacity:.4;}100% {transform:translate(var(--drift),-38px);opacity:0;} }
-@keyframes room-droplet { 0% {transform:translateY(-22px);opacity:0;}20%,70% {opacity:.22;}100% {transform:translateY(30px);opacity:0;} }
-@keyframes room-electric { 0%,100% {opacity:.08;transform:translateX(0);}45%,55% {opacity:.32;transform:translateX(2px);} }
-@keyframes room-ripple { 0% {transform:scale(.5);opacity:0;}25% {opacity:.2;}100% {transform:scale(1.7);opacity:0;} }
-body.reduced .room-atmosphere *,body:has(#motion:checked) .room-atmosphere * { animation:none; }
-@media(prefers-reduced-motion:reduce) { .room-atmosphere * {animation:none;} }
+/* Essa regra reúne os ajustes na camada de efeitos do quarto.
+*/.room-atmosphere { /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na camada de efeitos do quarto.
+*/position:absolute;/* Essa declaração ajusta as distâncias das quatro bordas na área de posicionamento na camada de efeitos do quarto.
+*/inset:0;/* Aqui o CSS controla o que acontece com o conteúdo que passa dos limites na camada de efeitos do quarto.
+*/overflow:hidden;/* Esse comando faz os cliques atravessarem essa camada para alcançar os controles de baixo na camada de efeitos do quarto.
+*/pointer-events:none;/* Essa declaração controla se essa área cria um grupo próprio de composição visual na camada de efeitos do quarto.
+*/isolation:isolate; }
+/* Essa regra reúne os ajustes na camada de efeitos do quarto, quando o quarto já ficou sem o seu morador.
+*/.room-atmosphere.spent { /* Aqui o CSS mistura a camada com o fundo usando transparência parcial na camada de efeitos do quarto.
+*/opacity:.25; }
+/* Essa regra reúne os ajustes nos detalhes de luz e partículas.
+*/.ambient-light { /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos detalhes de luz e partículas.
+*/position:absolute;/* Essa declaração ajusta as distâncias das quatro bordas na área de posicionamento nos detalhes de luz e partículas.
+*/inset:0;/* Aqui o CSS monta o fundo com gradientes de cor em vez de usar outra imagem nos detalhes de luz e partículas.
+*/background:radial-gradient(ellipse at 75% 20%,var(--room-color),transparent 58%);/* Esse comando mistura a camada com o fundo usando transparência parcial nos detalhes de luz e partículas.
+*/opacity:.09; }
+/* Essa regra reúne os ajustes nos detalhes de luz e partículas.
+*/.ambient-pixel { /* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos detalhes de luz e partículas.
+*/position:absolute;/* Aqui o CSS define a largura ocupada pela caixa nos detalhes de luz e partículas.
+*/width:3px;/* Esse comando define a altura ocupada pela caixa nos detalhes de luz e partículas.
+*/height:3px;/* Essa declaração define o preenchimento que aparece atrás do conteúdo nos detalhes de luz e partículas.
+*/background:var(--room-color);/* Aqui o CSS mistura a camada com o fundo usando transparência parcial nos detalhes de luz e partículas.
+*/opacity:.28;/* Esse comando desenha uma sombra ou um brilho ao redor da caixa nos detalhes de luz e partículas.
+*/box-shadow:3px 0 0 #ffffff22;/* Essa declaração liga a sequência de movimento e define seu tempo e sua repetição nos detalhes de luz e partículas.
+*/animation:room-drift 20s ease-in-out infinite; }
+/* Essa regra reúne os ajustes nos detalhes de luz e partículas.
+*/.petals .ambient-pixel,.leaves .ambient-pixel { /* Aqui o CSS define a largura ocupada pela caixa nos detalhes de luz e partículas.
+*/width:5px;/* Esse comando define a altura ocupada pela caixa nos detalhes de luz e partículas.
+*/height:3px;/* Essa declaração recorta a camada no formato indicado nos detalhes de luz e partículas.
+*/clip-path:polygon(25% 0,100% 0,100% 60%,50% 100%,0 100%,0 40%); }
+/* Essa regra reúne os ajustes nos detalhes de luz e partículas.
+*/.embers .ambient-pixel { /* Aqui o CSS desenha uma sombra ou um brilho ao redor da caixa nos detalhes de luz e partículas.
+*/box-shadow:0 0 6px var(--room-color);/* Esse comando escolhe qual sequência de animação será usada nos detalhes de luz e partículas.
+*/animation-name:room-ember;/* Essa declaração mistura a camada com o fundo usando transparência parcial nos detalhes de luz e partículas.
+*/opacity:.45; }
+/* Essa regra reúne os ajustes nos detalhes de luz e partículas.
+*/.rain .ambient-pixel { /* Aqui o CSS define a largura ocupada pela caixa nos detalhes de luz e partículas.
+*/width:2px;/* Esse comando define a altura ocupada pela caixa nos detalhes de luz e partículas.
+*/height:9px;/* Essa declaração mistura a camada com o fundo usando transparência parcial nos detalhes de luz e partículas.
+*/opacity:.23;/* Aqui o CSS escolhe qual sequência de animação será usada nos detalhes de luz e partículas.
+*/animation-name:room-droplet; }
+/* Essa regra reúne os ajustes nos detalhes de luz e partículas.
+*/.electric .ambient-pixel { /* Esse comando desenha uma sombra ou um brilho ao redor da caixa nos detalhes de luz e partículas.
+*/box-shadow:3px 2px 0 var(--room-color),5px 4px 0 #b7e8ed55;/* Essa declaração escolhe qual sequência de animação será usada nos detalhes de luz e partículas.
+*/animation-name:room-electric; }
+/* Essa regra reúne os ajustes nos detalhes de luz e partículas.
+*/.mist .ambient-pixel { /* Aqui o CSS define a largura ocupada pela caixa nos detalhes de luz e partículas.
+*/width:32px;/* Esse comando define a altura ocupada pela caixa nos detalhes de luz e partículas.
+*/height:2px;/* Essa declaração mistura a camada com o fundo usando transparência parcial nos detalhes de luz e partículas.
+*/opacity:.08;/* Aqui o CSS desenha uma sombra ou um brilho ao redor da caixa nos detalhes de luz e partículas.
+*/box-shadow:8px 3px 0 var(--room-color),17px 6px 0 var(--room-color); }
+/* Essa regra reúne os ajustes nos detalhes de luz e partículas.
+*/.ambient-ripple { /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nos detalhes de luz e partículas.
+*/position:absolute;/* Essa declaração define a largura ocupada pela caixa nos detalhes de luz e partículas.
+*/width:52px;/* Aqui o CSS define a altura ocupada pela caixa nos detalhes de luz e partículas.
+*/height:12px;/* Esse comando define a espessura, o estilo e a cor do contorno nos detalhes de luz e partículas.
+*/border:1px solid var(--room-color);/* Essa declaração mistura a camada com o fundo usando transparência parcial nos detalhes de luz e partículas.
+*/opacity:.18;/* Aqui o CSS recorta a camada no formato indicado nos detalhes de luz e partículas.
+*/clip-path:polygon(15% 0,85% 0,100% 30%,100% 70%,85% 100%,15% 100%,0 70%,0 30%);/* Esse comando liga a sequência de movimento e define seu tempo e sua repetição nos detalhes de luz e partículas.
+*/animation:room-ripple 11s ease-out infinite; }
+/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes room-drift { /* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/0%,100% {/* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(0,0);/* Aqui o CSS mistura a camada com o fundo usando transparência parcial nos elementos escolhidos por essa regra.
+*/opacity:.14;}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/50% {/* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(var(--drift),-16px);/* Essa declaração mistura a camada com o fundo usando transparência parcial nos elementos escolhidos por essa regra.
+*/opacity:.36;} }
+/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes room-ember { /* Essa parte define como a animação começa.
+*/0% {/* Aqui o CSS muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(0,12px);/* Esse comando deixa o desenho invisível sem remover a caixa da página nos elementos escolhidos por essa regra.
+*/opacity:0;}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/25%,70% {/* Essa declaração mistura a camada com o fundo usando transparência parcial nos elementos escolhidos por essa regra.
+*/opacity:.4;}/* Essa parte define como a animação termina.
+*/100% {/* Aqui o CSS muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translate(var(--drift),-38px);/* Esse comando deixa o desenho invisível sem remover a caixa da página nos elementos escolhidos por essa regra.
+*/opacity:0;} }
+/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes room-droplet { /* Essa parte define como a animação começa.
+*/0% {/* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translateY(-22px);/* Aqui o CSS deixa o desenho invisível sem remover a caixa da página nos elementos escolhidos por essa regra.
+*/opacity:0;}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/20%,70% {/* Esse comando mistura a camada com o fundo usando transparência parcial nos elementos escolhidos por essa regra.
+*/opacity:.22;}/* Essa parte define como a animação termina.
+*/100% {/* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translateY(30px);/* Aqui o CSS deixa o desenho invisível sem remover a caixa da página nos elementos escolhidos por essa regra.
+*/opacity:0;} }
+/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes room-electric { /* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/0%,100% {/* Esse comando mistura a camada com o fundo usando transparência parcial nos elementos escolhidos por essa regra.
+*/opacity:.08;/* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translateX(0);}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/45%,55% {/* Aqui o CSS mistura a camada com o fundo usando transparência parcial nos elementos escolhidos por essa regra.
+*/opacity:.32;/* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translateX(2px);} }
+/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes room-ripple { /* Essa parte define como a animação começa.
+*/0% {/* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:scale(.5);/* Aqui o CSS deixa o desenho invisível sem remover a caixa da página nos elementos escolhidos por essa regra.
+*/opacity:0;}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/25% {/* Esse comando mistura a camada com o fundo usando transparência parcial nos elementos escolhidos por essa regra.
+*/opacity:.2;}/* Essa parte define como a animação termina.
+*/100% {/* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:scale(1.7);/* Aqui o CSS deixa o desenho invisível sem remover a caixa da página nos elementos escolhidos por essa regra.
+*/opacity:0;} }
+/* Essa regra reúne os ajustes na camada de efeitos do quarto, quando a redução de movimento está ativa.
+*/body.reduced .room-atmosphere *,body:has(#motion:checked) .room-atmosphere * { /* Esse comando interrompe a animação dessa camada na camada de efeitos do quarto.
+*/animation:none; }
+/* Esse grupo só entra quando o sistema pede menos movimento, mantendo o conteúdo sem animação desnecessária.
+*/@media(prefers-reduced-motion:reduce) { /* Essa regra reúne os ajustes na camada de efeitos do quarto.
+*/.room-atmosphere * {/* Essa declaração interrompe a animação dessa camada na camada de efeitos do quarto.
+*/animation:none;} }
 /* A ausência muda somente as camadas do quarto, sem escurecer texto, mãos ou controles. */
-.stage.room-empty > .background { filter:brightness(.46) saturate(.48); }
+/* Essa regra reúne os ajustes na imagem do cenário, quando o quarto já ficou sem o seu morador.
+*/.stage.room-empty > .background { /* Aqui o CSS ajusta a aparência da imagem com os efeitos indicados na imagem do cenário.
+*/filter:brightness(.46) saturate(.48); }
 /* A mesma escala vale para todas as mãos. A arte fica presa ao rodapé da cena. */
-#stage > #hands.hands {
-  position:absolute;left:50%;bottom:0;transform:translateX(-50%);
-  width:min(76%,720px);height:43%;max-height:43%;
-  object-fit:contain;object-position:center bottom;z-index:4;
-  pointer-events:none;opacity:1;
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/#stage > #hands.hands {
+  /* Esse comando retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência nas mãos do protagonista.
+*/position:absolute;/* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento nas mãos do protagonista.
+*/left:50%;/* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:0;/* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nas mãos do protagonista.
+*/transform:translateX(-50%);
+  /* Essa declaração define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:min(76%,720px);/* Aqui o CSS define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:43%;/* Esse comando limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:43%;
+  /* Essa declaração mantém a imagem inteira dentro da caixa sem deformar a proporção nas mãos do protagonista.
+*/object-fit:contain;/* Aqui o CSS escolhe qual parte da imagem fica alinhada dentro da caixa nas mãos do protagonista.
+*/object-position:center bottom;/* Esse comando define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nas mãos do protagonista.
+*/z-index:4;
+  /* Essa declaração faz os cliques atravessarem essa camada para alcançar os controles de baixo nas mãos do protagonista.
+*/pointer-events:none;/* Aqui o CSS deixa a camada totalmente visível nas mãos do protagonista.
+*/opacity:1;
 }
-#stage > #hands[data-layout="equipment"] {width:min(83%,740px);height:52%;max-height:52%;}
-#stage > #hands.inspecting-hands,#stage > #hands.gesture-hands {
-  bottom:19%;width:min(65%,620px);height:44%;max-height:44%;
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/#stage > #hands[data-layout="equipment"] {/* Esse comando define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:min(83%,740px);/* Essa declaração define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:52%;/* Aqui o CSS limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:52%;}
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/#stage > #hands.inspecting-hands,#stage > #hands.gesture-hands {
+  /* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:19%;/* Essa declaração define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:min(65%,620px);/* Aqui o CSS define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:44%;/* Esse comando limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:44%;
 }
-#stage > #hands[data-layout="holding"] {height:47%;max-height:47%;}
-#stage > .held-object {z-index:5;left:46%;bottom:44%;width:8%;height:12%;}
-#stage > #effect {z-index:6;}
-#stage > #world-controls {z-index:8;}
-#stage > #dialogue {z-index:12;}
-#stage > #prompt {z-index:14;}
-#stage > #mobile-controls {z-index:15;}
-#stage > #fade {z-index:30;}
-.jumpscare-frame {position:absolute;inset:0;width:100%;height:100%;z-index:25;background:#000;image-rendering:pixelated;pointer-events:none;}
-.stage.sugar-finale > #actor {animation:none;}
-.stage.loss-scene > .background {filter:brightness(.5) saturate(.6);}
-.stage.choice-glitch > #dialogue {animation:choice-interference .5s steps(1,end);border-color:#9d626e;}
-.stage.choice-glitch > #actor {filter:drop-shadow(-4px 0 #6a263b) drop-shadow(4px 0 #245b61);}
-.stage.choice-glitch::after {content:'';position:absolute;inset:0;z-index:11;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 11px,#632b3938 12px 14px,transparent 15px 27px);box-shadow:inset 5px 0 #743c5588,inset -5px 0 #385d6c88;}
-@keyframes choice-interference {0%,100%{transform:translateX(0);}20%{transform:translateX(-7px);clip-path:inset(2% 0 0);}40%{transform:translateX(5px);clip-path:inset(0 0 5%);}65%{transform:translateX(-3px);}85%{transform:translateX(4px);}}
-body.reduced .stage.choice-glitch > #dialogue {animation:none;outline:2px solid #9d626e;}
-@media(prefers-reduced-motion:reduce){.stage.choice-glitch > #dialogue{animation:none;outline:2px solid #9d626e;}}
-@media(max-width:600px){
-  #stage > #hands.hands {width:100%;height:32%;max-height:32%;}
-  #stage > #hands[data-layout="equipment"] {width:100%;height:40%;max-height:40%;}
-  #stage > #hands.inspecting-hands,#stage > #hands.gesture-hands {bottom:23%;width:96%;height:38%;max-height:38%;}
-  #stage > .held-object {left:44%;bottom:44%;width:12%;height:10%;}
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/#stage > #hands[data-layout="holding"] {/* Essa declaração define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:47%;/* Aqui o CSS limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:47%;}
+/* Essa regra reúne os ajustes no objeto que o protagonista segura.
+*/#stage > .held-object {/* Esse comando define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente no objeto que o protagonista segura.
+*/z-index:5;/* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento no objeto que o protagonista segura.
+*/left:46%;/* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento no objeto que o protagonista segura.
+*/bottom:44%;/* Esse comando define a largura ocupada pela caixa no objeto que o protagonista segura.
+*/width:8%;/* Essa declaração define a altura ocupada pela caixa no objeto que o protagonista segura.
+*/height:12%;}
+/* Essa regra reúne os ajustes na área principal do jogo.
+*/#stage > #effect {/* Aqui o CSS define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente na área principal do jogo.
+*/z-index:6;}
+/* Essa regra reúne os ajustes nos controles sobre o cenário.
+*/#stage > #world-controls {/* Esse comando define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nos controles sobre o cenário.
+*/z-index:8;}
+/* Essa regra reúne os ajustes na caixa de diálogo.
+*/#stage > #dialogue {/* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente na caixa de diálogo.
+*/z-index:12;}
+/* Essa regra reúne os ajustes no aviso que pede uma reação rápida.
+*/#stage > #prompt {/* Aqui o CSS define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente no aviso que pede uma reação rápida.
+*/z-index:14;}
+/* Essa regra reúne os ajustes nos controles de toque.
+*/#stage > #mobile-controls {/* Esse comando define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente nos controles de toque.
+*/z-index:15;}
+/* Essa regra reúne os ajustes na transição de tela.
+*/#stage > #fade {/* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente na transição de tela.
+*/z-index:30;}
+/* Essa regra reúne os ajustes na imagem do susto.
+*/.jumpscare-frame {/* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na imagem do susto.
+*/position:absolute;/* Esse comando ajusta as distâncias das quatro bordas na área de posicionamento na imagem do susto.
+*/inset:0;/* Essa declaração define a largura ocupada pela caixa na imagem do susto.
+*/width:100%;/* Aqui o CSS define a altura ocupada pela caixa na imagem do susto.
+*/height:100%;/* Esse comando define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente na imagem do susto.
+*/z-index:25;/* Essa declaração define o preenchimento que aparece atrás do conteúdo na imagem do susto.
+*/background:#000;/* Aqui o CSS mantém os pixels bem visíveis quando a imagem é ampliada na imagem do susto.
+*/image-rendering:pixelated;/* Esse comando faz os cliques atravessarem essa camada para alcançar os controles de baixo na imagem do susto.
+*/pointer-events:none;}
+/* Essa regra reúne os ajustes no sprite do personagem.
+*/.stage.sugar-finale > #actor {/* Essa declaração interrompe a animação dessa camada no sprite do personagem.
+*/animation:none;}
+/* Essa regra reúne os ajustes na imagem do cenário.
+*/.stage.loss-scene > .background {/* Aqui o CSS ajusta a aparência da imagem com os efeitos indicados na imagem do cenário.
+*/filter:brightness(.5) saturate(.6);}
+/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.stage.choice-glitch > #dialogue {/* Esse comando liga a sequência de movimento e define seu tempo e sua repetição na caixa de diálogo.
+*/animation:choice-interference .5s steps(1,end);/* Essa declaração define a cor do contorno na caixa de diálogo.
+*/border-color:#9d626e;}
+/* Essa regra reúne os ajustes no sprite do personagem.
+*/.stage.choice-glitch > #actor {/* Aqui o CSS ajusta a aparência da imagem com os efeitos indicados no sprite do personagem.
+*/filter:drop-shadow(-4px 0 #6a263b) drop-shadow(4px 0 #245b61);}
+/* Essa regra reúne os ajustes na área principal do jogo, usando uma camada criada pelo próprio CSS.
+*/.stage.choice-glitch::after {/* Esse comando cria um conteúdo vazio para a camada do CSS poder receber um desenho na área principal do jogo.
+*/content:'';/* Essa declaração retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na área principal do jogo.
+*/position:absolute;/* Aqui o CSS ajusta as distâncias das quatro bordas na área de posicionamento na área principal do jogo.
+*/inset:0;/* Esse comando define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente na área principal do jogo.
+*/z-index:11;/* Essa declaração faz os cliques atravessarem essa camada para alcançar os controles de baixo na área principal do jogo.
+*/pointer-events:none;/* Aqui o CSS monta o fundo com gradientes de cor em vez de usar outra imagem na área principal do jogo.
+*/background:repeating-linear-gradient(0deg,transparent 0 11px,#632b3938 12px 14px,transparent 15px 27px);/* Esse comando desenha uma sombra ou um brilho ao redor da caixa na área principal do jogo.
+*/box-shadow:inset 5px 0 #743c5588,inset -5px 0 #385d6c88;}
+/* Aqui fica a sequência de estados que o navegador usa para desenhar essa animação ao longo do tempo.
+*/@keyframes choice-interference {/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/0%,100%{/* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translateX(0);}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/20%{/* Aqui o CSS muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translateX(-7px);/* Esse comando recorta a camada no formato indicado nos elementos escolhidos por essa regra.
+*/clip-path:inset(2% 0 0);}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/40%{/* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translateX(5px);/* Aqui o CSS recorta a camada no formato indicado nos elementos escolhidos por essa regra.
+*/clip-path:inset(0 0 5%);}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/65%{/* Esse comando muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translateX(-3px);}/* Essa parte define os estados intermediários da animação nos momentos indicados.
+*/85%{/* Essa declaração muda a posição, a escala ou a rotação visual sem reorganizar os elementos vizinhos nos elementos escolhidos por essa regra.
+*/transform:translateX(4px);}}
+/* Essa regra reúne os ajustes na caixa de diálogo, quando a redução de movimento está ativa.
+*/body.reduced .stage.choice-glitch > #dialogue {/* Aqui o CSS interrompe a animação dessa camada na caixa de diálogo.
+*/animation:none;/* Esse comando desenha uma marca ao redor do elemento sem alterar o tamanho da caixa na caixa de diálogo.
+*/outline:2px solid #9d626e;}
+/* Esse grupo só entra quando o sistema pede menos movimento, mantendo o conteúdo sem animação desnecessária.
+*/@media(prefers-reduced-motion:reduce){/* Essa regra reúne os ajustes na caixa de diálogo.
+*/.stage.choice-glitch > #dialogue{/* Essa declaração interrompe a animação dessa camada na caixa de diálogo.
+*/animation:none;/* Aqui o CSS desenha uma marca ao redor do elemento sem alterar o tamanho da caixa na caixa de diálogo.
+*/outline:2px solid #9d626e;}}
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px){
+  /* Essa regra reúne os ajustes nas mãos do protagonista.
+*/#stage > #hands.hands {/* Esse comando define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:100%;/* Essa declaração define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:32%;/* Aqui o CSS limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:32%;}
+  /* Essa regra reúne os ajustes nas mãos do protagonista.
+*/#stage > #hands[data-layout="equipment"] {/* Esse comando define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:100%;/* Essa declaração define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:40%;/* Aqui o CSS limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:40%;}
+  /* Essa regra reúne os ajustes nas mãos do protagonista.
+*/#stage > #hands.inspecting-hands,#stage > #hands.gesture-hands {/* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:23%;/* Essa declaração define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:96%;/* Aqui o CSS define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:38%;/* Esse comando limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:38%;}
+  /* Essa regra reúne os ajustes no objeto que o protagonista segura.
+*/#stage > .held-object {/* Essa declaração ajusta a distância da borda esquerda dentro da área de posicionamento no objeto que o protagonista segura.
+*/left:44%;/* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento no objeto que o protagonista segura.
+*/bottom:44%;/* Esse comando define a largura ocupada pela caixa no objeto que o protagonista segura.
+*/width:12%;/* Essa declaração define a altura ocupada pela caixa no objeto que o protagonista segura.
+*/height:10%;}
 }
-@media(orientation:landscape) and (max-height:550px){
-  #stage > #hands.hands {width:60%;height:42%;max-height:42%;}
-  #stage > #hands[data-layout="equipment"] {height:50%;max-height:50%;}
-  #stage > #hands.inspecting-hands,#stage > #hands.gesture-hands {bottom:12%;height:43%;max-height:43%;}
+/* Essas regras ajustam a interface quando a tela está deitada, com menos altura disponível.
+*/@media(orientation:landscape) and (max-height:550px){
+  /* Essa regra reúne os ajustes nas mãos do protagonista.
+*/#stage > #hands.hands {/* Aqui o CSS define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:60%;/* Esse comando define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:42%;/* Essa declaração limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:42%;}
+  /* Essa regra reúne os ajustes nas mãos do protagonista.
+*/#stage > #hands[data-layout="equipment"] {/* Aqui o CSS define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:50%;/* Esse comando limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:50%;}
+  /* Essa regra reúne os ajustes nas mãos do protagonista.
+*/#stage > #hands.inspecting-hands,#stage > #hands.gesture-hands {/* Essa declaração ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:12%;/* Aqui o CSS define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:43%;/* Esse comando limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:43%;}
 }
-.room-empty .ambient-light { opacity:.025; }
-.game-header #journal-button.has-new { border-color:#e9cc86; }
-.journal-count { display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 3px;margin-left:5px;background:#e9cc86;color:#172024;font:700 10px/1 monospace; }
-.game-footer { flex-wrap:wrap;align-items:center;gap:8px; }
-.journal-notice { min-height:36px;padding:6px 10px;border:1px solid #d9c68c80;background:#1a2927;color:#f4e6b9;font:11px/1.4 monospace; }
-.journal-toolbar { display:flex;flex-wrap:wrap;gap:10px;margin:18px 0; }
-.journal-toolbar input { width:100%;min-width:0;min-height:44px;padding:9px;border:1px solid #80958b;background:#111b1c;color:#f0efdc; }
-.journal-toolbar button { min-height:40px; }
-.journal-entry { margin:10px 0;border:1px solid #71857955;background:#101b1c;padding:12px; }
-.journal-entry.unread { border-left:3px solid #e5c882; }
-.journal-entry summary { padding:5px 0;font-weight:bold;min-height:44px;overflow-wrap:anywhere; }
-.journal-new { display:inline-block;margin-left:10px;padding:3px 5px;border:1px solid #e5c882;color:#e5c882;font:9px/1 monospace;vertical-align:middle; }
-.journal-source { color:#c7bda0;font:10px/1.4 monospace;text-transform:uppercase;letter-spacing:.06em; }
-.journal-voice { border-left:2px solid #977c67;padding-left:12px;font-style:italic; }
-.journal-evidence { padding:12px;background:#c3d6b80c;border-top:1px dashed #adc5b944; }
-.journal-evidence strong { font:11px/1.5 monospace;color:#b4cfb4; }
-.journal-evidence p { white-space:pre-wrap; }
-.bag-item { flex-wrap:wrap;align-items:center; }
-.bag-item>div { flex:1;min-width:min(100%,180px); }
-.object-viewer { height:240px;display:grid;place-items:center;overflow:hidden;border:1px solid #7f968044;background:radial-gradient(ellipse,#22302d,#0c1415);margin:18px 0; }
-.object-viewer img { width:120px;height:140px;object-fit:contain;image-rendering:pixelated;transform-origin:center;pointer-events:none;filter:drop-shadow(0 6px 6px #0008); }
-.item-observation label { display:block; }
-.item-observation input[type="range"] { display:block;width:100%;min-height:44px;accent-color:#d6c395; }
-.observation-controls { display:flex;flex-wrap:wrap;gap:8px;margin:12px 0; }
-.observation-controls button,.item-observation>button { min-height:44px; }
-.observation-finding { padding:12px;border-left:2px solid #c8b67f;background:#b9c7b112; }
-.observation-finding:empty { display:none; }
+/* Essa regra reúne os ajustes nos detalhes de luz e partículas, quando o quarto já ficou sem o seu morador.
+*/.room-empty .ambient-light { /* Essa declaração mistura a camada com o fundo usando transparência parcial nos detalhes de luz e partículas.
+*/opacity:.025; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.game-header #journal-button.has-new { /* Aqui o CSS define a cor do contorno no registro do Jardim.
+*/border-color:#e9cc86; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-count { /* Esse comando cria uma grade que pode ficar na mesma linha de outros conteúdos no registro do Jardim.
+*/display:inline-grid;/* Essa declaração define os alinhamentos vertical e horizontal dos itens da grade no registro do Jardim.
+*/place-items:center;/* Aqui o CSS impõe a menor largura permitida no registro do Jardim.
+*/min-width:17px;/* Esse comando define a altura ocupada pela caixa no registro do Jardim.
+*/height:17px;/* Essa declaração cria espaço entre o conteúdo e a borda no registro do Jardim.
+*/padding:0 3px;/* Aqui o CSS ajusta a distância externa do lado esquerdo no registro do Jardim.
+*/margin-left:5px;/* Esse comando define o preenchimento que aparece atrás do conteúdo no registro do Jardim.
+*/background:#e9cc86;/* Essa declaração define a cor do texto e dos detalhes que usam a cor atual no registro do Jardim.
+*/color:#172024;/* Aqui o CSS configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração no registro do Jardim.
+*/font:700 10px/1 monospace; }
+/* Essa regra reúne os ajustes no rodapé.
+*/.game-footer { /* Esse comando controla se os itens podem passar para outra linha no rodapé.
+*/flex-wrap:wrap;/* Essa declaração alinha os itens no eixo transversal do grupo no rodapé.
+*/align-items:center;/* Aqui o CSS define o espaço entre os itens de uma grade ou de um grupo flexível no rodapé.
+*/gap:8px; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-notice { /* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário no registro do Jardim.
+*/min-height:36px;/* Essa declaração cria espaço entre o conteúdo e a borda no registro do Jardim.
+*/padding:6px 10px;/* Aqui o CSS define a espessura, o estilo e a cor do contorno no registro do Jardim.
+*/border:1px solid #d9c68c80;/* Esse comando define o preenchimento que aparece atrás do conteúdo no registro do Jardim.
+*/background:#1a2927;/* Essa declaração define a cor do texto e dos detalhes que usam a cor atual no registro do Jardim.
+*/color:#f4e6b9;/* Aqui o CSS configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração no registro do Jardim.
+*/font:11px/1.4 monospace; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-toolbar { /* Esse comando organiza os elementos filhos em um grupo flexível no registro do Jardim.
+*/display:flex;/* Essa declaração controla se os itens podem passar para outra linha no registro do Jardim.
+*/flex-wrap:wrap;/* Aqui o CSS define o espaço entre os itens de uma grade ou de um grupo flexível no registro do Jardim.
+*/gap:10px;/* Esse comando define o espaço do lado de fora da caixa no registro do Jardim.
+*/margin:18px 0; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-toolbar input { /* Essa declaração define a largura ocupada pela caixa no registro do Jardim.
+*/width:100%;/* Aqui o CSS permite que a caixa encolha em um grupo flexível ou em uma grade sem forçar a largura da tela no registro do Jardim.
+*/min-width:0;/* Esse comando mantém uma altura mínima para a área não ficar menor que o necessário no registro do Jardim.
+*/min-height:44px;/* Essa declaração cria espaço entre o conteúdo e a borda no registro do Jardim.
+*/padding:9px;/* Aqui o CSS define a espessura, o estilo e a cor do contorno no registro do Jardim.
+*/border:1px solid #80958b;/* Esse comando define o preenchimento que aparece atrás do conteúdo no registro do Jardim.
+*/background:#111b1c;/* Essa declaração define a cor do texto e dos detalhes que usam a cor atual no registro do Jardim.
+*/color:#f0efdc; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-toolbar button { /* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário no registro do Jardim.
+*/min-height:40px; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-entry { /* Esse comando define o espaço do lado de fora da caixa no registro do Jardim.
+*/margin:10px 0;/* Essa declaração define a espessura, o estilo e a cor do contorno no registro do Jardim.
+*/border:1px solid #71857955;/* Aqui o CSS define o preenchimento que aparece atrás do conteúdo no registro do Jardim.
+*/background:#101b1c;/* Esse comando cria espaço entre o conteúdo e a borda no registro do Jardim.
+*/padding:12px; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-entry.unread { /* Essa declaração configura a borda da esquerda no registro do Jardim.
+*/border-left:3px solid #e5c882; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-entry summary { /* Aqui o CSS cria espaço entre o conteúdo e a borda no registro do Jardim.
+*/padding:5px 0;/* Esse comando ajusta a espessura das letras no registro do Jardim.
+*/font-weight:bold;/* Essa declaração mantém uma altura mínima para a área não ficar menor que o necessário no registro do Jardim.
+*/min-height:44px;/* Aqui o CSS permite quebrar palavras longas para o texto não escapar da caixa no registro do Jardim.
+*/overflow-wrap:anywhere; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-new { /* Esse comando mantém a caixa na linha e permite definir seus tamanhos no registro do Jardim.
+*/display:inline-block;/* Essa declaração ajusta a distância externa do lado esquerdo no registro do Jardim.
+*/margin-left:10px;/* Aqui o CSS cria espaço entre o conteúdo e a borda no registro do Jardim.
+*/padding:3px 5px;/* Esse comando define a espessura, o estilo e a cor do contorno no registro do Jardim.
+*/border:1px solid #e5c882;/* Essa declaração define a cor do texto e dos detalhes que usam a cor atual no registro do Jardim.
+*/color:#e5c882;/* Aqui o CSS configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração no registro do Jardim.
+*/font:9px/1 monospace;/* Esse comando alinha esse conteúdo em relação à linha de texto no registro do Jardim.
+*/vertical-align:middle; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-source { /* Essa declaração define a cor do texto e dos detalhes que usam a cor atual no registro do Jardim.
+*/color:#c7bda0;/* Aqui o CSS configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração no registro do Jardim.
+*/font:10px/1.4 monospace;/* Esse comando transforma a apresentação das letras em maiúsculas ou minúsculas no registro do Jardim.
+*/text-transform:uppercase;/* Essa declaração ajusta o espaço entre as letras no registro do Jardim.
+*/letter-spacing:.06em; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-voice { /* Aqui o CSS configura a borda da esquerda no registro do Jardim.
+*/border-left:2px solid #977c67;/* Esse comando cria espaço interno à esquerda do conteúdo no registro do Jardim.
+*/padding-left:12px;/* Essa declaração escolhe se o texto usa o estilo normal ou inclinado no registro do Jardim.
+*/font-style:italic; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-evidence { /* Aqui o CSS cria espaço entre o conteúdo e a borda no registro do Jardim.
+*/padding:12px;/* Esse comando define o preenchimento que aparece atrás do conteúdo no registro do Jardim.
+*/background:#c3d6b80c;/* Essa declaração configura a borda de cima no registro do Jardim.
+*/border-top:1px dashed #adc5b944; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-evidence strong { /* Aqui o CSS configura a fonte, o tamanho e os demais ajustes tipográficos dessa declaração no registro do Jardim.
+*/font:11px/1.5 monospace;/* Esse comando define a cor do texto e dos detalhes que usam a cor atual no registro do Jardim.
+*/color:#b4cfb4; }
+/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-evidence p { /* Essa declaração controla a preservação de espaços e a quebra das linhas no registro do Jardim.
+*/white-space:pre-wrap; }
+/* Essa regra reúne os ajustes na bolsa de itens.
+*/.bag-item { /* Aqui o CSS controla se os itens podem passar para outra linha na bolsa de itens.
+*/flex-wrap:wrap;/* Esse comando alinha os itens no eixo transversal do grupo na bolsa de itens.
+*/align-items:center; }
+/* Essa regra reúne os ajustes na bolsa de itens.
+*/.bag-item>div { /* Essa declaração define como o item cresce ou encolhe dentro de um grupo flexível na bolsa de itens.
+*/flex:1;/* Aqui o CSS impõe a menor largura permitida na bolsa de itens.
+*/min-width:min(100%,180px); }
+/* Essa regra reúne os ajustes na imagem ampliada do inventário.
+*/.object-viewer { /* Esse comando define a altura ocupada pela caixa na imagem ampliada do inventário.
+*/height:240px;/* Essa declaração organiza os elementos filhos em linhas e colunas na imagem ampliada do inventário.
+*/display:grid;/* Aqui o CSS define os alinhamentos vertical e horizontal dos itens da grade na imagem ampliada do inventário.
+*/place-items:center;/* Esse comando controla o que acontece com o conteúdo que passa dos limites na imagem ampliada do inventário.
+*/overflow:hidden;/* Essa declaração define a espessura, o estilo e a cor do contorno na imagem ampliada do inventário.
+*/border:1px solid #7f968044;/* Aqui o CSS monta o fundo com gradientes de cor em vez de usar outra imagem na imagem ampliada do inventário.
+*/background:radial-gradient(ellipse,#22302d,#0c1415);/* Esse comando define o espaço do lado de fora da caixa na imagem ampliada do inventário.
+*/margin:18px 0; }
+/* Essa regra reúne os ajustes na imagem ampliada do inventário.
+*/.object-viewer img { /* Essa declaração define a largura ocupada pela caixa na imagem ampliada do inventário.
+*/width:120px;/* Aqui o CSS define a altura ocupada pela caixa na imagem ampliada do inventário.
+*/height:140px;/* Esse comando mantém a imagem inteira dentro da caixa sem deformar a proporção na imagem ampliada do inventário.
+*/object-fit:contain;/* Essa declaração mantém os pixels bem visíveis quando a imagem é ampliada na imagem ampliada do inventário.
+*/image-rendering:pixelated;/* Aqui o CSS define o ponto de apoio usado nas rotações e mudanças de escala na imagem ampliada do inventário.
+*/transform-origin:center;/* Esse comando faz os cliques atravessarem essa camada para alcançar os controles de baixo na imagem ampliada do inventário.
+*/pointer-events:none;/* Essa declaração ajusta a aparência da imagem com os efeitos indicados na imagem ampliada do inventário.
+*/filter:drop-shadow(0 6px 6px #0008); }
+/* Essa regra reúne os ajustes na observação dos objetos.
+*/.item-observation label { /* Aqui o CSS trata o elemento como uma caixa de bloco na observação dos objetos.
+*/display:block; }
+/* Essa regra reúne os ajustes na observação dos objetos.
+*/.item-observation input[type="range"] { /* Esse comando trata o elemento como uma caixa de bloco na observação dos objetos.
+*/display:block;/* Essa declaração define a largura ocupada pela caixa na observação dos objetos.
+*/width:100%;/* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário na observação dos objetos.
+*/min-height:44px;/* Esse comando define a cor usada pelo navegador nos controles de seleção na observação dos objetos.
+*/accent-color:#d6c395; }
+/* Essa regra reúne os ajustes na observação dos objetos.
+*/.observation-controls { /* Essa declaração organiza os elementos filhos em um grupo flexível na observação dos objetos.
+*/display:flex;/* Aqui o CSS controla se os itens podem passar para outra linha na observação dos objetos.
+*/flex-wrap:wrap;/* Esse comando define o espaço entre os itens de uma grade ou de um grupo flexível na observação dos objetos.
+*/gap:8px;/* Essa declaração define o espaço do lado de fora da caixa na observação dos objetos.
+*/margin:12px 0; }
+/* Essa regra reúne os ajustes na observação dos objetos.
+*/.observation-controls button,.item-observation>button { /* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário na observação dos objetos.
+*/min-height:44px; }
+/* Essa regra reúne os ajustes na observação dos objetos.
+*/.observation-finding { /* Esse comando cria espaço entre o conteúdo e a borda na observação dos objetos.
+*/padding:12px;/* Essa declaração configura a borda da esquerda na observação dos objetos.
+*/border-left:2px solid #c8b67f;/* Aqui o CSS define o preenchimento que aparece atrás do conteúdo na observação dos objetos.
+*/background:#b9c7b112; }
+/* Essa regra reúne os ajustes na observação dos objetos.
+*/.observation-finding:empty { /* Esse comando esconde o elemento e retira o espaço que ele ocuparia na observação dos objetos.
+*/display:none; }
 /* O papel fica discreto no canto da entrada da Candy, mas continua clicável no toque. */
-#stage .room-scene .quiet-interaction {
-  right:2%;bottom:3%;width:48px;height:48px;min-height:48px;
-  padding:0;opacity:1;z-index:3;pointer-events:auto;touch-action:manipulation;
-  border:0;background:transparent;box-shadow:none;
+/* Essa regra reúne os ajustes no ponto discreto do quarto da Candy.
+*/#stage .room-scene .quiet-interaction {
+  /* Essa declaração ajusta a distância da borda direita dentro da área de posicionamento no ponto discreto do quarto da Candy.
+*/right:2%;/* Aqui o CSS ajusta a distância da borda de baixo dentro da área de posicionamento no ponto discreto do quarto da Candy.
+*/bottom:3%;/* Esse comando define a largura ocupada pela caixa no ponto discreto do quarto da Candy.
+*/width:48px;/* Essa declaração define a altura ocupada pela caixa no ponto discreto do quarto da Candy.
+*/height:48px;/* Aqui o CSS mantém uma altura mínima para a área não ficar menor que o necessário no ponto discreto do quarto da Candy.
+*/min-height:48px;
+  /* Esse comando cria espaço entre o conteúdo e a borda no ponto discreto do quarto da Candy.
+*/padding:0;/* Essa declaração deixa a camada totalmente visível no ponto discreto do quarto da Candy.
+*/opacity:1;/* Aqui o CSS define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente no ponto discreto do quarto da Candy.
+*/z-index:3;/* Esse comando permite que essa camada receba cliques e toques no ponto discreto do quarto da Candy.
+*/pointer-events:auto;/* Essa declaração controla quais gestos de toque o navegador pode tratar diretamente no ponto discreto do quarto da Candy.
+*/touch-action:manipulation;
+  /* Aqui o CSS define a espessura, o estilo e a cor do contorno no ponto discreto do quarto da Candy.
+*/border:0;/* Esse comando remove o preenchimento de fundo no ponto discreto do quarto da Candy.
+*/background:transparent;/* Essa declaração desenha uma sombra ou um brilho ao redor da caixa no ponto discreto do quarto da Candy.
+*/box-shadow:none;
 }
-#stage .quiet-interaction img {
-  right:7px;bottom:7px;width:22px;height:22px;opacity:.62;
-  filter:drop-shadow(1px 2px 1px #000a);transition:opacity .15s;
+/* Essa regra reúne os ajustes no ponto discreto do quarto da Candy.
+*/#stage .quiet-interaction img {
+  /* Aqui o CSS ajusta a distância da borda direita dentro da área de posicionamento no ponto discreto do quarto da Candy.
+*/right:7px;/* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento no ponto discreto do quarto da Candy.
+*/bottom:7px;/* Essa declaração define a largura ocupada pela caixa no ponto discreto do quarto da Candy.
+*/width:22px;/* Aqui o CSS define a altura ocupada pela caixa no ponto discreto do quarto da Candy.
+*/height:22px;/* Esse comando mistura a camada com o fundo usando transparência parcial no ponto discreto do quarto da Candy.
+*/opacity:.62;
+  /* Essa declaração ajusta a aparência da imagem com os efeitos indicados no ponto discreto do quarto da Candy.
+*/filter:drop-shadow(1px 2px 1px #000a);/* Aqui o CSS suaviza as mudanças nas propriedades citadas quando o estado do elemento troca no ponto discreto do quarto da Candy.
+*/transition:opacity .15s;
 }
-#stage .quiet-interaction:hover img,#stage .quiet-interaction:focus-visible img {opacity:1;}
-#stage .quiet-interaction:focus-visible {outline:1px dashed #eadde3;outline-offset:1px;}
+/* Essa regra reúne os ajustes no ponto discreto do quarto da Candy, quando o cursor fica sobre o elemento.
+*/#stage .quiet-interaction:hover img,#stage .quiet-interaction:focus-visible img {/* Esse comando deixa a camada totalmente visível no ponto discreto do quarto da Candy.
+*/opacity:1;}
+/* Essa regra reúne os ajustes no ponto discreto do quarto da Candy, quando o foco de teclado precisa ficar visível.
+*/#stage .quiet-interaction:focus-visible {/* Essa declaração desenha uma marca ao redor do elemento sem alterar o tamanho da caixa no ponto discreto do quarto da Candy.
+*/outline:1px dashed #eadde3;/* Aqui o CSS define a distância entre a marca de foco e a borda do elemento no ponto discreto do quarto da Candy.
+*/outline-offset:1px;}
 /* Na exploração os punhos terminam na própria arte, inclusive na tela vertical. */
-#stage.exploring > #hands.hands {
-  bottom:var(--room-bottom,0px);
-  width:min(76%,calc(var(--room-width,800px)*.76),720px);
-  height:calc(var(--room-height,600px)*.43);max-height:calc(var(--room-height,600px)*.43);
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/#stage.exploring > #hands.hands {
+  /* Esse comando ajusta a distância da borda de baixo dentro da área de posicionamento nas mãos do protagonista.
+*/bottom:var(--room-bottom,0px);
+  /* Essa declaração define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:min(76%,calc(var(--room-width,800px)*.76),720px);
+  /* Aqui o CSS define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:calc(var(--room-height,600px)*.43);/* Esse comando limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:calc(var(--room-height,600px)*.43);
 }
-#stage.exploring > #hands.hands[data-layout="equipment"] {
-  width:min(83%,calc(var(--room-width,800px)*.83),740px);
-  height:calc(var(--room-height,600px)*.52);max-height:calc(var(--room-height,600px)*.52);
+/* Essa regra reúne os ajustes nas mãos do protagonista.
+*/#stage.exploring > #hands.hands[data-layout="equipment"] {
+  /* Essa declaração define a largura ocupada pela caixa nas mãos do protagonista.
+*/width:min(83%,calc(var(--room-width,800px)*.83),740px);
+  /* Aqui o CSS define a altura ocupada pela caixa nas mãos do protagonista.
+*/height:calc(var(--room-height,600px)*.52);/* Esse comando limita até onde a altura pode crescer nas mãos do protagonista.
+*/max-height:calc(var(--room-height,600px)*.52);
 }
-/* O cenário continua inteiro; as faixas restantes recebem só a sua luz ambiente. */
-#stage.in-room::before {
-  content:'';position:absolute;inset:-20px;z-index:-4;pointer-events:none;
-  background:var(--room-backdrop,none) center/cover no-repeat;
-  filter:blur(14px) brightness(.2) saturate(.7);opacity:.8;
+/* O cenário continua inteiro, as faixas restantes recebem só a sua luz ambiente. */
+/* Essa regra reúne os ajustes na área principal do jogo, usando uma camada criada pelo próprio CSS.
+*/#stage.in-room::before {
+  /* Essa declaração cria um conteúdo vazio para a camada do CSS poder receber um desenho na área principal do jogo.
+*/content:'';/* Aqui o CSS retira a caixa do fluxo normal e deixa as bordas definirem sua posição no elemento de referência na área principal do jogo.
+*/position:absolute;/* Esse comando ajusta as distâncias das quatro bordas na área de posicionamento na área principal do jogo.
+*/inset:-20px;/* Essa declaração define a ordem dessa camada em relação às outras do mesmo grupo, valores maiores aparecem na frente na área principal do jogo.
+*/z-index:-4;/* Aqui o CSS faz os cliques atravessarem essa camada para alcançar os controles de baixo na área principal do jogo.
+*/pointer-events:none;
+  /* Esse comando define o preenchimento que aparece atrás do conteúdo na área principal do jogo.
+*/background:var(--room-backdrop,none) center/cover no-repeat;
+  /* Essa declaração ajusta a aparência da imagem com os efeitos indicados na área principal do jogo.
+*/filter:blur(14px) brightness(.2) saturate(.7);/* Aqui o CSS mistura a camada com o fundo usando transparência parcial na área principal do jogo.
+*/opacity:.8;
 }
-@media(max-width:600px) { .object-viewer {height:195px;}.bag-item {gap:8px;}.journal-entry {padding:10px;}.journal-toolbar button {flex:1;font-size:12px;} }
-@media(orientation:landscape) and (max-height:550px) {
-  .watch-hud.camera-hud { left:23%;width:62%; }
-  .stage:has(.camera-hud)>#status { display:none; }
+/* Esse grupo adapta os elementos quando a largura da tela fica abaixo do limite definido.
+*/@media(max-width:600px) { /* Essa regra reúne os ajustes na imagem ampliada do inventário.
+*/.object-viewer {/* Esse comando define a altura ocupada pela caixa na imagem ampliada do inventário.
+*/height:195px;}/* Essa regra reúne os ajustes na bolsa de itens.
+*/.bag-item {/* Essa declaração define o espaço entre os itens de uma grade ou de um grupo flexível na bolsa de itens.
+*/gap:8px;}/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-entry {/* Aqui o CSS cria espaço entre o conteúdo e a borda no registro do Jardim.
+*/padding:10px;}/* Essa regra reúne os ajustes no registro do Jardim.
+*/.journal-toolbar button {/* Esse comando define como o item cresce ou encolhe dentro de um grupo flexível no registro do Jardim.
+*/flex:1;/* Essa declaração define o tamanho das letras no registro do Jardim.
+*/font-size:12px;} }
+/* Essas regras ajustam a interface quando a tela está deitada, com menos altura disponível.
+*/@media(orientation:landscape) and (max-height:550px) {
+  /* Essa regra reúne os ajustes na interface das esferas de vigilância.
+*/.watch-hud.camera-hud { /* Aqui o CSS ajusta a distância da borda esquerda dentro da área de posicionamento na interface das esferas de vigilância.
+*/left:23%;/* Esse comando define a largura ocupada pela caixa na interface das esferas de vigilância.
+*/width:62%; }
+  /* Essa regra reúne os ajustes na área principal do jogo.
+*/.stage:has(.camera-hud)>#status { /* Essa declaração esconde o elemento e retira o espaço que ele ocuparia na área principal do jogo.
+*/display:none; }
 }
