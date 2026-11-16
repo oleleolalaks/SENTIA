@@ -505,7 +505,10 @@
 */ significant();
      /* Confere as condições da história que abrem a passagem de Hunger.
 */ checkHungerDoor();
-  }
+  
+/* O rodapé não anuncia uma nova conversa depois da morte. */
+if (S.room === id) objective('A ausência de ' + D.names[id] + ' mudou este lugar.');
+}
    /* Coloca o objeto na bolsa e registra como ele foi recebido.
 */ function addItem(id) {
      /* Esse teste confere se o resultado de S.items.includes está ativo ou retorna um valor verdadeiro, e só entra nesse caminho quando a condição passa.
@@ -611,7 +614,11 @@
 */ return;
     }
      /* Escolhe o arquivo que esse elemento deve carregar.
-*/ el.src = id==='amor' && S?.phase==='candy' && pose==='quebrou' ?  /* Procura o caminho do recurso aprovado no catálogo de imagens. */ asset('amor-chorando-rosto-coberto.png') :  /* Procura a pose pelo nome e mantém a imagem de morte separada do choro vulnerável. */ baseSprite(id, pose);
+*/ el.src = id==='amor' && S?.phase==='candy' && pose==='quebrou' ? asset('amor-chorando-rosto-coberto.png')
+      /* A postura neutra da batalha continua sendo a arte de combate de Ninfa. */
+      : id==='tristeza' && S?.phase==='ninfa' && !S.flags.ninfaDefeated && pose==='base'
+        ? asset('/04-Tristeza/01-prontidao.png') || baseSprite(id, pose)
+        : baseSprite(id, pose);
      /* Atualiza el.dataset.pose usando pose.
 */ el.dataset.pose = pose;
      /* Atualiza el.dataset.eco usando id.
@@ -621,9 +628,12 @@
      /* Define se esse elemento fica escondido ou disponível na tela.
 */ el.hidden = false;
      /* Define as classes de aparência desse elemento.
-*/ el.className = 'actor ' + extra + ( /* Confere se esse valor está presente na lista ou no texto. */ [ /* Essa posição da lista guarda amor.
-*/ 'amor',  /* Essa posição da lista guarda calma.
-*/ 'calma'].includes(id) && !settings.reduced ? ' floating' : '');
+*/ el.className = 'actor ' + extra
+      /* Na visita, o lugar do anfitrião não muda quando ele troca de pose. */
+      + ($('#stage').classList.contains('shared-scene') ? ' paired' : '')
+      /* Uma figura ajoelhada, em ruptura ou morta não continua flutuando. */
+      + (['amor','calma'].includes(id) && !settings.reduced && !fragilePose(pose)
+        && !(id === 'amor' && S?.phase === 'candy') ? ' floating' : '');
      /* Atualiza current Eco usando id.
 */ currentEco = id;
      /* Define o valor da propriedade de estilo accent.
@@ -686,27 +696,29 @@
   }
    /* Coloca o segundo Eco na conversa compartilhada e ajusta a posição dos dois.
 */ function actorTwo(id, pose = 'base') {
-     /* Essa declaração usa const para preparar el, mantendo essas referências fixas.
-*/ const  /* Aqui el recebe o resultado de atalho de seleção de elementos.
-*/ el =  /* Procura o primeiro elemento da página que corresponde ao seletor indicado. */ $('#actor-two');
-     /* Define se esse elemento fica escondido ou disponível na tela.
-*/ el.hidden = !id;
-     /* Esse teste confere se id está ativo ou retorna um valor verdadeiro, e só entra nesse caminho quando a condição passa.
-*/ if (id) {
-       /* Define as classes de aparência desse elemento.
-*/ el.className = 'actor two';
-       /* Escolhe o arquivo que esse elemento deve carregar.
-*/ el.src =  /* Procura a pose pelo nome e mantém a imagem de morte separada do choro vulnerável. */ baseSprite(id, pose);
-       /* Atualiza el.alt usando D.names.id.
-*/ el.alt = D.names[id];
-       /* Acrescenta esse valor ao conjunto ou à lista de classes.
-*/ $('#actor').classList.add('paired');
-    }
+  const el = $('#actor-two');
+  el.hidden = !id;
+  if (!id) {
+    delete el.dataset.eco;
+    delete el.dataset.pose;
+    return;
   }
+  el.src = baseSprite(id, pose);
+  el.dataset.eco = id;
+  el.dataset.pose = pose;
+  el.alt = D.names[id];
+  const floats = ['amor','calma'].includes(id) && !settings.reduced && !fragilePose(pose);
+  el.className = 'actor two' + (floats ? ' floating' : '');
+  $('#actor').classList.add('paired');
+  document.querySelectorAll('.idle-layer').forEach(layer => layer.classList.add('paired'));
+}
    /* Limpa atores, mãos, caixas, efeitos e tarefas da cena anterior antes de montar outra.
 */ function resetScene() {
      /* Executa essa expressão para atualizar o estado ou a apresentação dessa parte.
 */ sceneSerial++;
+scareResizeCleanup?.();
+scareResizeCleanup = null;
+
      /* Executa essa expressão para atualizar o estado ou a apresentação dessa parte.
 */ window.AudioSentia?.cancelScare?.();
      /* Executa essa expressão para atualizar o estado ou a apresentação dessa parte.
@@ -755,6 +767,8 @@
 */ $('#hands').hidden = true;
      /* Define as classes de aparência desse elemento.
 */ $('#hands').className = 'hands';
+     /* Esse marcador não pode restaurar uma mão de outra cena. */
+     delete $('#hands').dataset.dialogueRest;
      /* Executa essa expressão para atualizar o estado ou a apresentação dessa parte.
 */ delete  /* Procura o primeiro elemento da página que corresponde ao seletor indicado. */ $('#hands').dataset.layout;
      /* Executa essa expressão para atualizar o estado ou a apresentação dessa parte.
@@ -923,6 +937,12 @@
 */ window.AudioSentia?.stopVoice?.();
      /* Atualiza mode usando dialogue.
 */ mode = 'dialogue';
+     /* Mãos sem ação não ficam aparecendo como punhos soltos abaixo da caixa. */
+     const restingHands = $('#hands');
+     if (!restingHands.hidden && !restingHands.classList.contains('inspecting-hands')) {
+       restingHands.hidden = true;
+       restingHands.dataset.dialogueRest = 'true';
+     }
      /* Mostra ou desativa o botão do gesto conforme o desbloqueio e a cena atual.
 */ updateGestureControl();
      /* Atualiza current Eco usando eco.
@@ -1072,6 +1092,8 @@
 */ $('#effect').hidden=true;
      /* Esse teste confere se line.choices está ativo ou retorna um valor verdadeiro, e só entra nesse caminho quando a condição passa.
 */ if (line.choices) {
+       /* Uma escolha pode pedir uma reação explícita, sem interpretar o texto do menu como fala. */
+       applyDialoguePose(line, false);
        /* Essa declaração usa let para preparar choice Made, permitindo atualizar esses valores depois.
 */ let  /* Aqui choice Made recebe false.
 */ choiceMade=false;
@@ -1124,7 +1146,9 @@
            /* Guarda o texto que essa parte vai mostrar.
 */ text: c.reply,
            /* Escolhe a pose do personagem para essa fala.
-*/ pose: c.pose
+*/ pose: c.pose,
+            /* Uma reação em grupo mantém os dois sprites ligados às próprias emoções. */
+            reactions: c.reactions
         });
          /* Esse teste confere se c.go está ativo ou retorna um valor verdadeiro, e só entra nesse caminho quando a condição passa.
 */ if (c.go) {
@@ -1179,31 +1203,8 @@
 */ $('#speaker').title= /* Procura o primeiro elemento da página que corresponde ao seletor indicado. */ $('#speaker').textContent;
      /* Prepara as letras que vão aparecer aos poucos junto dos bipes.
 */ revealSpeech(line.text);
-     /* Essa declaração usa const para preparar eco Speaking, mantendo essas referências fixas.
-*/ const  /* Aqui eco Speaking recebe o resultado dessa expressão.
-*/ ecoSpeaking=currentEco && (!line.who || (nomesAntigos[line.who]||line.who)===D.names[currentEco]);
-     /* Esse teste confere se os testes combinados dessa condição passam, e só entra nesse caminho quando a condição passa.
-*/ if (currentEco && (line.pose || ecoSpeaking) && ! /* Confere se esse valor está presente na lista ou no texto. */ [ /* Essa posição da lista guarda Você.
-*/ 'Você', /* Essa posição da lista guarda Protagonista.
-*/ 'Protagonista'].includes(line.who)) {
-       /* Essa declaração usa let para preparar pose, permitindo atualizar esses valores depois.
-*/ let  /* Aqui pose recebe o resultado dessa expressão.
-*/ pose = line.pose || 'base';
-       /* Esse teste confere se pose é igual a base, e só entra nesse caminho quando a condição passa.
-*/ if(pose==='base') {
-         /* Esse teste confere se o resultado de não foi confunda use fala pare perigo mentiu ferir machuca i.test está ativo ou retorna um valor verdadeiro, e só entra nesse caminho quando a condição passa.
-*/ if( /* Confere se o texto corresponde a esse padrão de expressão regular. */ /não (foi|confunda|use|fala)|pare|perigo|mentiu|ferir|machuca/i.test(line.text))  /* Atualiza pose usando nao gostou.
-*/ pose='nao-gostou';
-        else  /* Esse teste confere se o resultado de não consigo medo esque perdi sozinh não sei difícil demais i.test está ativo ou retorna um valor verdadeiro, e só entra nesse caminho quando a condição passa.
-*/ if( /* Confere se o texto corresponde a esse padrão de expressão regular. */ /não consigo|medo|esque|perdi|sozinh|não sei|difícil|demais/i.test(line.text))  /* Atualiza pose usando abalado.
-*/ pose='abalado';
-        else  /* Esse teste confere se o resultado de obrigad pode ficar comigo ajud gost junto companhia i.test está ativo ou retorna um valor verdadeiro, e só entra nesse caminho quando a condição passa.
-*/ if( /* Confere se o texto corresponde a esse padrão de expressão regular. */ /obrigad|pode ficar|comigo|ajud|gost|junto|companhia/i.test(line.text))  /* Atualiza pose usando gostou.
-*/ pose='gostou';
-      }
-       /* Escolhe a pose do Eco e prepara as camadas aprovadas para a apresentação.
-*/ actor(currentEco, /* Confere se esse Eco já está na lista de mortos. */ dead(currentEco)?'morreu':pose);
-    }
+     /* A fala só muda a pose de quem a pronunciou, conservando rupturas explícitas. */
+applyDialoguePose(line);
      /* Essa declaração usa const para preparar speaker Eco, mantendo essas referências fixas.
 */ const  /* Aqui speaker Eco recebe o resultado de .find.
 */ speakerEco= /* Procura o primeiro item que passa na condição indicada. */ Object.keys(D.names).find( /* Essa função recebe id e devolve o resultado dessa expressão. */ id=>D.names[id]=== /* Procura o primeiro elemento da página que corresponde ao seletor indicado. */ $('#speaker').textContent);
@@ -1273,7 +1274,10 @@
 */ hands.dataset.gesture=gesture;
      /* Acrescenta esse valor ao conjunto ou à lista de classes.
 */ hands.classList.add('exploration-hands');
-  }
+  
+/* O repouso não deixa só os punhos aparecendo atrás da caixa. */
+if(mode === 'dialogue' && gesture === '00-repouso') { hands.hidden = true; hands.dataset.dialogueRest = 'true'; }
+}
                                                                                
    /* Mostra o arquivo das mãos e identifica o tipo de enquadramento.
 */ function showHands(source,gesture='00-repouso') {
@@ -1291,7 +1295,10 @@
 */ hands.dataset.layout= /* Confere se o texto corresponde a esse padrão de expressão regular. */ /02-Equipamentos/.test(source)?'equipment': /* Confere se o texto corresponde a esse padrão de expressão regular. */ /04-segurar-papel|05-equipar-chave|11-segurar-flor|06-oferecer-semente/.test(gesture)?'holding':gesture==='00-repouso'?'rest':'gesture';
      /* Define se esse elemento fica escondido ou disponível na tela.
 */ hands.hidden=false;
-  }
+  
+/* Uma ação explícita volta a mostrar as mãos. */
+delete hands.dataset.dialogueRest;
+}
    /* Atualiza a barra de sanidade e a indicação do efeito daquele quarto.
 */ function updateSanityHUD() {
      /* Essa declaração usa const para preparar hud, mantendo essas referências fixas.
@@ -1471,7 +1478,10 @@
 */ if (S.pending[id] != null && S.activity > S.pending[id])  /* Devolve o resultado de later Death e encerra essa chamada da função.
 */ return  /* Mostra uma consequência posterior sem confundir isso com a decisão anterior de parar. */ laterDeath(id);
      /* Monta cenário, morador, objetos e setas da vista atual do quarto.
-*/ renderRoom();
+*/ /* Uma entrada sorteia e salva a visita, sem sortear a cada renderização. */
+planGuestVisit(id);
+save();
+renderRoom();
   }
                                                                           
                                                                                 
@@ -2030,61 +2040,148 @@
 */ 'Eu vou deixar vocês conversarem. Depois eu passo outra vez.']]}
   ];
    /* Procura uma visita que já foi liberada e ainda pode acontecer.
-*/ function guestFor(host) {
-     /* Devolve o resultado de visits.find e encerra essa chamada da função.
-*/ return  /* Procura o primeiro item que passa na condição indicada. */ visits.find( /* Essa função recebe v e devolve o resultado dessa expressão. */ v=> /* Confere se esse valor está presente na lista ou no texto. */ v.hosts.includes(host)&&!S.flags['visit-'+v.key]&& /* Confere se todos os itens passam no teste. */ v.requires.every( /* Essa função recebe x e devolve S.talks.x. */ x=>S.talks[x])&& /* Confere se todos os itens passam no teste. */ v.people.every( /* Essa função recebe x e devolve a negação de o resultado de dead. */ x=>! /* Confere se esse Eco já está na lista de mortos. */ dead(x)));
+*/ function fragilePose(pose) {
+  return /^(quebrando|quebrou|quebrado|vulner[aá]vel|morreu)/.test(pose || '');
+}
+
+function dialogueSpeaker(who) {
+  if (!who) return currentEco;
+  const aliases = { Felicidade:'felicidade', Amor:'amor', Tristeza:'tristeza', Orgulho:'orgulho',
+    Determinação:'determinacao', Calma:'calma', Ansiedade:'ansiedade', Culpa:'culpa',
+    Medo:'medo', Ódio:'odio', Sanidade:'sanidade', Insanidade:'insanidade' };
+  return Object.keys(D.names).find(id => D.names[id] === who) || aliases[who] || null;
+}
+
+function dialoguePose(line, previous = 'base') {
+  if (line.pose) return line.pose;
+  if (fragilePose(previous)) return previous;
+  /* Uma resposta da luta não troca a aura de Ninfa por uma expressão casual. */
+  if (S.phase === 'ninfa' && !S.flags.ninfaDefeated) return previous;
+  const text = String(line.text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  if (/\b(pare|mentiu)\b|\bnao (confunda|use|fale|encoste)\b|\bnao quero que\b/.test(text)) return 'nao-gostou';
+  if (/\b(nao consigo|nao sei|tenho medo|estou com medo|sinto falta|me sinto so|perdi)\b/.test(text)) return 'abalado';
+  if (/\b(obrigad[oa]|pode ficar|conte comigo|gosto|companhia|fico feliz|ajudou)\b/.test(text)) return 'gostou';
+  return 'base';
+}
+
+function applyDialoguePose(line, infer = true) {
+  if (line.hideActor) {
+    actor(null);
+    actorTwo(null);
+    return;
   }
+  const update = (id, pose) => {
+    const other = $('#actor-two');
+    if (!other.hidden && other.dataset.eco === id) actorTwo(id, dead(id) ? 'morreu' : pose);
+    else if (id === currentEco) actor(id, dead(id) ? 'morreu' : pose);
+  };
+  if (line.reactions) for (const [id, pose] of Object.entries(line.reactions)) update(id, pose);
+  /* A narração também pode ordenar uma pose de morte ou outra mudança explícita da cena. */
+  const id = dialogueSpeaker(line.who) || (line.who === 'Jardim' && line.pose ? currentEco : null);
+  if (!id || (!infer && !line.pose)) return;
+  const other = $('#actor-two');
+  const target = !other.hidden && other.dataset.eco === id ? other : $('#actor');
+  if (id !== currentEco && (other.hidden || other.dataset.eco !== id)) return;
+  update(id, dialoguePose(line, target.dataset.eco === id ? target.dataset.pose : 'base'));
+}
+
+function guestState() {
+  const saved = S.flags.guestEvents;
+  if (!saved || saved.version !== 1 || !Number.isFinite(saved.entry)) {
+    S.flags.guestEvents = { version:1, entry:0, drought:0, cooldown:0, active:null };
+  }
+  return S.flags.guestEvents;
+}
+
+function visitEligible(visit, host) {
+  return visit.hosts.includes(host) && S.talks[first[host]] && !S.flags['visit-' + visit.key]
+    && visit.requires.every(talk => S.talks[talk])
+    && visit.people.every(id => !dead(id) && S.pending[id] == null && !S.flags[id + 'Confront']);
+}
+
+function planGuestVisit(host) {
+  const state = guestState();
+  state.entry++;
+  const previous = state.active;
+  if (previous?.host === host) {
+    const visit = visits.find(item => item.key === previous.key);
+    if (visit && visitEligible(visit, host)) return;
+  }
+  state.active = null;
+  if (state.entry <= state.cooldown) return;
+  const eligible = visits.filter(visit => visitEligible(visit, host));
+  if (!eligible.length) return;
+  /* Reabrir a mesma porta sem fazer nada não fica sorteando de novo. */
+  if (state.lastHost === host && state.lastActivity === S.activity) return;
+  state.lastHost = host;
+  state.lastActivity = S.activity;
+  /* Depois de duas tentativas vazias, um encontro elegível evita azar sem fim. */
+  if (state.drought < 2 && Math.random() >= 0.45) {
+    state.drought++;
+    return;
+  }
+  const visit = eligible[Math.floor(Math.random() * eligible.length)];
+  state.active = { key:visit.key, host, view:1 + Math.floor(Math.random() * 3), entry:state.entry };
+  state.drought = 0;
+}
+
+function guestFor(host) {
+  const active = S.flags.guestEvents?.active;
+  if (!active || active.host !== host) return null;
+  return visits.find(visit => visit.key === active.key && visitEligible(visit, host)) || null;
+}
    /* Coloca o visitante na vista correta do quarto.
-*/ function renderGuest(scene,host) {
-     /* Essa declaração usa const para preparar visit, mantendo essas referências fixas.
-*/ const  /* Aqui visit recebe o resultado de guest For.
-*/ visit= /* Procura uma visita que já foi liberada e ainda pode acontecer. */ guestFor(host); /* Esse teste confere se os testes combinados dessa condição passam, e só entra nesse caminho quando a condição passa.
-*/ if(!visit||S.view!==1) /* Encerra essa função sem devolver outro valor.
-*/ return;
-     /* Essa declaração usa const para preparar guest, mantendo essas referências fixas.
-*/ const  /* Aqui guest recebe o resultado de visit.people.find.
-*/ guest= /* Procura o primeiro item que passa na condição indicada. */ visit.people.find( /* Essa função recebe x e devolve o resultado dessa expressão. */ x=>x!==host);
-     /* Essa declaração usa const para preparar target, mantendo essas referências fixas.
-*/ const  /* Aqui target recebe o resultado de btn.
-*/ target= /* Cria um botão com o texto, a ação e a aparência indicados. */ btn('', /* Essa função recebe nenhum parâmetro e devolve o resultado de shared Visit. */ ()=> /* Monta uma conversa dos dois moradores e registra que o encontro aconteceu. */ sharedVisit(visit),'guest-eco'); /* Define o atributo aria label desse elemento.
-*/ target.setAttribute('aria-label','Conversar com '+D.names[guest]+' em visita');
-     /* Essa declaração usa const para preparar image, mantendo essas referências fixas.
-*/ const  /* Aqui image recebe o resultado de document.create Element.
-*/ image= /* Cria um elemento HTML do tipo img. */ document.createElement('img'); /* Escolhe o arquivo que esse elemento deve carregar.
-*/ image.src= /* Procura a pose pequena usada durante a exploração do cenário. */ worldSprite(guest,2); /* Atualiza image.alt usando um texto vazio.
-*/ image.alt=''; /* Essa declaração usa const para preparar label, mantendo essas referências fixas.
-*/ const  /* Aqui label recebe o resultado de document.create Element.
-*/ label= /* Cria um elemento HTML do tipo span. */ document.createElement('span'); /* Escreve o texto desse elemento sem interpretar marcação HTML.
-*/ label.textContent=D.names[guest]+' está em visita'; /* Acrescenta os elementos indicados ao fim desse conteúdo.
-*/ target.append(image,label); /* Acrescenta os elementos indicados ao fim desse conteúdo.
-*/ scene.append(target);
-  }
+*/ function renderGuest(scene, host) {
+  const visit = guestFor(host);
+  const active = S.flags.guestEvents?.active;
+  if (!visit || S.view !== active.view) return;
+  const guest = visit.people.find(id => id !== host);
+  const target = btn('', () => sharedVisit(visit), 'guest-eco');
+  target.dataset.guest = guest;
+  /* A posição também considera a vista para não cobrir objetos de outro ângulo. */
+  target.dataset.host = host;
+  target.dataset.view = String(S.view);
+  target.setAttribute('aria-label', 'Conversar com ' + D.names[guest] + ' em visita');
+  const image = document.createElement('img');
+  image.src = worldSprite(guest, 2);
+  image.alt = '';
+  const label = document.createElement('span');
+  label.textContent = D.names[guest] + ' está em visita';
+  target.append(image, label);
+  scene.append(target);
+}
    /* Monta uma conversa dos dois moradores e registra que o encontro aconteceu.
-*/ function sharedVisit(visit,done=renderRoom) {
-     /* Essa declaração usa const para preparar host e guest, mantendo essas referências fixas.
-*/ const  /* Aqui host recebe S.room.
-*/ host=S.room, /* Aqui guest recebe o resultado de visit.people.find.
-*/ guest= /* Procura o primeiro item que passa na condição indicada. */ visit.people.find( /* Essa função recebe x e devolve o resultado dessa expressão. */ x=>x!==host); /* Limpa atores, mãos, caixas, efeitos e tarefas da cena anterior antes de montar outra.
-*/ resetScene(); /* Escolhe a imagem que fica no fundo da cena.
-*/ background( /* Escolhe o fundo correspondente ao quarto e à direção da câmera. */ roomBg(host,1)); /* Acrescenta esse valor ao conjunto ou à lista de classes.
-*/ $('#stage').classList.add('shared-scene');
-     /* Essa declaração usa const para preparar lines, mantendo essas referências fixas.
-*/ const  /* Aqui lines recebe o resultado de structured Clone.
-*/ lines= /* Copia os dados sem compartilhar os objetos internos com a versão original. */ structuredClone(visit.lines); /* Percorre os itens e executa a função indicada em cada um.
-*/ lines.forEach( /* Essa função recebe l e devolve o resultado de l.choices.for Each. */ l=> /* Percorre os itens e executa a função indicada em cada um. */ l.choices?.forEach( /* Essa função recebe c e devolve o resultado dessa expressão. */ c=> /* Atualiza c.who usando Jardim. */ c.who='Jardim')); /* Atualiza lines.0 usando uma das duas alternativas, conforme o teste.
-*/ lines[0]= /* Confere se esse valor é uma lista antes de acessar suas posições. */ Array.isArray(lines[0])?{ /* Indica quem está falando nessa linha.
-*/ who:lines[0][0], /* Guarda o texto que essa parte vai mostrar.
-*/ text:lines[0][1], /* Define a mudança que acontece ao passar por essa parte.
-*/ effect: /* Essa função recebe nenhum parâmetro e devolve o resultado de actor Two. */ ()=> /* Coloca o segundo Eco na conversa compartilhada e ajusta a posição dos dois. */ actorTwo(guest)}:lines[0];
-     /* Prepara a fila de falas e escolhas e segura os controles de exploração durante a conversa.
-*/ say(host,lines, /* Essa função agrupa a ação executada quando for chamada nesta parte. */ ()=>{ /* Atualiza S.flags. usando true.
-*/ S.flags['visit-'+visit.key]=true; /* Esse teste confere se os testes combinados dessa condição passam, e só entra nesse caminho quando a condição passa.
-*/ if(guest==='culpa'&&!S.talks.C1) /* Marca a conversa como concluída e libera os caminhos relacionados.
-*/ finishConversation('C1','culpa'); /* Acrescenta uma descoberta ao registro sem repetir a mesma anotação.
-*/ note('Encontro: '+ /* Junta as partes da lista em um texto. */ visit.people.map( /* Essa função recebe x e devolve D.names.x. */ x=>D.names[x]).join(' e '),'Você ouviu os dois juntos. Novos assuntos podem ser retomados em seus quartos.'); /* Conta uma interação importante e salva a mudança.
-*/ significant(); /* Executa a continuação recebida para seguir depois desta etapa.
-*/ done();});
-  }
+*/ function sharedVisit(visit, done = renderRoom) {
+  const host = S.room;
+  if (!visitEligible(visit, host) || guestFor(host)?.key !== visit.key) return renderRoom();
+  const guest = visit.people.find(id => id !== host);
+  const view = S.flags.guestEvents.active.view;
+  resetScene();
+  background(roomBg(host, view));
+  $('#stage').classList.add('shared-scene');
+  const replies = { acolhimento:['Jardim','Pax'], melodia:['Jardim','Hermes'],
+    protecao:['Jardim','Aurea'], bilhete:['Hunger','Lúmen'] };
+  const lines = structuredClone(visit.lines);
+  lines.forEach(line => line.choices?.forEach((choice, index) => {
+    choice.who = choice.who || replies[visit.key]?.[index] || 'Jardim';
+    if (choice.who === 'Jardim' && choice.pose) {
+      choice.reactions = Object.fromEntries(visit.people.map(id => [id, choice.pose]));
+      delete choice.pose;
+    }
+  }));
+  actorTwo(guest);
+  say(host, lines, () => {
+    S.flags['visit-' + visit.key] = true;
+    const state = guestState();
+    state.active = null;
+    state.cooldown = state.entry + 1;
+    if (guest === 'culpa' && !S.talks.C1) finishConversation('C1', 'culpa');
+    note('Encontro: ' + visit.people.map(id => D.names[id]).join(' e '),
+      'Você ouviu os dois juntos. Novos assuntos podem ser retomados em seus quartos.');
+    significant();
+    done();
+  });
+}
    /* Abre a interação discreta do quarto e confere o texto digitado localmente.
 */ function openQuietInteraction() {
      /* Esse teste confere se os testes combinados dessa condição passam, e só entra nesse caminho quando a condição passa.
@@ -2448,13 +2545,7 @@
 */ label:'Voltar ao quarto', /* Define a ação executada quando essa opção é escolhida.
 */ go:renderRoom}
     ]}],renderRoom);
-     /* Essa declaração usa const para preparar visit, mantendo essas referências fixas.
-*/ const  /* Aqui visit recebe o resultado de guest For.
-*/ visit= /* Procura uma visita que já foi liberada e ainda pode acontecer. */ guestFor(p.eco); /* Esse teste confere se os testes combinados dessa condição passam, e só entra nesse caminho quando a condição passa.
-*/ if(visit&&S.view===1&&!S.flags['visit-'+visit.key]) /* Devolve o resultado de shared Visit e encerra essa chamada da função.
-*/ return  /* Monta uma conversa dos dois moradores e registra que o encontro aconteceu. */ sharedVisit(visit, /* Essa função agrupa a ação executada quando for chamada nesta parte. */ ()=>{ /* Monta cenário, morador, objetos e setas da vista atual do quarto.
-*/ renderRoom(); /* Confere a descoberta, mostra o objeto e abre as falas ligadas à observação.
-*/ inspectPoint(p);});
+     /* A inspeção abre só o objeto escolhido. A visita usa seu próprio alvo. */
      /* Executa essa expressão para atualizar o estado ou a apresentação dessa parte.
 */ window.AudioSentia?.roomCue?.('inspect');
      /* Escolhe a mão comum ou o equipamento que está realmente na bolsa.
@@ -2497,7 +2588,7 @@
 */ who: p.name,
        /* Guarda o texto que essa parte vai mostrar.
 */ text:  /* Confere se esse Eco já está na lista de mortos. */ dead(p.eco) ? p.after : p.description
-    }];
+    }].map(line => ({ ...line, hideActor:true }));
      /* Esse teste confere se os testes combinados dessa condição passam, e só entra nesse caminho quando a condição passa.
 */ if (! /* Confere se esse Eco já está na lista de mortos. */ dead(p.eco) && p.voice)  /* Acrescenta esse valor no fim da lista.
 */ entries.push({
@@ -2518,7 +2609,7 @@
 */ memory = MEMORIAS[p.eco];
        /* Acrescenta esse valor no fim da lista.
 */ entries.push( /* Usa os itens ou campos desse valor dentro da nova lista ou do novo objeto.
-*/ ... /* Monta uma nova lista transformando cada posição da lista original. */ memory.paragraphs.map( /* Essa função recebe text e devolve um objeto com os campos dessa parte. */ text => ({
+*/ ... /* Monta uma nova lista transformando cada posição da lista original. */ memory.paragraphs.map( /* Essa função recebe text e devolve um objeto com os campos dessa parte. */ text => ({ hideActor:true,
          /* Indica quem está falando nessa linha.
 */ who: memory.title,
          /* Guarda o texto que essa parte vai mostrar.
@@ -2881,14 +2972,7 @@
 */ setPhase('ninfa'); /* Prepara a fala e a sequência de água da etapa atual de Ninfa.
 */ ninfaStart(0,true);})};
     }
-     /* Esse teste confere se os testes combinados dessa condição passam, e só entra nesse caminho quando a condição passa.
-*/ if (id==='medo'&&S.talks.M2&&!S.flags['visit-bilhete']) { /* Essa declaração usa const para preparar visit, mantendo essas referências fixas.
-*/ const  /* Aqui visit recebe o resultado de guest For.
-*/ visit= /* Procura uma visita que já foi liberada e ainda pode acontecer. */ guestFor(id); /* Esse teste confere se visit está ativo ou retorna um valor verdadeiro, e só entra nesse caminho quando a condição passa.
-*/ if(visit) /* Devolve um objeto com os campos dessa parte e encerra essa chamada da função.
-*/ return { /* Define o texto mostrado na opção ou no controle.
-*/ label:'Ouvir Lúmen no corredor', /* Define a ação executada quando essa opção é escolhida.
-*/ go: /* Essa função recebe nenhum parâmetro e devolve o resultado de shared Visit. */ ()=> /* Monta uma conversa dos dois moradores e registra que o encontro aconteceu. */ sharedVisit(visit)};}
+     /* Visitas são encontros opcionais, sem bloquear o caminho ao observatório. */
      /* Esse teste confere se os testes combinados dessa condição passam, e só entra nesse caminho quando a condição passa.
 */ if (id === 'medo' && S.talks.M2)  /* Devolve um objeto com os campos dessa parte e encerra essa chamada da função.
 */ return { /* Define o texto mostrado na opção ou no controle.
@@ -3600,6 +3684,9 @@
 */ function prompt(label, actions, seconds, done) {
      /* Atualiza mode usando prompt.
 */ mode = 'prompt';
+/* Ao começar a ação, a postura que ficou recolhida durante a fala volta. */
+if($('#hands').dataset.dialogueRest) { $('#hands').hidden = false; delete $('#hands').dataset.dialogueRest; }
+
                                                                                        
      /* Essa declaração usa const para preparar keyboard Only, mantendo essas referências fixas.
 */ const  /* Aqui keyboard Only recebe o resultado dessa expressão.
@@ -3923,7 +4010,9 @@
     });
   }
    /* Prepara as imagens e o som do susto antes de abrir o retorno ao checkpoint.
-*/ function deathScreen(text, restart, kind = 'insanidade') {
+*/ /* Essa limpeza encerra o observador de tamanho ao trocar de cena. */
+let scareResizeCleanup = null;
+function deathScreen(text, restart, kind = 'insanidade') {
      /* Limpa atores, mãos, caixas, efeitos e tarefas da cena anterior antes de montar outra.
 */ resetScene();
      /* Atualiza mode usando defeat.
@@ -3986,7 +4075,11 @@
 */ defer(0, /* Essa função recebe nenhum parâmetro e devolve o resultado dessa expressão. */ ()=>void  /* Prepara os recursos definidos nesse trecho antes de mostrar o resultado. */ prepare()); /* Encerra essa função sem devolver outro valor.
 */ return;}
        /* Esse teste confere se o resultado de .includes está ativo ou retorna um valor verdadeiro, e só entra nesse caminho quando a condição passa.
-*/ if( /* Confere se esse valor está presente na lista ou no texto. */ [ /* Essa posição da lista guarda medo.
+*/ /* Sem imagem pronta, mostramos o erro sem disparar um grito sobre uma tela vazia. */
+if(visualError){ /* Finaliza essa etapa usando a continuação preparada nesta função.
+*/ finish(); /* Encerra essa função sem devolver outro valor.
+*/ return;}
+if( /* Confere se esse valor está presente na lista ou no texto. */ [ /* Essa posição da lista guarda medo.
 */ 'medo', /* Essa posição da lista guarda insanidade.
 */ 'insanidade'].includes(kind)) {
          /* Esse teste confere se window.Audio Sentia.play Scare está ativo ou retorna um valor verdadeiro, e só entra nesse caminho quando a condição passa.
@@ -4003,71 +4096,68 @@
 */ if(paused){ /* Agenda uma ação no relógio do jogo, que também respeita a pausa.
 */ defer(0, /* Essa função recebe nenhum parâmetro e devolve o resultado dessa expressão. */ ()=>void  /* Prepara os recursos definidos nesse trecho antes de mostrar o resultado. */ prepare()); /* Encerra essa função sem devolver outro valor.
 */ return;}
-       /* Esse teste confere se visual Error está ativo ou retorna um valor verdadeiro, e só entra nesse caminho quando a condição passa.
-*/ if(visualError){ /* Finaliza essa etapa usando a continuação preparada nesta função.
-*/ finish(); /* Encerra essa função sem devolver outro valor.
-*/ return;}
+       
        /* Esse teste confere se kind é igual a medo, e só entra nesse caminho quando a condição passa.
-*/ if(kind==='medo') {
-         /* Essa declaração usa const para preparar canvas, mantendo essas referências fixas.
-*/ const  /* Aqui canvas recebe o resultado de document.create Element.
-*/ canvas= /* Cria um elemento HTML do tipo canvas. */ document.createElement('canvas');
-         /* Atualiza canvas.id usando jumpscare frame.
-*/ canvas.id='jumpscare-frame'; /* Define as classes de aparência desse elemento.
-*/ canvas.className='jumpscare-frame';
-         /* Define o atributo aria label desse elemento.
-*/ canvas.setAttribute('aria-label','Hunger avança da escuridão');
-         /* Acrescenta os elementos indicados ao fim desse conteúdo.
-*/ $('#stage').append(canvas);
-         /* Essa declaração usa const para preparar bounds, mantendo essas referências fixas.
-*/ const  /* Aqui bounds recebe o resultado de .get Bounding Client Rect.
-*/ bounds= /* Mede a posição e o tamanho real do elemento na tela. */ $('#stage').getBoundingClientRect();
-         /* Atualiza canvas.width usando o resultado de Math.max.
-*/ canvas.width= /* Escolhe o maior valor entre os valores recebidos. */ Math.max(1, /* Arredonda o número para o inteiro mais próximo. */ Math.round(bounds.width)); /* Atualiza canvas.height usando o resultado de Math.max.
-*/ canvas.height= /* Escolhe o maior valor entre os valores recebidos. */ Math.max(1, /* Arredonda o número para o inteiro mais próximo. */ Math.round(bounds.height));
-         /* Essa declaração usa const para preparar ctx, mantendo essas referências fixas.
-*/ const  /* Aqui ctx recebe o resultado de canvas.get Context.
-*/ ctx= /* Obtém o contexto usado para desenhar no canvas. */ canvas.getContext('2d'); /* Atualiza ctx.image Smoothing Enabled usando false.
-*/ ctx.imageSmoothingEnabled=false;
-         /* Essa declaração usa const para preparar cell, mantendo essas referências fixas.
-*/ const  /* Aqui cell recebe o resultado dessa expressão.
-*/ cell=fearJumpscare.naturalWidth/7;
-         /* Essa declaração usa let para preparar frame, permitindo atualizar esses valores depois.
-*/ let  /* Aqui frame recebe uma das duas alternativas, conforme o teste.
-*/ frame=settings.reduced?6:0;
-         /* Essa declaração usa const para preparar animate, mantendo essas referências fixas.
-*/ const  /* Atualiza o próximo quadro dessa sequência de apresentação.
-*/ animate= /* Atualiza o próximo quadro dessa sequência de apresentação. */ ()=>{
-           /* Esse teste confere se os testes combinados dessa condição passam, e só entra nesse caminho quando a condição passa.
-*/ if(serial!==sceneSerial||!canvas.isConnected) /* Encerra essa função sem devolver outro valor.
-*/ return;
-           /* Esse teste confere se frame é maior ou igual a 7, e só entra nesse caminho quando a condição passa.
-*/ if(frame>=7){ /* Retira esse elemento da página.
-*/ canvas.remove(); /* Finaliza essa etapa usando a continuação preparada nesta função.
-*/ finish(); /* Encerra essa função sem devolver outro valor.
-*/ return;}
-           /* Atualiza ctx.fill Style usando 000.
-*/ ctx.fillStyle='#000'; /* Preenche a área retangular com a cor atual do desenho.
-*/ ctx.fillRect(0,0,canvas.width,canvas.height);
-                                                                                 
-           /* Essa declaração usa const para preparar width, mantendo essas referências fixas.
-*/ const  /* Aqui width recebe uma das duas alternativas, conforme o teste.
-*/ width=settings.reduced? /* Escolhe o menor valor entre os valores recebidos. */ Math.min(canvas.width*.82,canvas.height*.6):canvas.width*(.26+frame/6*.66);
-           /* Essa declaração usa const para preparar height, mantendo essas referências fixas.
-*/ const  /* Aqui height recebe o resultado dessa expressão.
-*/ height=width*fearJumpscare.naturalHeight/cell;
-           /* Desenha a imagem ou o recorte indicado no canvas.
-*/ ctx.drawImage(fearJumpscare,frame*cell,0,cell,fearJumpscare.naturalHeight,(canvas.width-width)/2,canvas.height*.5-height*.48,width,height);
-           /* Atualiza canvas.dataset.frame usando o resultado de String.
-*/ canvas.dataset.frame= /* Converte esse valor para texto. */ String( /* Aumenta frame em um para atualizar o contador. */ frame++); /* Atualiza canvas.dataset.reduced usando o resultado de String.
-*/ canvas.dataset.reduced= /* Converte esse valor para texto. */ String(settings.reduced);
-           /* Agenda uma ação no relógio do jogo, que também respeita a pausa.
-*/ defer(settings.reduced?1.05:.15,animate);
-        };
-         /* Atualiza o próximo quadro dessa sequência de apresentação.
-*/ animate(); /* Encerra essa função sem devolver outro valor.
-*/ return;
-      }
+*/ if (kind === 'medo') {
+  const canvas = document.createElement('canvas');
+  canvas.id = 'jumpscare-frame';
+  canvas.className = 'jumpscare-frame';
+  canvas.setAttribute('aria-label', 'Hunger avança da escuridão');
+  $('#stage').append(canvas);
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    canvas.remove();
+    window.AudioSentia?.cancelScare?.();
+    visualError = ' O navegador não conseguiu desenhar o susto.';
+    finish();
+    return;
+  }
+  const cell = fearJumpscare.naturalWidth / 7;
+  let frame = settings.reduced ? 6 : 0;
+  let shownFrame = frame;
+  /* O desenho pode ser repetido ao redimensionar, sem avançar a animação. */
+  const paint = index => {
+    if (serial !== sceneSerial || !canvas.isConnected) return;
+    const bounds = $('#stage').getBoundingClientRect();
+    const w = Math.max(1, Math.round(bounds.width)), h = Math.max(1, Math.round(bounds.height));
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, w, h);
+    /* A altura limita o zoom para os dois olhos e a boca caberem também em paisagem. */
+    const width = settings.reduced ? Math.min(w * .82, h * .54)
+      : Math.min(w * (.30 + index / 6 * .67), h * (.32 + index / 6 * .22));
+    const height = width * fearJumpscare.naturalHeight / cell;
+    ctx.drawImage(fearJumpscare, index * cell, 0, cell, fearJumpscare.naturalHeight,
+      (w - width) / 2, h * .5 - height * .50, width, height);
+    canvas.dataset.frame = String(index);
+    canvas.dataset.reduced = String(settings.reduced);
+    shownFrame = index;
+  };
+  const resize = () => {
+    const bounds = $('#stage').getBoundingClientRect();
+    if (canvas.width !== Math.round(bounds.width) || canvas.height !== Math.round(bounds.height)) paint(shownFrame);
+  };
+  const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(resize) : null;
+  const cleanup = () => {
+    observer?.disconnect();
+    window.removeEventListener('resize', resize);
+    if (scareResizeCleanup === cleanup) scareResizeCleanup = null;
+  };
+  scareResizeCleanup = cleanup;
+  observer?.observe($('#stage'));
+  window.addEventListener('resize', resize);
+  const animate = () => {
+    if (serial !== sceneSerial || !canvas.isConnected) { cleanup(); return; }
+    if (frame >= 7) { cleanup(); canvas.remove(); finish(); return; }
+    paint(frame++);
+    /* A última imagem fica um pouco mais tempo para o rosto ser percebido. */
+    defer(settings.reduced ? 1.05 : frame >= 7 ? .33 : .12, animate);
+  };
+  animate();
+  return;
+}
+
        /* Esse teste confere se frames.length está ativo ou retorna um valor verdadeiro, e só entra nesse caminho quando a condição passa.
 */ if(frames.length) {
          /* Essa declaração usa let para preparar n, permitindo atualizar esses valores depois.

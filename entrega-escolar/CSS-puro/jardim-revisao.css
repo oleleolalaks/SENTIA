@@ -1,0 +1,54 @@
+/* Nessa vista, o centro já pertence a um objeto. A visita fica ao lado dele. */
+@media(max-width:600px) {
+  .guest-eco[data-host="medo"][data-view="3"] {
+    /* Esse recuo mantém tanto o visitante quanto o ponto do objeto clicáveis. */
+    left:24%;
+  }
+}
+
+/* Esses ajustes deixam os dois personagens visíveis acima da fala no celular em pé. O computador e o celular deitado mantêm sua composição anterior. */
+@media(max-width:600px) and (orientation:portrait) {
+  /* Essa cena reserva a altura usada pela fala e também atende aos dois generais quando aparecem juntos. A imagem distante de Candy na revelação continua fora desse ajuste. */
+  #stage:is(.shared-scene,:has(> #actor-two:not([hidden]):not(.ghost))) {
+    /* Essa altura acompanha a caixa de uma fala sem opções. */
+    --dupla-altura-dialogo:min(260px,80%);
+  }
+
+  /* Uma pergunta com opções ocupa mais altura que uma fala simples. */
+  #stage:is(.shared-scene,:has(> #actor-two:not([hidden]):not(.ghost))):has(#choices:not(:empty)) {
+    /* Essa reserva acompanha a caixa de escolhas do celular. */
+    --dupla-altura-dialogo:min(360px,80%);
+  }
+
+  /* Esse estado acompanha perguntas que precisam mostrar quatro ou mais respostas. */
+  #stage:is(.shared-scene,:has(> #actor-two:not([hidden]):not(.ghost))):has(#choices>button:nth-child(4)) {
+    /* Essa reserva maior acompanha a caixa que contém mais opções. */
+    --dupla-altura-dialogo:min(540px,82%);
+  }
+
+  /* O corpo e cada camada usam o mesmo quadro para que asas, roupa e energia continuem alinhados. */
+  #stage:is(.shared-scene,:has(> #actor-two:not([hidden]):not(.ghost)))> :is(#actor,#actor-two,.idle-layer) {
+    /* Essa largura deixa os dois sprites lado a lado com uma pequena margem. */
+    width:46%;
+    /* Essa altura usa o espaço livre acima da caixa e abaixo dos indicadores. */
+    height:max(70px,calc(100% - var(--dupla-altura-dialogo) - 100px));
+    /* Esse espaço mantém o quadro dos personagens acima da caixa de fala. */
+    bottom:calc(var(--dupla-altura-dialogo) + 14px);
+    /* Esse encaixe mantém cada arte inteira dentro do seu quadro. */
+    object-fit:contain;
+    /* Esse alinhamento distribui o espaço vazio acima e abaixo da arte. */
+    object-position:center center;
+  }
+
+  /* O primeiro personagem e suas camadas continuam na mesma coluna. */
+  #stage:is(.shared-scene,:has(> #actor-two:not([hidden]):not(.ghost)))> :is(#actor,.idle-layer) {
+    /* Essa posição reserva o lado esquerdo sem encostar na borda da tela. */
+    left:26%;
+  }
+
+  /* O segundo personagem ocupa a coluna direita. */
+  #stage:is(.shared-scene,:has(> #actor-two:not([hidden]):not(.ghost)))>#actor-two {
+    /* Essa posição espelha a coluna esquerda e mantém uma distância entre as artes. */
+    left:74%;
+  }
+}
