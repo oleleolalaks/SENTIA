@@ -1,23 +1,51 @@
--- Esse comando cria o banco sentia somente se ele ainda não existir, sem apagar um banco já criado.
-CREATE DATABASE IF NOT EXISTS `sentia`
-  -- Aqui utf8mb4 permite guardar os caracteres Unicode, e a comparação de texto usa a collation indicada.
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
--- Esse comando escolhe o banco sentia para os próximos comandos desta conexão.
-USE `sentia`;
+-- Selecione primeiro o banco criado no painel ou no XAMPP e depois importe este arquivo.
+-- Não há criação, seleção ou remoção de banco aqui. Os dados existentes são preservados.
 
--- Essa parte cria a tabela de registros somente quando ela ainda não existe, preservando os registros já guardados.
+-- Cada navegador consulta e altera somente as tarefas vinculadas à sua sessão.
 CREATE TABLE IF NOT EXISTS `registros` (
-  -- Esse campo guarda o identificador com até sessenta e quatro caracteres, a comparação binária diferencia maiúsculas e minúsculas, e NOT NULL exige um valor não nulo.
   `id` VARCHAR(64) COLLATE utf8mb4_bin NOT NULL,
-  -- Aqui fica o texto de cada ação com até cento e sessenta caracteres, e NOT NULL impede que o campo receba um valor nulo.
   `text` VARCHAR(160) NOT NULL,
-  -- Esse campo usa um inteiro pequeno para a conclusão, começa em zero e não aceita valor nulo, a API confere o estado recebido antes de gravar.
   `done` TINYINT(1) NOT NULL DEFAULT 0,
-  -- Essa coluna registra o instante da criação, usando o horário atual quando nenhum outro valor é enviado.
+  `owner_hash` CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT '',
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  -- Aqui fica o instante da última alteração, ele começa no horário atual e o MySQL o atualiza quando a linha muda.
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  -- Esse comando faz do identificador a chave primária, então duas linhas não podem usar o mesmo identificador.
-  PRIMARY KEY (`id`)
--- Essa parte escolhe InnoDB como motor da tabela e mantém utf8mb4 e a comparação indicada como padrões de texto.
+  PRIMARY KEY (`id`),
+  KEY `idx_registros_owner` (`owner_hash`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- O contato é salvo de verdade, mas sua leitura não fica disponível em um endpoint público.
+CREATE TABLE IF NOT EXISTS `contatos` (
+  `id` CHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `owner_hash` CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `nome` VARCHAR(80) NOT NULL,
+  `email` VARCHAR(160) NOT NULL,
+  `mensagem` TEXT NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_contatos_owner` (`owner_hash`)
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Se a tabela antiga já existia, acrescenta o vínculo sem apagar ou atribuir seus dados a qualquer visitante.
+-- A consulta ao catálogo torna a importação repetível em MySQL e MariaDB.
+SET @sentia_migration = (
+  SELECT IF(COUNT(*) = 0,
+    'ALTER TABLE `registros` ADD COLUMN `owner_hash` CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT ''''',
+    'SELECT 1')
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'registros' AND COLUMN_NAME = 'owner_hash'
+);
+PREPARE sentia_statement FROM @sentia_migration;
+EXECUTE sentia_statement;
+DEALLOCATE PREPARE sentia_statement;
+
+-- O índice acelera a consulta sem tornar as tarefas de outros navegadores visíveis.
+SET @sentia_migration = (
+  SELECT IF(COUNT(*) = 0,
+    'CREATE INDEX `idx_registros_owner` ON `registros` (`owner_hash`)',
+    'SELECT 1')
+  FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'registros' AND INDEX_NAME = 'idx_registros_owner'
+);
+PREPARE sentia_statement FROM @sentia_migration;
+EXECUTE sentia_statement;
+DEALLOCATE PREPARE sentia_statement;

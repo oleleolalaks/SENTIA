@@ -1,319 +1,236 @@
 <?php
- /* Ativa a conferência estrita dos tipos declarados nas funções deste arquivo.
-*/ declare(strict_types=1);
+declare(strict_types=1);
 
-                                                                                                    
- /* Ajusta essa configuração do PHP para a execução deste pedido.
-*/ ini_set('display_errors', '0');
- /* Define esse cabeçalho da resposta antes de enviar o conteúdo.
-*/ header('Content-Type: application/json; charset=utf-8');
- /* Define esse cabeçalho da resposta antes de enviar o conteúdo.
-*/ header('Cache-Control: no-store');
- /* Define esse cabeçalho da resposta antes de enviar o conteúdo.
-*/ header('X-Content-Type-Options: nosniff');
-
- /* Monta a resposta JSON com o status indicado e encerra esse pedido.
-*/ function sentia_json(array $data, int $status = 200): void
-{
-     /* Define o código HTTP da resposta para indicar sucesso ou falha.
-*/ http_response_code($status);
-     /* Envia esse conteúdo no corpo da resposta HTTP.
-*/ echo  /* Converte os dados para JSON para enviar ao JavaScript do site.
-*/ json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-     /* Encerra a execução deste pedido depois da resposta.
-*/ exit;
+// O arquivo de apoio só entra pelo require dos endpoints, mesmo em um servidor que não lê .htaccess.
+if (PHP_SAPI !== 'cli' && realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
+    http_response_code(404);
+    exit;
 }
 
- /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ function sentia_error(string $code, string $message, int $status = 400, array $extra = []): void
+// As respostas da API são JSON. Erros internos e respostas antigas não ficam expostos ao visitante.
+ini_set('display_errors', '0');
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store');
+header('X-Content-Type-Options: nosniff');
+
+function sentia_json(array $data, int $status = 200): void
 {
-     /* Monta a resposta JSON com o status indicado e encerra esse pedido.
-*/ sentia_json( /* Junta os campos recebidos em um novo array.
-*/ array_merge([ /* Indica se a operação terminou com sucesso.
-*/ 'ok' => false,  /* Reúne os dados que identificam a falha.
-*/ 'error' => [ /* Guarda o código de erro que o JavaScript pode reconhecer.
-*/ 'code' => $code,  /* Guarda a mensagem apresentada para essa situação.
-*/ 'message' => $message]], $extra), $status);
+    http_response_code($status);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
 }
 
- /* Identifica a falha do banco sem mostrar detalhes internos da conexão.
-*/ function sentia_database_error(Throwable $error): void
+// O site recebe uma mensagem útil, mas não recebe senha, consulta SQL ou endereço do banco.
+function sentia_error(string $code, string $message, int $status = 400, array $extra = []): void
 {
-     /* Esse comando prepara ou atualiza driverCode com os dados usados nesta operação.
-*/ $driverCode = $error instanceof PDOException &&  /* Confere se esse campo existe e não está nulo.
-*/ isset($error->errorInfo[1]) ?  /* Converte esse valor para número inteiro.
-*/ (int) $error->errorInfo[1] : 0;
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if ( /* Confere se esse valor está entre as opções aceitas.
-*/ in_array($driverCode, [1049, 1146, 1054], true)) {
-         /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('schema_missing', 'O banco do SENTIA precisa ser preparado. Use Preparar banco ou importe banco/schema.sql pelo phpMyAdmin.', 503, [ /* Informa se o banco e a tabela estão prontos para uso.
-*/ 'ready' => false]);
+    sentia_json(array_merge(['ok' => false, 'error' => ['code' => $code, 'message' => $message]], $extra), $status);
+}
+
+function sentia_database_error(Throwable $error): void
+{
+    $driverCode = $error instanceof PDOException && isset($error->errorInfo[1]) ? (int) $error->errorInfo[1] : 0;
+    if (in_array($driverCode, [1049, 1146, 1054], true)) {
+        sentia_error('schema_missing', 'Importe banco/schema.sql no banco selecionado pelo phpMyAdmin. Em uma instalação local, também é possível usar Preparar banco.', 503, ['ready' => false, 'setupAllowed' => sentia_setup_allowed()]);
     }
-     /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('database_unavailable', 'Não foi possível acessar o MySQL. Inicie o MySQL no XAMPP e confira a configuração local da API.', 503, [ /* Informa se o banco e a tabela estão prontos para uso.
-*/ 'ready' => false]);
+    sentia_error('database_unavailable', 'Não foi possível acessar o MySQL. Confira o serviço e os dados de conexão na configuração privada da API.', 503, ['ready' => false, 'setupAllowed' => sentia_setup_allowed()]);
 }
 
- /* Prepara o tratamento das exceções que não forem resolvidas antes.
-*/ set_exception_handler( /* Essa função anônima não depende de um objeto externo ligado a ela.
-*/ static  /* Essa função agrupa as operações executadas quando for chamada.
-*/ function (Throwable $error): void {
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if ($error instanceof PDOException) {
-         /* Identifica a falha do banco sem mostrar detalhes internos da conexão.
-*/ sentia_database_error($error);
+set_exception_handler(static function (Throwable $error): void {
+    if ($error instanceof PDOException) {
+        sentia_database_error($error);
     }
-     /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('server_error', 'Não foi possível concluir a operação. Confira a instalação PHP e a configuração local da API.', 500);
+    sentia_error('server_error', 'Não foi possível concluir a operação. Confira a instalação PHP e a configuração privada da API.', 500);
 });
 
- /* Confere se esse endereço aceita o método e a origem do pedido.
-*/ function sentia_method(array $allowed): string
+function sentia_https(): bool
 {
-     /* Esse comando prepara ou atualiza method com os dados usados nesta operação.
-*/ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if (! /* Confere se esse valor está entre as opções aceitas.
-*/ in_array($method, $allowed, true)) {
-         /* Define esse cabeçalho da resposta antes de enviar o conteúdo.
-*/ header('Allow: ' .  /* Junta os valores em um texto usando o separador indicado.
-*/ implode(', ', $allowed));
-         /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('method_not_allowed', 'Este endereço não aceita esse método.', 405);
-    }
-                                                                                                      
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if ($method !== 'GET' &&  /* Confere se esse campo existe e não está nulo.
-*/ isset($_SERVER['HTTP_ORIGIN'])) {
-         /* Esse comando prepara ou atualiza origin com os dados usados nesta operação.
-*/ $origin =  /* Separa as partes do endereço para conferir a origem do pedido.
-*/ parse_url($_SERVER['HTTP_ORIGIN']);
-         /* Esse comando prepara ou atualiza request com os dados usados nesta operação.
-*/ $request =  /* Separa as partes do endereço para conferir a origem do pedido.
-*/ parse_url('http://' . ($_SERVER['HTTP_HOST'] ?? ''));
-         /* Esse comando prepara ou atualiza originPort com os dados usados nesta operação.
-*/ $originPort = $origin['port'] ?? (($origin['scheme'] ?? '') === 'https' ? 443 : 80);
-         /* Esse comando prepara ou atualiza requestPort com os dados usados nesta operação.
-*/ $requestPort = $request['port'] ?? (! /* Confere se esse valor está ausente ou é considerado vazio pelo PHP.
-*/ empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 443 : 80);
-         /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if ($origin === false || $request === false ||
-             /* Converte esse texto para minúsculas antes da comparação.
-*/ strtolower($origin['host'] ?? '') !==  /* Converte esse texto para minúsculas antes da comparação.
-*/ strtolower($request['host'] ?? '') || $originPort !== $requestPort) {
-             /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('origin_not_allowed', 'Abra o SENTIA e a API pelo mesmo endereço local.', 403);
-        }
-    }
-     /* Devolve esse resultado e encerra a chamada atual da função.
-*/ return $method;
+    return !empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off';
 }
 
- /* Carrega e valida os valores usados na conexão com o MySQL.
-*/ function sentia_config(): array
+function sentia_setup_allowed(): bool
 {
-     /* Mantém o valor dessa variável entre as chamadas da função.
-*/ static $config;
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if ($config !== null) {
-         /* Devolve esse resultado e encerra a chamada atual da função.
-*/ return $config;
-    }
-     /* Esse comando prepara ou atualiza config com os dados usados nesta operação.
-*/ $config =  /* Carrega o arquivo PHP necessário para continuar essa execução.
-*/ require __DIR__ . '/config.php';
-     /* Percorre cada campo ou valor dessa lista para conferir ou transformar os dados.
-*/ foreach (['host', 'database', 'username', 'password'] as $field) {
-         /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if (! /* Confere se esse campo existe e não está nulo.
-*/ isset($config[$field]) || ! /* Confere se esse valor é texto.
-*/ is_string($config[$field])) {
-             /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('invalid_configuration', 'Confira os campos de api/config.local.php.', 500);
-        }
-    }
-                                                                                                         
-     /* Esse comando prepara ou atualiza port com os dados usados nesta operação.
-*/ $port =  /* Converte esse valor para texto.
-*/ (string) ($config['port'] ?? '');
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if (! /* Confere o formato desse texto usando o padrão definido.
-*/ preg_match('/\A[a-zA-Z0-9.:-]{1,255}\z/D', $config['host']) ||
-        ! /* Confere o formato desse texto usando o padrão definido.
-*/ preg_match('/\A[a-zA-Z0-9_]{1,64}\z/D', $config['database']) ||
-        ! /* Confere se o texto contém somente dígitos decimais.
-*/ ctype_digit($port) ||  /* Converte esse valor para número inteiro.
-*/ (int) $port < 1 ||  /* Converte esse valor para número inteiro.
-*/ (int) $port > 65535) {
-         /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('invalid_configuration', 'Confira o servidor, a porta e o nome do banco em api/config.local.php.', 500);
-    }
-     /* Esse comando prepara ou atualiza config com os dados usados nesta operação.
-*/ $config['port'] = $port;
-     /* Devolve esse resultado e encerra a chamada atual da função.
-*/ return $config;
+    $host = parse_url('http://' . ($_SERVER['HTTP_HOST'] ?? ''), PHP_URL_HOST);
+    return in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1', '::ffff:127.0.0.1'], true) &&
+        in_array(strtolower((string) $host), ['localhost', '127.0.0.1', '::1', '[::1]'], true);
 }
 
- /* Abre a conexão PDO com o banco depois de conferir as configurações e o driver.
-*/ function sentia_pdo(bool $withDatabase = true): PDO
+// A sessão separa o registro de cada navegador. O cookie identifica uma sessão, não uma conta ou pessoa.
+function sentia_session(): void
 {
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if (! /* Confere se essa classe está disponível no PHP instalado.
-*/ class_exists('PDO') || ! /* Confere se esse valor está entre as opções aceitas.
-*/ in_array('mysql', PDO:: /* Consulta os drivers de banco disponíveis no PDO.
-*/ getAvailableDrivers(), true)) {
-         /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('php_mysql_missing', 'Ative a extensão pdo_mysql no PHP do XAMPP e reinicie o Apache.', 503, [ /* Informa se o banco e a tabela estão prontos para uso.
-*/ 'ready' => false]);
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        return;
     }
-     /* Esse comando prepara ou atualiza config com os dados usados nesta operação.
-*/ $config =  /* Carrega e valida os valores usados na conexão com o MySQL.
-*/ sentia_config();
-     /* Esse comando prepara ou atualiza dsn com os dados usados nesta operação.
-*/ $dsn = 'mysql:host=' . $config['host'] . ';port=' . $config['port'] .
-        ($withDatabase ? ';dbname=' . $config['database'] : '') . ';charset=utf8mb4';
-     /* Devolve esse resultado e encerra a chamada atual da função.
-*/ return new  /* Cria a conexão com o MySQL usando o endereço, o usuário e as opções definidos.
-*/ PDO($dsn, $config['username'], $config['password'], [
-        PDO:: /* Configura o PDO para sinalizar falhas por exceções.
-*/ ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO:: /* Configura o formato padrão das linhas retornadas pelo PDO.
-*/ ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO:: /* Define se a preparação da consulta é emulada ou feita pelo driver.
-*/ ATTR_EMULATE_PREPARES => false,
-        PDO:: /* Define o prazo máximo dessa tentativa de conexão.
-*/ ATTR_TIMEOUT => 3,
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
+    session_name('SENTIA_SESSION');
+    $base = str_replace('\\', '/', dirname(dirname($_SERVER['SCRIPT_NAME'] ?? '/api/sessao.php')));
+    $cookiePath = $base === '/' || $base === '.' ? '/' : rtrim($base, '/') . '/';
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => $cookiePath,
+        'secure' => sentia_https(),
+        'httponly' => true,
+        'samesite' => 'Lax',
     ]);
+    if (!session_start()) {
+        sentia_error('session_unavailable', 'Não foi possível iniciar a sessão. Confira os cookies e o suporte a sessões do servidor.', 503);
+    }
+    if (!isset($_SESSION['csrf']) || !is_string($_SESSION['csrf'])) {
+        $_SESSION['csrf'] = bin2hex(random_bytes(32));
+    }
+    if (!isset($_SESSION['owner']) || !is_string($_SESSION['owner'])) {
+        $_SESSION['owner'] = bin2hex(random_bytes(32));
+    }
 }
 
- /* Lê o JSON enviado e aceita somente os campos permitidos nesse pedido.
-*/ function sentia_body(array $allowed): array
+function sentia_owner(): string
 {
-     /* Esse comando prepara ou atualiza contentType com os dados usados nesta operação.
-*/ $contentType =  /* Converte esse texto para minúsculas antes da comparação.
-*/ strtolower( /* Retira os espaços extras do começo e do fim desse texto.
-*/ trim( /* Separa o texto usando o delimitador indicado.
-*/ explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0]));
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if ($contentType !== 'application/json') {
-         /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('json_required', 'Envie os dados como application/json.', 415);
-    }
-     /* Esse comando prepara ou atualiza raw com os dados usados nesta operação.
-*/ $raw =  /* Lê o corpo do pedido respeitando o limite de tamanho indicado.
-*/ file_get_contents('php://input', false, null, 0, 8193);
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if ($raw === false ||  /* Conta os bytes desse texto para conferir o limite do pedido.
-*/ strlen($raw) > 8192) {
-         /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('body_too_large', 'O pedido ultrapassou o tamanho permitido.', 413);
-    }
-     /* Esse comando prepara ou atualiza decoded com os dados usados nesta operação.
-*/ $decoded =  /* Converte o texto JSON recebido em dados para validar no servidor.
-*/ json_decode($raw);
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if ( /* Consulta se houve uma falha ao converter o JSON.
-*/ json_last_error() !== JSON_ERROR_NONE || ! /* Confere se o JSON recebido virou um objeto.
-*/ is_object($decoded)) {
-         /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('invalid_json', 'Envie um objeto JSON válido.', 400);
-    }
-     /* Esse comando prepara ou atualiza data com os dados usados nesta operação.
-*/ $data =  /* Executa a função get object vars com os valores definidos nessa parte.
-*/ get_object_vars($decoded);
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if ( /* Procura campos que não pertencem à lista de nomes permitidos.
-*/ array_diff( /* Reúne os nomes dos campos recebidos no array.
-*/ array_keys($data), $allowed)) {
-         /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('unknown_field', 'O pedido contém um campo que não é reconhecido.', 422);
-    }
-     /* Devolve esse resultado e encerra a chamada atual da função.
-*/ return $data;
+    sentia_session();
+    return hash('sha256', $_SESSION['owner']);
 }
 
- /* Confere o tamanho e o formato do identificador do registro.
-*/ function sentia_id($value): string
+// Antes de gravar ou apagar, o pedido precisa trazer o token que este navegador recebeu da API.
+function sentia_require_csrf(): void
 {
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if (! /* Confere se esse valor é texto.
-*/ is_string($value) || ! /* Confere o formato desse texto usando o padrão definido.
-*/ preg_match('/\A[a-zA-Z0-9_-]{1,64}\z/D', $value)) {
-         /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('invalid_id', 'O identificador deve ter de 1 a 64 letras, números, traços ou sublinhados.', 422);
+    sentia_session();
+    $token = $_SERVER['HTTP_X_SENTIA_CSRF'] ?? '';
+    if (!is_string($token) || !hash_equals($_SESSION['csrf'], $token)) {
+        sentia_error('csrf_invalid', 'A sessão mudou ou expirou. Atualize a conexão e tente novamente.', 403);
     }
-     /* Devolve esse resultado e encerra a chamada atual da função.
-*/ return $value;
 }
 
- /* Valida e normaliza o texto de uma ação antes de guardar no banco.
-*/ function sentia_text($value): string
+function sentia_method(array $allowed): string
 {
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if (! /* Confere se esse valor é texto.
-*/ is_string($value) || ! /* Confere o formato desse texto usando o padrão definido.
-*/ preg_match('//u', $value)) {
-         /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('invalid_text', 'Escreva uma ação em texto UTF-8 válido.', 422);
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    if (!in_array($method, $allowed, true)) {
+        header('Allow: ' . implode(', ', $allowed));
+        sentia_error('method_not_allowed', 'Este endereço não aceita esse método.', 405);
     }
-     /* Esse comando prepara ou atualiza value com os dados usados nesta operação.
-*/ $value =  /* Executa a função preg replace com os valores definidos nessa parte.
-*/ preg_replace('/\A\s+|\s+\z/u', '', $value);
-     /* Esse comando prepara ou atualiza length com os dados usados nesta operação.
-*/ $length =  /* Executa a função preg match all com os valores definidos nessa parte.
-*/ preg_match_all('/./us', $value);
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if ($length < 1 || $length > 160 ||  /* Confere o formato desse texto usando o padrão definido.
-*/ preg_match('/[\x00-\x1F\x7F]/', $value)) {
-         /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('invalid_text', 'A ação precisa ter de 1 a 160 caracteres, sem caracteres de controle.', 422);
+    if (isset($_SERVER['HTTP_ORIGIN'])) {
+        $origin = parse_url($_SERVER['HTTP_ORIGIN']);
+        $request = parse_url((sentia_https() ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? ''));
+        $originPort = $origin['port'] ?? (($origin['scheme'] ?? '') === 'https' ? 443 : 80);
+        $requestPort = $request['port'] ?? (sentia_https() ? 443 : 80);
+        if ($origin === false || $request === false ||
+            !in_array($origin['scheme'] ?? '', ['http', 'https'], true) ||
+            strtolower($origin['host'] ?? '') !== strtolower($request['host'] ?? '') ||
+            ($origin['scheme'] ?? '') !== ($request['scheme'] ?? '') || $originPort !== $requestPort) {
+            sentia_error('origin_not_allowed', 'Abra o SENTIA e a API pelo mesmo endereço.', 403);
+        }
     }
-     /* Devolve esse resultado e encerra a chamada atual da função.
-*/ return $value;
+    if ($method !== 'GET') {
+        sentia_require_csrf();
+    }
+    return $method;
 }
 
- /* Confere se o estado de conclusão recebido é um valor booleano.
-*/ function sentia_done($value): bool
+function sentia_config(): array
 {
-     /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if (! /* Confere se o valor recebido é verdadeiro ou falso.
-*/ is_bool($value)) {
-         /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('invalid_done', 'O campo done deve ser true ou false.', 422);
+    static $config;
+    if ($config !== null) {
+        return $config;
     }
-     /* Devolve esse resultado e encerra a chamada atual da função.
-*/ return $value;
+    $config = require __DIR__ . '/config.php';
+    foreach (['host', 'database', 'username', 'password'] as $field) {
+        if (!isset($config[$field]) || !is_string($config[$field])) {
+            sentia_error('invalid_configuration', 'Confira os campos da configuração privada da API.', 500);
+        }
+    }
+    $port = (string) ($config['port'] ?? '');
+    if (!preg_match('/\A[a-zA-Z0-9.:-]{1,255}\z/D', $config['host']) ||
+        !preg_match('/\A[a-zA-Z0-9_]{1,64}\z/D', $config['database']) ||
+        !ctype_digit($port) || (int) $port < 1 || (int) $port > 65535 || $config['username'] === '') {
+        sentia_error('invalid_configuration', 'Confira servidor, porta, banco e usuário na configuração privada da API.', 500);
+    }
+    $config['port'] = $port;
+    return $config;
 }
 
- /* Converte a linha do banco para o formato de registro usado pelo site.
-*/ function sentia_record(array $row): array
+function sentia_pdo(bool $withDatabase = true): PDO
 {
-     /* Devolve esse resultado e encerra a chamada atual da função.
-*/ return [ /* Guarda o identificador usado para localizar esse registro.
-*/ 'id' =>  /* Converte esse valor para texto.
-*/ (string) $row['id'],  /* Guarda o texto da ação validado pelo servidor.
-*/ 'text' =>  /* Converte esse valor para texto.
-*/ (string) $row['text'],  /* Guarda se essa ação está concluída.
-*/ 'done' =>  /* Converte esse valor para verdadeiro ou falso.
-*/ (bool) $row['done']];
+    if (!class_exists('PDO') || !in_array('mysql', PDO::getAvailableDrivers(), true)) {
+        sentia_error('php_mysql_missing', 'Ative a extensão pdo_mysql no PHP do servidor.', 503, ['ready' => false]);
+    }
+    $config = sentia_config();
+    $dsn = 'mysql:host=' . $config['host'] . ';port=' . $config['port'] .
+        ($withDatabase ? ';dbname=' . $config['database'] : '') . ';charset=utf8mb4';
+    $pdo = new PDO($dsn, $config['username'], $config['password'], [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+        PDO::ATTR_TIMEOUT => 3,
+    ]);
+    // A confirmação de contato usa um horário UTC consistente com o valor lido do banco.
+    $pdo->exec("SET time_zone = '+00:00'");
+    return $pdo;
 }
 
- /* Essa função agrupa as operações executadas quando for chamada.
-*/ function sentia_find(PDO $pdo, string $id): ?array
+function sentia_body(array $allowed): array
 {
-     /* Esse comando prepara ou atualiza statement com os dados usados nesta operação.
-*/ $statement = $pdo-> /* Prepara a consulta SQL com marcadores, sem juntar o texto do usuário ao comando.
-*/ prepare( /* Esse texto é a instrução SQL enviada para executar a operação indicada no banco.
-*/ 'SELECT id, text, done FROM registros WHERE id = :id');
-     /* Esse comando prepara ou atualiza statement com os dados usados nesta operação.
-*/ $statement-> /* Envia os valores aos marcadores e executa a consulta preparada.
-*/ execute([ /* Guarda o identificador usado para localizar esse registro.
-*/ 'id' => $id]);
-     /* Esse comando prepara ou atualiza row com os dados usados nesta operação.
-*/ $row = $statement-> /* Lê a próxima linha do resultado da consulta.
-*/ fetch();
-     /* Devolve esse resultado e encerra a chamada atual da função.
-*/ return $row === false ? null :  /* Converte a linha do banco para o formato de registro usado pelo site.
-*/ sentia_record($row);
+    $contentType = strtolower(trim(explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0]));
+    if ($contentType !== 'application/json') {
+        sentia_error('json_required', 'Envie os dados como application/json.', 415);
+    }
+    $raw = file_get_contents('php://input', false, null, 0, 8193);
+    if ($raw === false || strlen($raw) > 8192) {
+        sentia_error('body_too_large', 'O pedido ultrapassou o tamanho permitido.', 413);
+    }
+    $decoded = json_decode($raw);
+    if (json_last_error() !== JSON_ERROR_NONE || !is_object($decoded)) {
+        sentia_error('invalid_json', 'Envie um objeto JSON válido.', 400);
+    }
+    $data = get_object_vars($decoded);
+    if (array_diff(array_keys($data), $allowed)) {
+        sentia_error('unknown_field', 'O pedido contém um campo que não é reconhecido.', 422);
+    }
+    return $data;
+}
+
+// Esses limites também são conferidos no servidor. A validação do navegador não substitui esta etapa.
+function sentia_field($value, string $field, int $minimum, int $maximum, bool $multiline = false): string
+{
+    if (!is_string($value) || !preg_match('//u', $value)) {
+        sentia_error('invalid_' . $field, 'Confira o campo ' . $field . '.', 422);
+    }
+    $value = preg_replace('/\A\s+|\s+\z/u', '', $value);
+    $length = preg_match_all('/./us', $value);
+    $invalidControls = $multiline ? '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/' : '/[\x00-\x1F\x7F]/';
+    if ($length < $minimum || $length > $maximum || preg_match($invalidControls, $value)) {
+        sentia_error('invalid_' . $field, 'O campo ' . $field . ' precisa ter de ' . $minimum . ' a ' . $maximum . ' caracteres válidos.', 422);
+    }
+    return $value;
+}
+
+function sentia_id($value): string
+{
+    if (!is_string($value) || !preg_match('/\A[a-zA-Z0-9_-]{1,64}\z/D', $value)) {
+        sentia_error('invalid_id', 'O identificador deve ter de 1 a 64 letras, números, traços ou sublinhados.', 422);
+    }
+    return $value;
+}
+
+function sentia_text($value): string
+{
+    return sentia_field($value, 'text', 1, 160);
+}
+
+function sentia_done($value): bool
+{
+    if (!is_bool($value)) {
+        sentia_error('invalid_done', 'O campo done deve ser true ou false.', 422);
+    }
+    return $value;
+}
+
+function sentia_record(array $row): array
+{
+    return ['id' => (string) $row['id'], 'text' => (string) $row['text'], 'done' => (bool) $row['done']];
+}
+
+function sentia_find(PDO $pdo, string $id, string $owner): ?array
+{
+    $statement = $pdo->prepare('SELECT id, text, done FROM registros WHERE id = :id AND owner_hash = :owner');
+    $statement->execute(['id' => $id, 'owner' => $owner]);
+    $row = $statement->fetch();
+    return $row === false ? null : sentia_record($row);
 }

@@ -1,0 +1,160 @@
+{
+  "revision": "v1.5.0-hospedagem",
+  "date": "2026-11-23",
+  "scope": "SENTIA normal, preparação local para hospedagem PHP/MySQL. Não é comprovação do domínio InfinityFree.",
+  "frontend": {
+    "status": "PASSOU",
+    "checks": [
+      "Tema claro/escuro e persistência funcionando no site normal.",
+      "Filtro, modal, CTA, restauração de foco e alertas dinâmicos aprovados.",
+      "Tarefas locais completas e reflexão assíncrona funcionam sem chamadas à API.",
+      "CRUD MySQL real, texto seguro, reload, isolamento entre visitantes e renovação de CSRF aprovados.",
+      "Contato real validado e gravado, sem exposição do conteúdo, com confirmação só após sucesso; falha mantém os campos.",
+      "Oito páginas conferidas em320/390/844/1440, sem rolagem horizontal ou erro JavaScript.",
+      "Site pessoal e menu do Jardim continuam abrindo sem PHP; jogo não importa nem chama o banco."
+    ],
+    "errors": []
+  },
+  "backend": {
+    "status": "PASS",
+    "checks": [
+      {
+        "id": "php_lint",
+        "status": "PASS",
+        "files": 8
+      },
+      {
+        "id": "install_idempotent",
+        "status": "PASS",
+        "runs": 2,
+        "http_status": 200
+      },
+      {
+        "id": "schema_status",
+        "status": "PASS",
+        "http_status": 200,
+        "ready": true,
+        "configuration_not_exposed": true
+      },
+      {
+        "id": "session_cookie",
+        "status": "PASS",
+        "http_only": true,
+        "same_site": "Lax",
+        "distinct_csrf_tokens": true
+      },
+      {
+        "id": "csrf_missing",
+        "status": "PASS",
+        "http_status": 403
+      },
+      {
+        "id": "foreign_origin",
+        "status": "PASS",
+        "http_status": 403
+      },
+      {
+        "id": "malformed_json",
+        "status": "PASS",
+        "http_status": 400
+      },
+      {
+        "id": "invalid_email",
+        "status": "PASS",
+        "http_status": 422
+      },
+      {
+        "id": "unknown_fields_and_invalid_id",
+        "status": "PASS",
+        "http_status": 422
+      },
+      {
+        "id": "task_crud",
+        "status": "PASS",
+        "create_status": 201,
+        "update_status": 200,
+        "delete_status": 200
+      },
+      {
+        "id": "session_isolation",
+        "status": "PASS",
+        "read_other_session": false,
+        "edit_other_session_http_status": 404,
+        "delete_other_session_count": 0,
+        "delete_all_scoped_to_current_session": true
+      },
+      {
+        "id": "sql_text_treated_as_literal",
+        "status": "PASS"
+      },
+      {
+        "id": "contact_persistence",
+        "status": "PASS",
+        "http_status": 201,
+        "receipt_fields": [
+          "id",
+          "createdAt"
+        ],
+        "personal_data_echoed": false
+      },
+      {
+        "id": "contact_public_listing_disabled",
+        "status": "PASS",
+        "http_status": 405
+      },
+      {
+        "id": "legacy_migration",
+        "status": "PASS",
+        "imports": 2,
+        "legacy_row_preserved": true,
+        "owner_column_added": true,
+        "contacts_table_created": true,
+        "old_rows_not_assigned_to_new_visitors": true
+      }
+    ]
+  },
+  "ai": {
+    "real_cpu_inference": {
+      "cpuReady": true,
+      "actualChunks": true,
+      "localMemory": false,
+      "noChatUploads": true,
+      "noRuntimeErrors": true,
+      "oneWeightsFile": true
+    },
+    "recovery_protocol_test_ok": true,
+    "recovery_test_scope": "Recuperação do protocolo/controles com motor e transporte falsos. Não comprova inferência.",
+    "full_remote_download_repeated": false,
+    "quality_context_memory_passed": false,
+    "note": "Gerou tokens reais com pesos já existentes, mas respondeu genericamente à pergunta de memória contextual. Worker/CDN HTTPS e CORS testados separadamente."
+  },
+  "package": {
+    "archive": "SENTIA-HOSPEDAGEM-COMPLETO.zip",
+    "bytes": 493911375,
+    "sha256": "a7a8db364b41d3c42218f87ea8f2530c0d489acda850f02ae8ba85c6f3998114",
+    "files": 956,
+    "public_files": 881,
+    "directories": 167,
+    "images": 835,
+    "music": 4,
+    "crc": "OK",
+    "source_bytes": "OK",
+    "hosting_limits": "OK",
+    "isolated_copies": "OK",
+    "entrypoints": [
+      "htdocs/index.html",
+      "htdocs/jardim.html"
+    ]
+  },
+  "extracted_package": {
+    "status": "PASSOU",
+    "source": "SENTIA-HOSPEDAGEM-COMPLETO.zip",
+    "integration": "PASSOU",
+    "localInstallerWithSqlOutsideWebRoot": "PASSOU",
+    "scope": "PHP local8101 e banco isolado3317. Não substitui a conferência emHTTPS no domínio real."
+  },
+  "pending": [
+    "Configurar conta e banco do painel com dados privados.",
+    "Publicar e repetir a conferência em janela anônima no domínio HTTPS real."
+  ]
+}

@@ -1,0 +1,37 @@
+SENTIA, ENTREGA E HOSPEDAGEM
+Revisão de 23 de novembro de 2026.
+
+Extraia o ZIP inteiro. A pasta htdocs contém somente o site, Jardim, imagens, áudio, CSS, JavaScript e API PHP. No domínio, envie o conteúdo de htdocs para o htdocs da hospedagem. SQL, guias, códigos isolados e portfólio ficam fora da pasta pública.
+O projeto principal no GitHub continua com index.html na raiz. Os dois formatos contêm o mesmo código, organizados para finalidades diferentes.
+
+COMPUTADOR E VS CODE
+Abra a pasta do projeto no VS Code. O Plano pessoal e o Jardim funcionam sem banco. Para a IA, use HTTPS ou localhost com Live Server/XAMPP.
+Para os dois formulários MySQL, use XAMPP ou hospedagem PHP/MySQL. No XAMPP, inicie Apache e MySQL e abra o endereço local da pasta. Escolha Registro MySQL e use Preparar banco local ou importe o SQL em um banco previamente selecionado.
+Se o projeto foi extraído com htdocs separado, copie o conteúdo de htdocs para a pasta pública do XAMPP e importe banco/schema.sql pelo phpMyAdmin.
+
+BANCO
+Meu registro tem Plano pessoal, salvo por JSON/localStorage, e Registro MySQL, salvo por PHP/PDO. Só há chamadas à API no segundo modo.
+O MySQL separa as tarefas por sessão de navegador. Não é uma conta com login. Outro visitante não vê ou altera suas tarefas. Limpar os cookies ou perder a sessão pode interromper o acesso.
+O contato em Sobre grava sugestões fictícias no MySQL e retorna um recibo. Não envia e-mail. Não há uma lista pública de nomes, e-mails ou mensagens.
+A importação SQL cria as duas tabelas e migra a antiga sem apagar seus registros. As linhas antigas sem vínculo não aparecem para visitantes novos.
+Use somente dados inventados para a demonstração. O pacote não contém exportação de dados dos testes, senha de hospedagem ou configuração preenchida.
+
+IA
+Conversas usa um modelo real Qwen2.5-0.5B-Instruct no Web Worker do navegador. Dez personalidades compartilham os mesmos pesos.
+O primeiro preparo baixa cerca de500MB externos no aparelho do visitante, após clique explícito. O cache do navegador pode guardar esses pesos. Não instale modelos, Node ou Python na hospedagem.
+CPU é a opção compatível. WebGPU volta à CPU quando necessário. Falhas, cancelamento e tempos limite liberam os controles.
+As mensagens não passam pelo PHP/MySQL. O histórico local só é salvo quando a pessoa escolhe. O modelo pequeno pode errar e responder genericamente, inclusive ao tentar lembrar o contexto.
+O teste local comprovou inferência real com pesos já existentes e verificou os recursos externos por HTTPS/CORS. O fluxo completo no domínio publicado ainda precisa ser testado.
+
+JARDIM
+O jogo continua conectado ao site pelo portal, sem PHP ou banco. O enigma tem quatro etapas, lanternas, vínculos, palavra e mosaico. A entrada oferece PC/celular e clarão de transição.
+O controle e o save do Jardim continuam no navegador. As atividades escolares pertencem ao SENTIA normal.
+
+ENTREGA
+HTML-puro contém HTML sem importar CSS ou JavaScript. CSS-puro e JavaScript-puro guardam as linguagens separadas. PHP-servidor e SQL guardam cópias do backend, sem configuração privada.
+Os arquivos isolados são para leitura e avaliação. Para executar, use o projeto integrado, com as pastas e imagens juntas.
+O portfólio contém as capturas atualizadas em PC/celular e Excalidraw com imagens incorporadas. Há uma versão PowerPoint quando indicada na pasta portfolio.
+O HTML contém o comentário com https://github.com/oleleolalaks/SENTIA . O histórico anterior foi preservado.
+Houve assistência de IA, declarada no projeto. O aluno deve estudar, revisar e explicar o código e sua participação de forma verdadeira.
+
+Para publicar, siga HOSPEDAGEM-INFINITYFREE.txt. Para saber o que foi testado e o que está pendente no domínio real, veja CONFERENCIA-HOSPEDAGEM.txt.

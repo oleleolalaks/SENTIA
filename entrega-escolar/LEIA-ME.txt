@@ -1,43 +1,37 @@
-SENTIA — COMO ABRIR
+SENTIA, ENTREGA E HOSPEDAGEM
+Revisão de 23 de novembro de 2026.
 
-Extraia o ZIP inteiro e abra a pasta Sentia no VS Code. Abra o index.html da raiz no navegador, diretamente ou pelo Live Server. Mantenha as pastas juntas. O site, o plano pessoal e o Jardim dos Ecos funcionam sem PHP ou MySQL; a partida do Jardim é salva separadamente neste navegador.
+Extraia o ZIP inteiro. A pasta htdocs contém somente o site, Jardim, imagens, áudio, CSS, JavaScript e API PHP. No domínio, envie o conteúdo de htdocs para o htdocs da hospedagem. SQL, guias, códigos isolados e portfólio ficam fora da pasta pública.
+O projeto principal no GitHub continua com index.html na raiz. Os dois formatos contêm o mesmo código, organizados para finalidades diferentes.
 
-Para o modo compartilhado: copie Sentia para a pasta htdocs do XAMPP, inicie Apache e MySQL e abra http://localhost/Sentia/. Em Meu registro, escolha Registro compartilhado · MySQL. Se necessário, use Preparar banco local ou importe banco/schema.sql pelo phpMyAdmin. Se sua senha ou porta for diferente, copie api/config.local.example.php para api/config.local.php e ajuste os valores. O plano pessoal só é copiado para o banco quando você escolhe importar.
+COMPUTADOR E VS CODE
+Abra a pasta do projeto no VS Code. O Plano pessoal e o Jardim funcionam sem banco. Para a IA, use HTTPS ou localhost com Live Server/XAMPP.
+Para os dois formulários MySQL, use XAMPP ou hospedagem PHP/MySQL. No XAMPP, inicie Apache e MySQL e abra o endereço local da pasta. Escolha Registro MySQL e use Preparar banco local ou importe o SQL em um banco previamente selecionado.
+Se o projeto foi extraído com htdocs separado, copie o conteúdo de htdocs para a pasta pública do XAMPP e importe banco/schema.sql pelo phpMyAdmin.
 
-O botão Reiniciar SENTIA fica no rodapé e pede confirmação. Ele limpa as descobertas, a coleção, o enigma e o plano pessoal, voltando ao início no modo pessoal. A partida e as preferências do Jardim, o tema, a redução de movimento e os registros compartilhados do MySQL são preservados. O portal inclui quatro desafios, com dicas graduais e progresso salvo: lanternas, vínculos, palavra e mosaico.
+BANCO
+Meu registro tem Plano pessoal, salvo por JSON/localStorage, e Registro MySQL, salvo por PHP/PDO. Só há chamadas à API no segundo modo.
+O MySQL separa as tarefas por sessão de navegador. Não é uma conta com login. Outro visitante não vê ou altera suas tarefas. Limpar os cookies ou perder a sessão pode interromper o acesso.
+O contato em Sobre grava sugestões fictícias no MySQL e retorna um recibo. Não envia e-mail. Não há uma lista pública de nomes, e-mails ou mensagens.
+A importação SQL cria as duas tabelas e migra a antiga sem apagar seus registros. As linhas antigas sem vínculo não aparecem para visitantes novos.
+Use somente dados inventados para a demonstração. O pacote não contém exportação de dados dos testes, senha de hospedagem ou configuração preenchida.
 
-As pastas HTML-puro, CSS-puro, JavaScript-puro, PHP-servidor e SQL servem para estudar cada linguagem separadamente. Para usar o projeto completo, abra sempre o index.html da raiz. O portfólio com as telas incorporadas está em portfolio/SENTIA-portfolio.excalidraw; abra-o no Excalidraw. Os créditos das quatro músicas estão em CREDITOS-AUDIO.txt.
+IA
+Conversas usa um modelo real Qwen2.5-0.5B-Instruct no Web Worker do navegador. Dez personalidades compartilham os mesmos pesos.
+O primeiro preparo baixa cerca de500MB externos no aparelho do visitante, após clique explícito. O cache do navegador pode guardar esses pesos. Não instale modelos, Node ou Python na hospedagem.
+CPU é a opção compatível. WebGPU volta à CPU quando necessário. Falhas, cancelamento e tempos limite liberam os controles.
+As mensagens não passam pelo PHP/MySQL. O histórico local só é salvo quando a pessoa escolhe. O modelo pequeno pode errar e responder genericamente, inclusive ao tentar lembrar o contexto.
+O teste local comprovou inferência real com pesos já existentes e verificou os recursos externos por HTTPS/CORS. O fluxo completo no domínio publicado ainda precisa ser testado.
 
-No Jardim, Registro (J) avisa quando aparece uma anotação nova. Abra a anotação para marcar como lida e comparar a interpretação do protagonista com o acontecimento observado. A busca e o filtro de novas anotações ajudam a retomar descobertas. Anotações antigas e a partida são preservadas ao atualizar o projeto.
+JARDIM
+O jogo continua conectado ao site pelo portal, sem PHP ou banco. O enigma tem quatro etapas, lanternas, vínculos, palavra e mosaico. A entrada oferece PC/celular e clarão de transição.
+O controle e o save do Jardim continuam no navegador. As atividades escolares pertencem ao SENTIA normal.
 
-Em Bolsa (I), use Observar para ampliar, girar e examinar os objetos sem equipá-los. Arraste a imagem ampliada ou use as setas com a imagem em foco; Home centraliza. Os detalhes examinados vão para o registro. Voltar à bolsa mantém a pausa, e Voltar ou Esc retorna ao jogo.
+ENTREGA
+HTML-puro contém HTML sem importar CSS ou JavaScript. CSS-puro e JavaScript-puro guardam as linguagens separadas. PHP-servidor e SQL guardam cópias do backend, sem configuração privada.
+Os arquivos isolados são para leitura e avaliação. Para executar, use o projeto integrado, com as pastas e imagens juntas.
+O portfólio contém as capturas atualizadas em PC/celular e Excalidraw com imagens incorporadas. Há uma versão PowerPoint quando indicada na pasta portfolio.
+O HTML contém o comentário com https://github.com/oleleolalaks/SENTIA . O histórico anterior foi preservado.
+Houve assistência de IA, declarada no projeto. O aluno deve estudar, revisar e explicar o código e sua participação de forma verdadeira.
 
-O áudio começa após uma interação no jogo. A pausa permite regular trilha, vozes e efeitos separadamente, testar a voz e silenciar tudo. Sons direcionais acompanham o quarto, os ataques, os bloqueios e as perseguições. Pausar ou esconder a aba interrompe a execução. Na exploração, quartos de moradores mortos ficam mais escuros por efeitos de CSS/JavaScript; as artes aprovadas foram mantidas.
-
-Na vigilância de Hunger, sobreviva por 2 minutos. Localize a esfera que muda de brilho em até 1,5 segundo; mantenha a visão por 0,65 segundo para afastá-lo. As oito esferas são usadas. Na perseguição, Shift ou Correr mantém a corrida; F ou Acender reacende a lanterna. Sem luz, o corredor e a saída segura ficam ocultos. No último corredor, procure a porta da xícara, indicada como Quarto de Pax: entre por E ou toque no alvo. Pax explica o refúgio no primeiro encontro.
-
-Nas perseguições e reflexos dos generais, use a tecla indicada no PC. Clicar a caixa de diálogo não responde ao comando. No celular, use os botões próprios. O modo assistido amplia os prazos dos reflexos e permite os botões no PC. Na arena, Beerus começa com 350 de vida; a cutscene começa com 10 ou menos. W/S move, A/D desloca e as setas ou arrastar giram a visão; F ataca, Espaço defende, Q lança a luz e E interage.
-
-As mãos com efeitos de sentimentos foram retiradas da seleção do jogo. As mãos comuns e as de equipamentos mantêm a proporção e ficam atrás das caixas e dos controles. O jumpscare de Hunger usa sete quadros em um único PNG de animação, na pasta assets/02-Chases-Batalhas-Efeitos/04-Jumpscare-Medo. Os sustos de Hunger e Mizzery têm sons diferentes. A redução de movimento mostra um quadro novo estático de cada susto; os sons continuam seguindo o volume de efeitos e a opção de silenciar. As imagens são carregadas antes da sequência e não são substituídas pela arte antiga.
-
-Candy é o nome do Eco do Amor nos diálogos, objetivos e registros. Ao continuar ou importar uma partida antiga, o nome nos textos salvos é atualizado sem reiniciar o progresso. Os dez quartos têm efeitos próprios que acompanham a área do cenário, com uma versão estática na redução de movimento. As observações de objetos e a narração usam moldura própria; ao voltar ao mapa, os textos e escolhas anteriores são limpos.
-
-A apresentação da praça mostra somente o nome de Pax. As informações sobre o seu quarto são descobertas na conversa. Luz, água, névoa e partículas permanecem nos quartos também durante diálogos e observações. Os ambientes têm sons ao entrar, virar e examinar objetos, além dos detalhes sonoros espaçados. O áudio dos sustos aguarda a retomada do navegador e baixa temporariamente a música; pausa, volume zero e silêncio continuam sendo respeitados.
-
-Os arquivos HTML, CSS, JavaScript, PHP, SQL e SVG têm explicações junto das instruções, em linguagem simples. Nos arquivos de execução e nas cópias isoladas, os comentários explicam as tags, os atributos, as propriedades, as condições, as funções e os campos usados pelo roteiro. Eles servem para estudar o código e entender como cada parte participa do site e do jogo.
-
-Em assets/01-Personagens/05-Idle-e-Camadas, 00-forma-base.png é a arte completa do personagem. 01-camada-corpo.png é o corpo recortado. Os arquivos seguintes, com camada no nome, são partes como camisa, asas, água e cauda. A forma completa e a montagem por camadas são alternativas de exibição. O jogo já usa os nomes novos, não é necessário renomear nada. Os PNGs foram preservados e as camadas recompõem exatamente a forma base.
-
-Conversas é uma página do SENTIA normal, separada do Jardim. Escolha um dos dez sentimentos e clique em Preparar conversa. O primeiro preparo baixa cerca de 500 MB de arquivos públicos do modelo Qwen2.5-0.5B-Instruct. O modelo é gratuito e gera as respostas no navegador de quem está acessando, sem chave de API, conta ou outro programa aberto. Cada sentimento tem personalidade e histórico próprios, usando o mesmo modelo. O modo automático usa a CPU por compatibilidade. A GPU é opcional e exige suporte a shader-f16. Um computador é recomendado, celulares podem responder mais devagar.
-
-Para a IA, use um endereço HTTP local do Live Server ou XAMPP durante o desenvolvimento, ou o endereço HTTPS do site publicado. Abrir index.html diretamente continua funcionando para o restante do site, mas a página Conversas explica que a IA precisa desse endereço. O XAMPP não serve o modelo e não precisa ficar aberto no seu computador para os visitantes conversarem com uma publicação. Hospedagem estática pode executar a IA, enquanto o modo compartilhado MySQL continua precisando de hospedagem com PHP e MySQL para funcionar online.
-
-O primeiro download precisa de internet. O navegador pode guardar os pesos no seu cache, mas isso depende de espaço e permissão de armazenamento. As mensagens não são enviadas ao Hugging Face, a um servidor de IA ou ao MySQL. Por padrão, as conversas somem ao fechar a aba. Guardar conversas neste navegador é uma escolha separada. Apagar conversa pede confirmação, Baixar conversa salva um TXT e Liberar memória encerra o modelo sem apagar as mensagens. Reiniciar SENTIA também remove as conversas salvas. O cache contém os arquivos públicos do modelo, separado dos textos das conversas.
-
-TOPICOS-PROFESSOR.txt mostra onde cada conceito das apostilas está no site normal. A reflexão sorteada continua sendo um exercício de JavaScript e está identificada como frases pré-escritas. A página Conversas usa inferência de verdade, sem respostas prontas de substituição em caso de falha.
-
-As visitas no Jardim são eventos ocasionais. Depois de conhecer os moradores envolvidos, um deles pode aparecer em outra vista de um quarto. O encontro não muda quando você gira a câmera ou recarrega. Conversar com o visitante é uma escolha própria, observar um objeto não abre essa conversa automaticamente. Os encontros respeitam as relações já descobertas, as mortes e as rupturas em andamento. Há um intervalo entre encontros e uma proteção contra várias entradas elegíveis sem nenhuma visita. Encontros concluídos não se repetem.
-
-Durante uma conversa em dupla, a fala e a expressão pertencem ao personagem que está respondendo. As poses de ruptura, choro vulnerável e morte continuam separadas. Na batalha, Ninfa mantém sua postura de combate. Mãos sem ação ficam recolhidas durante a fala e voltam nas ações de observar, pegar objetos e reagir aos ataques. As duplas no celular ficam acima da caixa, com corpo e camadas alinhados.
-
-O susto de Hunger usa seus sete quadros com foco no rosto e limite de zoom pela altura da tela. Olhos e boca ficam visíveis no computador e no celular. Girar ou redimensionar a tela, inclusive durante a pausa, redesenha o mesmo quadro sem adiantar a animação. O áudio espera a imagem pronta, segue o volume e o silêncio escolhidos e é cancelado ao trocar de cena. Se o arquivo da imagem não carregar, aparece um aviso com retorno ao checkpoint em vez de um grito sobre uma tela vazia.
+Para publicar, siga HOSPEDAGEM-INFINITYFREE.txt. Para saber o que foi testado e o que está pendente no domínio real, veja CONFERENCIA-HOSPEDAGEM.txt.

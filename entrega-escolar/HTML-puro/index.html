@@ -1,426 +1,82 @@
-<!-- Essa declaração informa que o documento usa a versão atual do HTML.
---><!doctype html>
-<!-- Essa tag define o começo e o idioma do documento. O atributo lang informa que o conteúdo está em português do Brasil.
---><html lang="pt-BR">
-<!-- Aqui essa parte reúne as configurações que o navegador lê antes do conteúdo visível.
---><head>
+<!doctype html>
+<html lang="pt-BR">
+<head>
   <!-- Estrutura do documento, idioma, acentos, descrição e adaptação à largura da tela. -->
-  <!-- Esse comando passa uma configuração do documento para o navegador. O atributo charset permite ler corretamente os acentos e os demais caracteres do texto.
---><meta charset="UTF-8">
-  <!-- Essa tag passa uma configuração do documento para o navegador. O atributo name escolhe qual configuração é informada ao navegador. O conteúdo dessa configuração adapta a largura da página e a escala inicial à tela do dispositivo.
---><meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Aqui essa parte passa uma configuração do documento para o navegador. O atributo name escolhe qual configuração é informada ao navegador. O conteúdo dessa configuração escolhe a cor da interface do navegador quando ele usa a cor do site.
---><meta name="theme-color" content="#193e35">
-  <!-- Esse comando passa uma configuração do documento para o navegador. O atributo name escolhe qual configuração é informada ao navegador. O conteúdo dessa configuração resume o projeto para os serviços que leem os dados da página.
---><meta name="description" content="SENTIA: um espaço para conhecer sentimentos, perceber encontros e cultivar pequenas pausas.">
-  <!-- Essa tag define o nome que aparece na aba do navegador.
---><title>SENTIA · um lugar para sentir</title><!-- Aqui termina a área aberta pela tag title.
--->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#193e35">
+  <meta name="description" content="SENTIA: um espaço para conhecer sentimentos, perceber encontros e cultivar pequenas pausas.">
+  <title>SENTIA · um lugar para sentir</title>
   <!-- HTML organiza o conteúdo, os arquivos externos cuidam da aparência e das interações. -->
-  <!-- Esse comando conecta o documento a um recurso externo. O atributo rel identifica esse recurso externo como uma folha de estilos. O atributo href aponta para o arquivo externo de estilos dessa página.
---><!-- Essa tag conecta o documento a um recurso externo. O atributo rel identifica esse recurso externo como uma folha de estilos. O atributo href aponta para o arquivo externo de estilos dessa página.
--->
-  <!-- Aqui essa parte carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
---><!-- Aqui termina a área aberta pela tag script.
--->
-  <!-- Essa tag carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
---><!-- Aqui termina a área aberta pela tag script.
--->
-  <!-- Esse comando carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
---><!-- Aqui termina a área aberta pela tag script.
---><!-- Aqui essa parte carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
---><!-- Aqui termina a área aberta pela tag script.
---><!-- Essa tag carrega o código que controla as interações da página. O atributo src aponta para o arquivo separado que contém esse código JavaScript. O atributo defer espera o HTML ser lido antes de executar esse arquivo, mantendo a ordem dos scripts.
---><!-- Aqui termina a área aberta pela tag script.
--->
-<!-- Aqui termina a área aberta pela tag head.
--->
+
 <!-- Essa folha de estilos cuida só da conversa com os sentimentos no site normal. -->
 <!-- Esses arquivos preparam as personalidades e a interface. O modelo só é baixado após o clique. -->
 </head>
 <!-- GitHub público: https://github.com/oleleolalaks/SENTIA -->
-<!-- Essa tag reúne o conteúdo que a pessoa vê e usa na página.
---><body>
+<body>
   <!-- A navegação semântica e o atalho de teclado dão acesso direto ao conteúdo principal. -->
-  <!-- Aqui essa parte separa uma informação de apoio do conteúdo principal para o aviso de arquivos que não carregaram. O id identifica o aviso de arquivos que não carregaram para o CSS e o JavaScript encontrarem o lugar certo. O atributo role identifica a função acessível dessa área, como um aviso ou um estado atualizado.
---><aside id="loading-help" role="status"><!-- Esse comando marca esse trecho como importante.
---><strong>Preparando o SENTIA…<!-- Aqui termina a área aberta pela tag strong.
---></strong><!-- Aqui essa parte abre um parágrafo de texto.
---><p>Se a página continuar sem cores ou imagens, extraia o ZIP inteiro e abra o index.html da pasta Sentia, mantendo css, js e assets ao lado dele. O site e o Jardim abrem normalmente. Só o registro compartilhado usa o endereço do XAMPP.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag aside.
---></aside>
-  <!-- Aqui essa parte cria um link que leva a outro destino. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo href leva para a seção indicada dentro do próprio site.
---><a class="skip" href="#conteudo">Pular para o conteúdo<!-- Aqui termina a área aberta pela tag a.
---></a>
-  <!-- Essa tag organiza o cabeçalho e os controles de entrada. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><header class="site-header">
-    <!-- Aqui essa parte cria um link que leva a outro destino. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo href leva para a seção indicada dentro do próprio site. O atributo aria label dá um nome acessível a esse elemento para os leitores de tela.
---><a class="brand" href="#home" aria-label="SENTIA, início"><!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="brand-icon">✦<!-- Aqui termina a área aberta pela tag span.
---></span> SENTIA<!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="brand-period">.<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag a.
---></a>
-    <!-- Aqui essa parte identifica o grupo de links de navegação. O atributo aria label dá um nome acessível a esse elemento para os leitores de tela.
---><nav aria-label="Navegação principal"><!-- Esse comando cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site.
---><a href="#atlas">Atlas emocional<!-- Aqui termina a área aberta pela tag a.
---></a><!-- Aqui essa parte cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site.
---><a href="#convergencia">Convergência<!-- Aqui termina a área aberta pela tag a.
---></a><!-- Essa tag cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site.
---><a href="#conversas">Conversas</a><!-- Esse link leva à página de conversas com IA, fora do Jardim. --><a href="#praticas">Meu registro<!-- Aqui termina a área aberta pela tag a.
---></a><!-- Esse comando cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site.
---><a href="#jardim">O Jardim<!-- Aqui termina a área aberta pela tag a.
---></a><!-- Aqui essa parte cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site.
---><a href="#sobre">Sobre<!-- Aqui termina a área aberta pela tag a.
---></a><!-- Aqui termina a área aberta pela tag nav.
---></nav>
+  <aside id="loading-help" role="status"><strong>Preparando o SENTIA…</strong><p>Se a página continuar sem cores ou imagens, extraia o ZIP inteiro e abra o index.html da pasta Sentia, mantendo css, js e assets ao lado dele. O site e o Jardim abrem normalmente. O registro MySQL e o contato precisam de PHP e MySQL, no XAMPP ou na hospedagem.</p></aside>
+  <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="SENTIA, início"><span class="brand-icon">✦</span> SENTIA<span class="brand-period">.</span></a>
+    <!-- Links com fragmentos permitem trocar a seção pela navegação e manter um endereço para cada página. --><nav aria-label="Navegação principal"><a href="#atlas">Atlas emocional</a><a href="#convergencia">Convergência</a><a href="#conversas">Conversas</a><!-- Esse link leva à página de conversas com IA, fora do Jardim. --><a href="#praticas">Meu registro</a><a href="#jardim">O Jardim</a><a href="#sobre">Sobre</a></nav>
     <!-- Parte 1, este botão alterna o tema, o JavaScript salva a preferência no navegador. -->
-    <!-- Aqui essa parte cria um botão para executar uma ação para o botão do tema. O id identifica o botão do tema para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo aria label dá um nome acessível a esse elemento para os leitores de tela.
---><button id="tema" class="icon-button" aria-label="Ativar tema escuro">◐<!-- Aqui termina a área aberta pela tag button.
---></button>
-  <!-- Aqui termina a área aberta pela tag header.
---></header>
-  <!-- Aqui essa parte identifica o conteúdo principal para o conteúdo principal do SENTIA. O id identifica o conteúdo principal do SENTIA para o CSS e o JavaScript encontrarem o lugar certo. O atributo tabindex permite dar foco a essa área pelo JavaScript sem colocá la na sequência normal da tecla Tab.
---><main id="conteudo" tabindex="-1">
+    <button id="tema" class="icon-button" aria-label="Ativar tema escuro">◐</button>
+  </header>
+  <main id="conteudo" tabindex="-1">
     <!-- A página inicial apresenta o projeto, âncoras com identificam cada seção do SENTIA. -->
-    <!-- Esse comando separa uma área do conteúdo com um assunto próprio para a página inicial. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O id identifica a página inicial para o CSS e o JavaScript encontrarem o lugar certo.
---><section class="page" id="home">
-      <!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="hero">
-        <!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="hero-copy"><!-- Esse comando abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">UM PEQUENO UNIVERSO INTERIOR<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte define o título principal dessa área.
---><h1>Todo sentimento<!-- Esse comando quebra a linha do texto sem abrir outro parágrafo.
---><br>tem um lugar<!-- Essa tag separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>.<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag h1.
---></h1><!-- Essa tag abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="intro">Até aquele que você ainda não sabe nomear. Explore, descubra e encontre um jeito seu de sentir.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="actions"><!-- Essa tag cria um link que leva a outro destino. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo href leva para a seção indicada dentro do próprio site.
---><a class="button primary" href="#atlas">Explorar o Atlas <!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>↗<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag a.
---></a><!-- Aqui essa parte cria um link que leva a outro destino. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo href leva para a seção indicada dentro do próprio site.
---><a class="text-link" href="#sobre">Conheça o projeto →<!-- Aqui termina a área aberta pela tag a.
---></a><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui essa parte abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="small hero-note"><!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="status-dot"><!-- Aqui termina a área aberta pela tag span.
---></span> Um passo de cada vez. No seu ritmo.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag div.
---></div>
-        <!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="hero-art"><!-- Aqui essa parte reserva o lugar em que uma imagem será exibida. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo alt descreve o conteúdo da imagem para quem não consegue vê la. O atributo fetchpriority pede prioridade de carregamento para essa imagem importante da primeira tela.
---><img id="hero-image" alt="Jardim em pixel art com caminhos, vegetação e um portal" fetchpriority="high"><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="art-caption"><!-- Essa tag separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>01 / UM LUGAR PARA COMEÇAR<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>✦<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="floating-label">um pixel de cada vez<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag div.
---></div>
-      <!-- Aqui termina a área aberta pela tag div.
---></div>
-      <!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo aria hidden tira esse detalhe decorativo da leitura das ferramentas de acessibilidade.
---><div class="ticker" aria-hidden="true">RECONHECER <!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>✦<!-- Aqui termina a área aberta pela tag span.
---></span> ACOLHER <!-- Essa tag separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>✦<!-- Aqui termina a área aberta pela tag span.
---></span> DESCOBRIR <!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>✦<!-- Aqui termina a área aberta pela tag span.
---></span> SENTIR <!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>✦<!-- Aqui termina a área aberta pela tag span.
---></span> RECOMEÇAR<!-- Aqui termina a área aberta pela tag div.
---></div>
-      <!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="section-heading"><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos.
---><div><!-- Essa tag abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">ESCOLHA SEU CAMINHO<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando define um título de seção.
---><h2>Por onde você quer começar?<!-- Aqui termina a área aberta pela tag h2.
---></h2><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Esse comando abre um parágrafo de texto.
---><p>Pequenas descobertas.<!-- Essa tag quebra a linha do texto sem abrir outro parágrafo.
---><br>Um mundo de possibilidades.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag div.
---></div>
-      <!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="path-grid"><!-- Aqui essa parte cria um link que leva a outro destino. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo href leva para a seção indicada dentro do próprio site.
---><a class="path-card mint" href="#atlas"><!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="card-number">01<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="pixel-symbol">✳<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Essa tag define um título dentro da seção.
---><h3>Dar nome ao que sente<!-- Aqui termina a área aberta pela tag h3.
---></h3><!-- Esse comando abre um parágrafo de texto.
---><p>Conheça sentimentos, seus sinais e suas diferenças.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="card-link">Abrir o Atlas ↗<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag a.
---></a><!-- Aqui essa parte cria um link que leva a outro destino. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo href leva para a seção indicada dentro do próprio site.
---><a class="path-card lavender" href="#convergencia"><!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="card-number">02<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="pixel-symbol">◈<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Essa tag define um título dentro da seção.
---><h3>Sentir mais de uma coisa<!-- Aqui termina a área aberta pela tag h3.
---></h3><!-- Esse comando abre um parágrafo de texto.
---><p>Descubra o que acontece quando emoções se encontram.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="card-link">Ver conexões ↗<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag a.
---></a><!-- Aqui essa parte cria um link que leva a outro destino. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo href leva para a seção indicada dentro do próprio site.
---><a class="path-card peach" href="#praticas"><!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="card-number">03<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="pixel-symbol">☼<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Essa tag define um título dentro da seção.
---><h3>Cuidar do seu tempo<!-- Aqui termina a área aberta pela tag h3.
---></h3><!-- Esse comando abre um parágrafo de texto.
---><p>Guarde pequenas ações e encontre espaço para uma pausa.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="card-link">Criar meu registro ↗<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag a.
---></a><!-- Aqui termina a área aberta pela tag div.
---></div>
-      <!-- Esse comando agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="quote-strip"><!-- Essa tag separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>“<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Esse comando abre um parágrafo de texto.
---><p>Você não precisa transformar<!-- Essa tag quebra a linha do texto sem abrir outro parágrafo.
---><br>tudo o que sente em uma resposta.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><a href="#jardim" class="text-link">Há mais para descobrir →<!-- Aqui termina a área aberta pela tag a.
---></a><!-- Aqui termina a área aberta pela tag div.
---></div>
-    <!-- Aqui termina a área aberta pela tag section.
---></section>
+    <!-- Página inicial, apresenta o projeto e os caminhos para explorar o Atlas, as práticas e as conversas. --><section class="page" id="home">
+      <div class="hero">
+        <div class="hero-copy"><p class="eyebrow">UM PEQUENO UNIVERSO INTERIOR</p><h1>Todo sentimento<br>tem um lugar<span>.</span></h1><p class="intro">Até aquele que você ainda não sabe nomear. Explore, descubra e encontre um jeito seu de sentir.</p><div class="actions"><a class="button primary" href="#atlas">Explorar o Atlas <span>↗</span></a><a class="text-link" href="#sobre">Conheça o projeto →</a></div><p class="small hero-note"><span class="status-dot"></span> Um passo de cada vez. No seu ritmo.</p></div>
+        <div class="hero-art"><img id="hero-image" alt="Jardim em pixel art com caminhos, vegetação e um portal" fetchpriority="high"><div class="art-caption"><span>01 / UM LUGAR PARA COMEÇAR</span><span>✦</span></div><span class="floating-label">um pixel de cada vez</span></div>
+      </div>
+      <div class="ticker" aria-hidden="true">RECONHECER <span>✦</span> ACOLHER <span>✦</span> DESCOBRIR <span>✦</span> SENTIR <span>✦</span> RECOMEÇAR</div>
+      <div class="section-heading"><div><p class="eyebrow">ESCOLHA SEU CAMINHO</p><h2>Por onde você quer começar?</h2></div><p>Pequenas descobertas.<br>Um mundo de possibilidades.</p></div>
+      <div class="path-grid"><a class="path-card mint" href="#atlas"><span class="card-number">01</span><span class="pixel-symbol">✳</span><h3>Dar nome ao que sente</h3><p>Conheça sentimentos, seus sinais e suas diferenças.</p><span class="card-link">Abrir o Atlas ↗</span></a><a class="path-card lavender" href="#convergencia"><span class="card-number">02</span><span class="pixel-symbol">◈</span><h3>Sentir mais de uma coisa</h3><p>Descubra o que acontece quando emoções se encontram.</p><span class="card-link">Ver conexões ↗</span></a><a class="path-card peach" href="#praticas"><span class="card-number">03</span><span class="pixel-symbol">☼</span><h3>Cuidar do seu tempo</h3><p>Guarde pequenas ações e encontre espaço para uma pausa.</p><span class="card-link">Criar meu registro ↗</span></a></div>
+      <div class="quote-strip"><span>“</span><p>Você não precisa transformar<br>tudo o que sente em uma resposta.</p><a href="#jardim" class="text-link">Há mais para descobrir →</a></div>
+    </section>
     <!-- Parte 4, o evento input filtra o Atlas em tempo real, a região de status informa o resultado. -->
-    <!-- Essa tag separa uma área do conteúdo com um assunto próprio para o Atlas emocional. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O id identifica o Atlas emocional para o CSS e o JavaScript encontrarem o lugar certo. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><section class="page" id="atlas" hidden><!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="page-heading"><!-- Esse comando abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">01 / ATLAS EMOCIONAL<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte define o título principal dessa área.
---><h1>Um nome pode ser<!-- Esse comando quebra a linha do texto sem abrir outro parágrafo.
---><br>um começo<!-- Essa tag separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>.<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag h1.
---></h1><!-- Essa tag abre um parágrafo de texto.
---><p>Sentimentos têm funções e contextos. Nenhum deles resume quem você é.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Essa tag dá um nome visível ao campo ou controle. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><label class="search-box"><!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização. O atributo aria hidden tira esse detalhe decorativo da leitura das ferramentas de acessibilidade.
---><span aria-hidden="true">⌕<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Essa tag cria um campo de entrada ou um controle de seleção para a busca no Atlas. O id identifica a busca no Atlas para o CSS e o JavaScript encontrarem o lugar certo. O atributo type prepara esse campo para uma busca. O atributo placeholder mostra uma orientação curta enquanto o campo está vazio. O atributo aria label dá um nome acessível a esse elemento para os leitores de tela. O atributo aria controls informa qual área esse controle pode alterar. O atributo aria describedby liga esse controle a um texto extra de orientação.
---><input id="busca" type="search" placeholder="O que você quer entender hoje?" aria-label="Buscar um sentimento" aria-controls="emotion-grid" aria-describedby="search-count"><!-- Aqui termina a área aberta pela tag label.
---></label><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="atlas-toolbar"><!-- Essa tag abre um parágrafo de texto. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo role identifica a função acessível dessa área, como um aviso ou um estado atualizado.
---><p id="search-count" class="small" role="status"><!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo aria pressed informa se o botão de alternância está ligado ou desligado.
---><button id="collection-filter" class="collection-filter" aria-pressed="false">Minha coleção (0)<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui essa parte cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><button id="clear-atlas-filters" class="text-link" hidden>Limpar filtros<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div id="emotion-grid" class="emotion-grid"><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><div id="atlas-empty" class="empty-state" hidden><!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização. O atributo aria hidden tira esse detalhe decorativo da leitura das ferramentas de acessibilidade.
---><span aria-hidden="true">✦<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Essa tag define um título de seção.
---><h2>Uma descoberta de cada vez.<!-- Aqui termina a área aberta pela tag h2.
---></h2><!-- Esse comando abre um parágrafo de texto.
---><p>Experimente outra palavra ou limpe os filtros para explorar o Atlas.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Esse comando abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="footnote">Conteúdo introdutório para reflexão, sem testes ou diagnósticos.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag section.
---></section>
+    <!-- Parte 4, a busca filtra os cartões do Atlas e a região de status anuncia o resultado ao leitor de tela. --><section class="page" id="atlas" hidden><div class="page-heading"><p class="eyebrow">01 / ATLAS EMOCIONAL</p><h1>Um nome pode ser<br>um começo<span>.</span></h1><p>Sentimentos têm funções e contextos. Nenhum deles resume quem você é.</p></div><label class="search-box"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="O que você quer entender hoje?" aria-label="Buscar um sentimento" aria-controls="emotion-grid" aria-describedby="search-count"></label><div class="atlas-toolbar"><p id="search-count" class="small" role="status"></p><button id="collection-filter" class="collection-filter" aria-pressed="false">Minha coleção (0)</button><button id="clear-atlas-filters" class="text-link" hidden>Limpar filtros</button></div><div id="emotion-grid" class="emotion-grid"></div><div id="atlas-empty" class="empty-state" hidden><span aria-hidden="true">✦</span><h2>Uma descoberta de cada vez.</h2><p>Experimente outra palavra ou limpe os filtros para explorar o Atlas.</p></div><p class="footnote">Conteúdo introdutório para reflexão, sem testes ou diagnósticos.</p></section>
     <!-- Os seletores nativos recebem as emoções do array e atualizam o artigo de conexão. -->
-    <!-- Esse comando separa uma área do conteúdo com um assunto próprio para a área de combinações de sentimentos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O id identifica a área de combinações de sentimentos para o CSS e o JavaScript encontrarem o lugar certo. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><section class="page" id="convergencia" hidden><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="page-heading"><!-- Aqui essa parte abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">02 / CONVERGÊNCIA EMOCIONAL<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Essa tag define o título principal dessa área.
---><h1>Cabe mais de uma<!-- Aqui essa parte quebra a linha do texto sem abrir outro parágrafo.
---><br>emoção aqui<!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>.<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag h1.
---></h1><!-- Esse comando abre um parágrafo de texto.
---><p>Escolha dois sentimentos e explore como podem aparecer juntos.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="convergence"><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="selector-card"><!-- Aqui essa parte dá um nome visível ao campo ou controle. O atributo for liga esse nome ou resultado ao controle que tem o id correspondente.
---><label for="emocao-a">O que aparece primeiro?<!-- Aqui termina a área aberta pela tag label.
---></label><!-- Essa tag cria uma lista de opções para escolher. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo.
---><select id="emocao-a"><!-- Aqui termina a área aberta pela tag select.
---></select><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="convergence-symbol">◈<!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui essa parte dá um nome visível ao campo ou controle. O atributo for liga esse nome ou resultado ao controle que tem o id correspondente.
---><label for="emocao-b">E o que vem junto?<!-- Aqui termina a área aberta pela tag label.
---></label><!-- Essa tag cria uma lista de opções para escolher. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo.
---><select id="emocao-b"><!-- Aqui termina a área aberta pela tag select.
---></select><!-- Esse comando cria um botão para executar uma ação. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo.
---><button class="button primary" id="combinar">Encontrar uma conexão ↗<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Esse comando reúne um conteúdo que pode ser entendido como uma unidade. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo aria live pede que as mudanças desse texto sejam anunciadas sem interromper a leitura atual.
---><article id="connection" class="connection" aria-live="polite"><!-- Essa tag abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">NEM TUDO É UMA COISA SÓ<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando define um título de seção.
---><h2>Alegria com um<!-- Essa tag quebra a linha do texto sem abrir outro parágrafo.
---><br>pouco de medo?<!-- Aqui termina a área aberta pela tag h2.
---></h2><!-- Esse comando abre um parágrafo de texto.
---><p>Um começo pode animar e assustar ao mesmo tempo. Selecione uma combinação para continuar.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag article.
---></article><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui termina a área aberta pela tag section.
---></section>
-    <!-- Aqui essa parte separa uma área do conteúdo com um assunto próprio para o registro de ações. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O id identifica o registro de ações para o CSS e o JavaScript encontrarem o lugar certo. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><section class="page" id="praticas" hidden>
-      <!-- Esse comando agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="page-heading"><!-- Essa tag abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">03 / PRÁTICAS E REGISTRO<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando define o título principal dessa área.
---><h1>Pequenas coisas.<!-- Essa tag quebra a linha do texto sem abrir outro parágrafo.
---><br>Espaço para você<!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>.<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag h1.
---></h1><!-- Aqui essa parte abre um parágrafo de texto.
---><p>Seu plano pessoal fica neste navegador. Se quiser, escolha o registro compartilhado da instalação local com XAMPP. Só essa opção usa o banco de dados; nela, escreva ações simples, sem informações pessoais.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag div.
---></div>
-      <!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="practice-grid">
+    <!-- A Convergência cruza sentimentos e apresenta pistas usadas na segunda etapa do portal. --><section class="page" id="convergencia" hidden><div class="page-heading"><p class="eyebrow">02 / CONVERGÊNCIA EMOCIONAL</p><h1>Cabe mais de uma<br>emoção aqui<span>.</span></h1><p>Escolha dois sentimentos e explore como podem aparecer juntos.</p></div><div class="convergence"><div class="selector-card"><label for="emocao-a">O que aparece primeiro?</label><select id="emocao-a"></select><div class="convergence-symbol">◈</div><label for="emocao-b">E o que vem junto?</label><select id="emocao-b"></select><button class="button primary" id="combinar">Encontrar uma conexão ↗</button></div><article id="connection" class="connection" aria-live="polite"><p class="eyebrow">NEM TUDO É UMA COISA SÓ</p><h2>Alegria com um<br>pouco de medo?</h2><p>Um começo pode animar e assustar ao mesmo tempo. Selecione uma combinação para continuar.</p></article></div></section>
+    <!-- Parte 5, o registro tem formulário, filtros e progresso. O plano pessoal é local e o modo MySQL usa a sessão desta instalação. --><section class="page" id="praticas" hidden>
+      <div class="page-heading"><p class="eyebrow">03 / PRÁTICAS E REGISTRO</p><h1>Pequenas coisas.<br>Espaço para você<span>.</span></h1><p>Seu plano pessoal fica neste navegador. A opção MySQL grava ações no banco, sem mostrá-las a outros visitantes. Ela depende desta sessão do navegador. Use apenas ações fictícias, sem informações pessoais.</p></div>
+      <div class="practice-grid">
         <!-- Parte 5, formulário e lista são a estrutura, o JavaScript renderiza o array de ações. -->
-        <!-- Esse comando reúne um conteúdo que pode ser entendido como uma unidade. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><article class="paper">
-          <!-- Essa tag define um título de seção.
---><h2>Um passo de cada vez<!-- Aqui termina a área aberta pela tag h2.
---></h2>
-          <!-- Esse comando agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="database-panel">
-            <!-- Essa tag dá um nome visível ao campo ou controle. O atributo for liga esse nome ou resultado ao controle que tem o id correspondente.
---><label for="record-storage">Onde guardar este registro?<!-- Aqui termina a área aberta pela tag label.
---></label>
-            <!-- Esse comando cria uma lista de opções para escolher para a escolha entre registro local e compartilhado. O id identifica a escolha entre registro local e compartilhado para o CSS e o JavaScript encontrarem o lugar certo.
---><select id="record-storage"><!-- Essa tag define uma escolha dessa lista. O atributo value define o valor inicial ou o valor enviado por essa opção. O atributo selected deixa essa opção escolhida no estado inicial da lista.
---><option value="local" selected>Plano pessoal · neste navegador<!-- Aqui termina a área aberta pela tag option.
---></option><!-- Esse comando define uma escolha dessa lista. O atributo value define o valor inicial ou o valor enviado por essa opção.
---><option value="mysql">Registro compartilhado · MySQL<!-- Aqui termina a área aberta pela tag option.
---></option><!-- Aqui termina a área aberta pela tag select.
---></select>
-            <!-- Esse comando abre um parágrafo de texto. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo role identifica a função acessível dessa área, como um aviso ou um estado atualizado.
---><p id="database-status" role="status">Seu plano pessoal fica neste navegador.<!-- Aqui termina a área aberta pela tag p.
---></p>
-            <!-- Os controles do XAMPP aparecem somente ao escolher o registro compartilhado. -->
-            <!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><div id="database-actions" class="record-actions" hidden><!-- Esse comando cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo type impede que esse botão envie o formulário sem querer. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button id="database-connect" type="button" class="text-link">Reconectar registros<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui essa parte cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo type impede que esse botão envie o formulário sem querer. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><button id="database-install" type="button" class="text-link" hidden>Preparar banco local<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag div.
---></div>
-          <!-- Aqui termina a área aberta pela tag div.
---></div>
-          <!-- Esse comando separa uma informação de apoio do conteúdo principal. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><aside id="local-records" class="local-records" hidden><!-- Essa tag abre um parágrafo de texto. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo.
---><p id="local-record-count"><!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo type impede que esse botão envie o formulário sem querer. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button id="import-old-records" type="button" class="text-link">Importar ações antigas deste navegador<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag aside.
---></aside>
-          <!-- Esse comando reúne os campos e o envio de um formulário para o formulário do registro. O id identifica o formulário do registro para o CSS e o JavaScript encontrarem o lugar certo.
---><form id="task-form"><!-- Essa tag dá um nome visível ao campo ou controle. O atributo for liga esse nome ou resultado ao controle que tem o id correspondente.
---><label for="task">Qual pequena ação você quer lembrar?<!-- Aqui termina a área aberta pela tag label.
---></label><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="input-row"><!-- Essa tag cria um campo de entrada ou um controle de seleção para o texto da ação que será registrada. O id identifica o texto da ação que será registrada para o CSS e o JavaScript encontrarem o lugar certo. O atributo maxlength limita o número de caracteres que a pessoa pode escrever. O atributo placeholder mostra uma orientação curta enquanto o campo está vazio. O atributo autocomplete define se o navegador pode sugerir valores que já foram usados no campo. O atributo required informa que esse campo precisa ser preenchido.
---><input id="task" maxlength="160" placeholder="Ex.: fazer uma pausa para beber água" autocomplete="off" required><!-- Aqui essa parte cria um botão para executar uma ação. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo type faz esse botão enviar o formulário.
---><button class="button primary" type="submit">Adicionar<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui termina a área aberta pela tag form.
---></form>
-          <!-- Esse comando abre um parágrafo de texto. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo role identifica a função acessível dessa área, como um aviso ou um estado atualizado. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p id="task-status" role="status" class="small"><!-- Aqui termina a área aberta pela tag p.
---></p>
-          <!-- Aqui essa parte mostra o avanço de uma tarefa. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo max define o maior valor permitido nessa medida ou nesse campo. O atributo value define o valor inicial ou o valor enviado por essa opção. O atributo aria label dá um nome acessível a esse elemento para os leitores de tela. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><progress id="task-progress" class="task-progress" max="1" value="0" aria-label="Progresso das ações concluídas" hidden><!-- Aqui termina a área aberta pela tag progress.
---></progress>
-          <!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo role identifica a função acessível dessa área, como um aviso ou um estado atualizado. O atributo aria label dá um nome acessível a esse elemento para os leitores de tela. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><div id="task-filters" class="task-filters" role="group" aria-label="Filtrar ações" hidden><!-- Aqui essa parte cria um botão para executar uma ação. O atributo type impede que esse botão envie o formulário sem querer. O atributo data task filter guarda uma identificação local que o JavaScript usa para reconhecer essa ação. O atributo aria pressed informa se o botão de alternância está ligado ou desligado.
---><button type="button" data-task-filter="all" aria-pressed="true">Todas<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Essa tag cria um botão para executar uma ação. O atributo type impede que esse botão envie o formulário sem querer. O atributo data task filter guarda uma identificação local que o JavaScript usa para reconhecer essa ação. O atributo aria pressed informa se o botão de alternância está ligado ou desligado.
---><button type="button" data-task-filter="pending" aria-pressed="false">Pendentes<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Esse comando cria um botão para executar uma ação. O atributo type impede que esse botão envie o formulário sem querer. O atributo data task filter guarda uma identificação local que o JavaScript usa para reconhecer essa ação. O atributo aria pressed informa se o botão de alternância está ligado ou desligado.
---><button type="button" data-task-filter="done" aria-pressed="false">Concluídas<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag div.
---></div>
-          <!-- Esse comando organiza uma lista sem numeração de ordem para a lista de ações do registro. O id identifica a lista de ações do registro para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><ul id="tasks" class="tasks"><!-- Aqui termina a área aberta pela tag ul.
---></ul>
-          <!-- Aqui essa parte abre um parágrafo de texto. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><p id="task-empty" class="task-empty" hidden><!-- Aqui termina a área aberta pela tag p.
---></p>
-          <!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="record-actions"><!-- Aqui essa parte cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button id="download-tasks" class="text-link">Baixar meu registro ↓<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Essa tag cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button id="clear-tasks" class="text-link">Apagar meu registro<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag div.
---></div>
-        <!-- Aqui termina a área aberta pela tag article.
---></article>
+        <article class="paper">
+          <h2>Um passo de cada vez</h2>
+          <div class="database-panel">
+            <label for="record-storage">Onde guardar este registro?</label>
+            <select id="record-storage"><option value="local" selected>Plano pessoal · neste navegador</option><option value="mysql">Registro MySQL · sessão do navegador</option></select>
+            <p id="database-status" role="status">Seu plano pessoal fica neste navegador.</p>
+            <!-- Os controles de conexão aparecem apenas no modo MySQL. O instalador fica restrito ao computador local. -->
+            <div id="database-actions" class="record-actions" hidden><button id="database-connect" type="button" class="text-link">Reconectar registros</button><button id="database-install" type="button" class="text-link" hidden>Preparar banco local</button></div>
+          </div>
+          <aside id="local-records" class="local-records" hidden><p id="local-record-count"></p><button id="import-old-records" type="button" class="text-link">Importar ações antigas deste navegador</button></aside>
+          <form id="task-form"><label for="task">Qual pequena ação você quer lembrar?</label><div class="input-row"><input id="task" maxlength="160" placeholder="Ex.: fazer uma pausa para beber água" autocomplete="off" required><button class="button primary" type="submit">Adicionar</button></div></form>
+          <p id="task-status" role="status" class="small"></p>
+          <progress id="task-progress" class="task-progress" max="1" value="0" aria-label="Progresso das ações concluídas" hidden></progress>
+          <div id="task-filters" class="task-filters" role="group" aria-label="Filtrar ações" hidden><button type="button" data-task-filter="all" aria-pressed="true">Todas</button><button type="button" data-task-filter="pending" aria-pressed="false">Pendentes</button><button type="button" data-task-filter="done" aria-pressed="false">Concluídas</button></div>
+          <ul id="tasks" class="tasks"></ul>
+          <p id="task-empty" class="task-empty" hidden></p>
+          <div class="record-actions"><button id="download-tasks" class="text-link">Baixar meu registro ↓</button><button id="clear-tasks" class="text-link">Apagar meu registro</button></div>
+        </article>
         <!-- Parte 6, a reflexão simula uma espera com Promise, o resultado começa escondido. -->
-        <!-- Aqui essa parte reúne um conteúdo que pode ser entendido como uma unidade. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><article class="paper reflection">
-          <!-- Esse comando abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">UM CONVITE PARA PAUSAR<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte define um título de seção.
---><h2>Outra maneira<!-- Esse comando quebra a linha do texto sem abrir outro parágrafo.
---><br>de olhar.<!-- Aqui termina a área aberta pela tag h2.
---></h2>
-          <!-- Aqui essa parte abre um parágrafo de texto.
---><p>Uma pergunta pequena pode abrir espaço para uma ideia diferente.<!-- Aqui termina a área aberta pela tag p.
---></p>
-          <!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><div id="reflection-result" hidden><!-- Aqui essa parte abre um parágrafo de texto. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo aria live pede que as mudanças desse texto sejam anunciadas sem interromper a leitura atual.
---><p id="reflection-text" aria-live="polite"><!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag div.
---></div>
-          <!-- Aqui essa parte cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><a class="button secondary" href="#conversas">Conversar com um sentimento ↗</a>
+        <article class="paper reflection">
+          <p class="eyebrow">UM CONVITE PARA PAUSAR</p><h2>Outra maneira<br>de olhar.</h2>
+          <p>Uma pergunta pequena pode abrir espaço para uma ideia diferente.</p>
+          <div id="reflection-result" hidden><p id="reflection-text" aria-live="polite"></p></div>
+          <a class="button secondary" href="#conversas">Conversar com um sentimento ↗</a>
 <!-- Esse botão mantém o exercício de sorteio do professor separado da IA real. -->
-<button id="reflection" class="button secondary">Receber uma reflexão ✦<!-- Aqui termina a área aberta pela tag button.
---></button>
-          <!-- Essa tag abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="small">Frases pré-escritas, escolhidas ao acaso. Não é um atendimento ou uma IA.<!-- Aqui termina a área aberta pela tag p.
---></p>
-          <!-- Esse comando dá um nome visível ao campo ou controle. O atributo for liga esse nome ou resultado ao controle que tem o id correspondente.
---><label for="reflect-choice">Hoje uma pausa pode ser…<!-- Aqui termina a área aberta pela tag label.
---></label><!-- Aqui essa parte cria uma lista de opções para escolher. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo.
---><select id="reflect-choice"><!-- Esse comando define uma escolha dessa lista. O atributo value define o valor inicial ou o valor enviado por essa opção.
---><option value="">Escolha se quiser<!-- Aqui termina a área aberta pela tag option.
---></option><!-- Aqui essa parte define uma escolha dessa lista.
---><option>Conversar com alguém<!-- Aqui termina a área aberta pela tag option.
---></option><!-- Essa tag define uma escolha dessa lista.
---><option>Ficar um pouco em silêncio<!-- Aqui termina a área aberta pela tag option.
---></option><!-- Esse comando define uma escolha dessa lista.
---><option>Fazer algo de que gosto<!-- Aqui termina a área aberta pela tag option.
---></option><!-- Aqui termina a área aberta pela tag select.
---></select>
-        <!-- Aqui termina a área aberta pela tag article.
---></article>
-      <!-- Aqui termina a área aberta pela tag div.
---></div>
-    <!-- Aqui termina a área aberta pela tag section.
---></section>
+<button id="reflection" class="button secondary">Receber uma reflexão ✦</button>
+          <p class="small">Frases pré-escritas, escolhidas ao acaso. Não é um atendimento ou uma IA.</p>
+          <label for="reflect-choice">Hoje uma pausa pode ser…</label><select id="reflect-choice"><option value="">Escolha se quiser</option><option>Conversar com alguém</option><option>Ficar um pouco em silêncio</option><option>Fazer algo de que gosto</option></select>
+        </article>
+      </div>
+    </section>
     <!-- Este convite pertence ao SENTIA, o jogo Jardim dos Ecos tem arquivos e salvamento próprios. -->
-    <!-- Esse comando separa uma área do conteúdo com um assunto próprio para a entrada do Jardim. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O id identifica a entrada do Jardim para o CSS e o JavaScript encontrarem o lugar certo. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><!-- Essa seção entra na navegação normal do SENTIA. O id conversa com a rota e hidden mantém a página fora da tela até ela ser escolhida.
---><section class="page" id="conversas" hidden aria-labelledby="conversas-title">
+    <!-- Essa seção entra na navegação normal do SENTIA. O id conversa com a rota e hidden mantém a página fora da tela até ela ser escolhida.
+--><!-- Parte 6, a conversa usa IA real no navegador. O modelo é carregado pelo Web Worker após a escolha do visitante, sem exigir um servidor de IA local. --><section class="page" id="conversas" hidden aria-labelledby="conversas-title">
   <!-- Esse cabeçalho usa o mesmo espaço e a mesma hierarquia das outras páginas do site.
   --><div class="page-heading chat-page-heading">
     <!-- Esse texto pequeno identifica a parte do site antes do título principal.
@@ -556,287 +212,27 @@
   </div>
 </section>
 
-<section class="page" id="jardim" hidden><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="garden-invitation"><!-- Aqui essa parte reserva o lugar em que uma imagem será exibida. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo alt descreve o conteúdo da imagem para quem não consegue vê la.
---><img id="garden-image" alt="Entrada de um jardim em pixel art"><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos.
---><div><!-- Essa tag abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">NEM TODO CAMINHO ESTÁ NO MAPA<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando define o título principal dessa área.
---><h1>Jardim<!-- Essa tag quebra a linha do texto sem abrir outro parágrafo.
---><br>dos Ecos<!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>.<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag h1.
---></h1><!-- Aqui essa parte abre um parágrafo de texto.
---><p>Algumas portas se abrem quando você passa a olhar de outro jeito.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Essa tag abre um parágrafo de texto. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p id="discovery-text" class="small"><!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div id="discoveries" class="discoveries"><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui essa parte cria um botão para executar uma ação para o botão de entrada no Jardim. O id identifica o botão de entrada no Jardim para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button id="garden-entry" class="button primary">Observar o portal ✦<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Esse comando separa uma área do conteúdo com um assunto próprio. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo aria labelledby usa o texto de outro elemento como nome acessível dessa área.
---><section id="portal-puzzle" class="portal-puzzle" aria-labelledby="puzzle-title">
-  <!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="puzzle-heading"><!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos.
---><div><!-- Esse comando abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">UMA PORTA, SEIS LANTERNAS<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte define um título de seção. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo tabindex permite dar foco a essa área pelo JavaScript sem colocá la na sequência normal da tecla Tab.
---><h2 id="puzzle-title" tabindex="-1">O caminho se abre<!-- Esse comando quebra a linha do texto sem abrir outro parágrafo.
---><br>quando as pistas se encontram.<!-- Aqui termina a área aberta pela tag h2.
---></h2><!-- Aqui essa parte abre um parágrafo de texto.
---><p>Reúna os seis fragmentos no Atlas, organize as lanternas e interprete os vínculos da Convergência. Não há cronômetro: o desafio é perceber as relações.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span id="puzzle-attempts" class="small"><!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag div.
---></div>
-  <!-- Aqui essa parte organiza uma lista que tem uma ordem. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo aria label dá um nome acessível a esse elemento para os leitores de tela.
---><ol id="puzzle-steps" class="puzzle-steps" aria-label="Etapas do enigma"><!-- Aqui termina a área aberta pela tag ol.
---></ol>
-  <!-- Essa tag cria uma área que pode ser aberta e fechada. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><details class="puzzle-notebook"><!-- Aqui essa parte define o título clicável dessa área de detalhes. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo.
---><summary id="puzzle-notebook-title">Meu caderno de pistas<!-- Aqui termina a área aberta pela tag summary.
---></summary><!-- Essa tag abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="small">As marcas são ficcionais. Os sentimentos têm lugar no enigma, sem uma ordem de valor entre eles.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando organiza uma lista sem numeração de ordem. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><ul id="clue-notebook" class="clue-notebook"><!-- Aqui termina a área aberta pela tag ul.
---></ul><!-- Aqui essa parte define um título dentro da seção.
---><h3>Versos dos vínculos<!-- Aqui termina a área aberta pela tag h3.
---></h3><!-- Essa tag abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="small">Procure na Convergência conexões entre os seis sentimentos das lanternas. Três delas guardam os versos dos selos.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando organiza uma lista sem numeração de ordem. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><ul id="seal-notebook" class="seal-notebook"><!-- Aqui termina a área aberta pela tag ul.
---></ul><!-- Aqui essa parte cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><a href="#convergencia" class="text-link">Explorar conexões →<!-- Aqui termina a área aberta pela tag a.
---></a><!-- Aqui termina a área aberta pela tag details.
---></details>
-  <!-- Aqui essa parte reúne os campos e o envio de um formulário. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><form id="lantern-form" class="puzzle-form"><!-- Esse comando abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">ETAPA 1 / POSIÇÕES<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte define um título dentro da seção.
---><h3>Acenda as seis lanternas.<!-- Aqui termina a área aberta pela tag h3.
---></h3><!-- Essa tag abre um parágrafo de texto.
---><p>Cada sentimento ocupa uma posição. A disposição precisa respeitar todas as relações do caderno.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div id="lantern-slots" class="lantern-slots"><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui essa parte cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button id="lantern-submit" class="button primary">Conferir disposição ✦<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag form.
---></form>
-  <!-- Aqui essa parte separa uma área do conteúdo com um assunto próprio. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar. O atributo aria labelledby usa o texto de outro elemento como nome acessível dessa área.
---><section id="seal-step" class="puzzle-form" hidden aria-labelledby="seal-title"><!-- Esse comando abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">ETAPA 2 / VÍNCULOS<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte define um título dentro da seção. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo tabindex permite dar foco a essa área pelo JavaScript sem colocá la na sequência normal da tecla Tab.
---><h3 id="seal-title" tabindex="-1">Três selos, três encontros.<!-- Aqui termina a área aberta pela tag h3.
---></h3><!-- Essa tag abre um parágrafo de texto.
---><p>Associe dois sentimentos a cada verso. Use cada uma das seis lanternas uma única vez e confira essas conexões na Convergência.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando reúne os campos e o envio de um formulário. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo.
---><form id="seal-form"><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div id="seal-slots" class="seal-slots"><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Esse comando cria um botão para executar uma ação. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button class="button primary">Conferir os vínculos ✦<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag form.
---></form><!-- Esse comando abre um parágrafo de texto. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><p id="seal-solved" class="puzzle-complete" hidden>✓ Os três vínculos estão alinhados.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag section.
---></section>
-  <!-- Esse comando separa uma área do conteúdo com um assunto próprio. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar. O atributo aria labelledby usa o texto de outro elemento como nome acessível dessa área.
---><section id="word-step" class="puzzle-form" hidden aria-labelledby="word-title"><!-- Essa tag abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">ETAPA 3 / MARCAS<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando define um título dentro da seção. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo.
---><h3 id="word-title">Os vínculos mudam a leitura.<!-- Aqui termina a área aberta pela tag h3.
---></h3><!-- Aqui essa parte abre um parágrafo de texto.
---><p>Siga os selos de 1 a 3. Em cada par, leia primeiro a marca da lanterna em posição ímpar e depois a da posição par. Junte os três pares de letras para formar a palavra. Os números são os das lanternas; a ordem dos campos do selo não interfere.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Essa tag reúne os campos e o envio de um formulário. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo.
---><form id="word-form"><!-- Aqui essa parte dá um nome visível ao campo ou controle. O atributo for liga esse nome ou resultado ao controle que tem o id correspondente.
---><label for="portal-word">Palavra de seis letras<!-- Aqui termina a área aberta pela tag label.
---></label><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="input-row"><!-- Aqui essa parte cria um campo de entrada ou um controle de seleção. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo maxlength limita o número de caracteres que a pessoa pode escrever. O atributo autocomplete define se o navegador pode sugerir valores que já foram usados no campo. O atributo autocapitalize controla a sugestão automática de letras maiúsculas no teclado do celular. O atributo spellcheck controla a conferência de escrita feita pelo navegador nesse campo. O atributo required informa que esse campo precisa ser preenchido.
---><input id="portal-word" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" required><!-- Esse comando cria um botão para executar uma ação. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button class="button primary">Abrir o caminho ↗<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui termina a área aberta pela tag form.
---></form><!-- Aqui termina a área aberta pela tag section.
---></section>
-  <!-- Aqui essa parte separa uma área do conteúdo com um assunto próprio. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar. O atributo aria labelledby usa o texto de outro elemento como nome acessível dessa área.
---><section id="trail-step" class="puzzle-form" hidden aria-labelledby="trail-title"><!-- Esse comando abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">ETAPA 4 / O MOSAICO<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte define um título dentro da seção. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo tabindex permite dar foco a essa área pelo JavaScript sem colocá la na sequência normal da tecla Tab.
---><h3 id="trail-title" tabindex="-1">Nem todo atalho leva à saída.<!-- Aqui termina a área aberta pela tag h3.
---></h3><!-- Essa tag abre um parágrafo de texto.
---><p>Trace um caminho da <!-- Aqui essa parte marca esse trecho como importante.
---><strong>Semente A1<!-- Aqui termina a área aberta pela tag strong.
---></strong> ao <!-- Essa tag marca esse trecho como importante.
---><strong>Portal D4<!-- Aqui termina a área aberta pela tag strong.
---></strong>. Avance uma casa para a direita ou para baixo, passe pela <!-- Esse comando marca esse trecho como importante.
---><strong>Folha B2<!-- Aqui termina a área aberta pela tag strong.
---></strong> e pela <!-- Aqui essa parte marca esse trecho como importante.
---><strong>Lua C3<!-- Aqui termina a área aberta pela tag strong.
---></strong> e termine com <!-- Essa tag marca esse trecho como importante.
---><strong>sete pedras somando exatamente 16<!-- Aqui termina a área aberta pela tag strong.
---></strong>, incluindo o início e o fim.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Essa tag abre um parágrafo de texto. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p id="trail-help" class="small">Só os próximos passos possíveis podem ser escolhidos. Os números no canto registram a ordem do caminho. No teclado, use Tab ou as setas para alternar entre elas e Enter ou Espaço para escolher.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo role identifica a função acessível dessa área, como um aviso ou um estado atualizado. O atributo aria label dá um nome acessível a esse elemento para os leitores de tela. O atributo aria describedby liga esse controle a um texto extra de orientação.
---><div id="trail-grid" class="trail-grid" role="group" aria-label="Mosaico de quatro linhas e quatro colunas" aria-describedby="trail-help trail-status"><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui essa parte abre um parágrafo de texto. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo role identifica a função acessível dessa área, como um aviso ou um estado atualizado.
---><p id="trail-status" class="small" role="status"><!-- Aqui termina a área aberta pela tag p.
---></p><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="actions"><!-- Aqui essa parte cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo type impede que esse botão envie o formulário sem querer. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button id="trail-undo" type="button" class="button secondary">Desfazer passo<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Essa tag cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo type impede que esse botão envie o formulário sem querer. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button id="trail-clear" type="button" class="text-link">Limpar caminho<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Esse comando cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo type impede que esse botão envie o formulário sem querer. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button id="trail-check" type="button" class="button primary">Conferir passagem ↗<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui termina a área aberta pela tag section.
---></section>
-  <!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><div id="portal-solved" class="portal-solved" hidden><!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo aria hidden tira esse detalhe decorativo da leitura das ferramentas de acessibilidade.
---><span class="pixel-symbol" aria-hidden="true">✦<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Essa tag define um título dentro da seção.
---><h3>Você encontrou o caminho.<!-- Aqui termina a área aberta pela tag h3.
---></h3><!-- Esse comando abre um parágrafo de texto.
---><p>As lanternas não apagaram umas às outras. Suas diferenças fizeram a passagem aparecer.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag div.
---></div>
-  <!-- Esse comando abre um parágrafo de texto. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo role identifica a função acessível dessa área, como um aviso ou um estado atualizado. O atributo aria live pede que as mudanças desse texto sejam anunciadas sem interromper a leitura atual.
---><p id="puzzle-feedback" class="puzzle-feedback" role="status" aria-live="polite"><!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="puzzle-actions"><!-- Esse comando cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button id="puzzle-hint" class="text-link">Pedir uma pista de raciocínio<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui essa parte cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button id="puzzle-reset" class="text-link">Recomeçar apenas o enigma<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui essa parte abre um parágrafo de texto. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p id="puzzle-hint-text" class="small"><!-- Aqui termina a área aberta pela tag p.
---></p><!-- Essa tag cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><button id="portal-solved-entry" class="button primary" hidden>Escolher controles e entrar no Jardim ↗<!-- Aqui termina a área aberta pela tag button.
---></button>
-<!-- Aqui termina a área aberta pela tag section.
---></section><!-- Essa tag abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="footnote">O enigma é ficcional. Todo o conteúdo educativo do SENTIA continua disponível sem precisar resolvê-lo.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag section.
---></section>
-    <!-- Parte 2, labels, limites e tipo email apoiam a validação, preventDefault evita o envio real. -->
-    <!-- Essa tag separa uma área do conteúdo com um assunto próprio para a apresentação do projeto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O id identifica a apresentação do projeto para o CSS e o JavaScript encontrarem o lugar certo. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><section class="page" id="sobre" hidden><!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="page-heading"><!-- Esse comando abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">SOBRE O PROJETO<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte define o título principal dessa área.
---><h1>Sentir também<!-- Esse comando quebra a linha do texto sem abrir outro parágrafo.
---><br>é descobrir<!-- Essa tag separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>.<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag h1.
---></h1><!-- Essa tag abre um parágrafo de texto.
---><p>SENTIA é um projeto escolar de PW I sobre linguagem visual, interatividade e sentimentos.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="about-grid"><!-- Aqui essa parte reúne um conteúdo que pode ser entendido como uma unidade. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><article class="paper"><!-- Esse comando define um título de seção.
---><h2>Feito de encontros<!-- Aqui termina a área aberta pela tag h2.
---></h2><!-- Aqui essa parte abre um parágrafo de texto.
---><p>O Atlas apresenta sentimentos. A Convergência explora combinações. O registro convida a pequenas ações. O Jardim guarda uma narrativa ficcional própria.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Essa tag abre um parágrafo de texto.
---><p>A identidade em pixel art conecta essas partes: cada detalhe tem seu espaço, como os sentimentos que fazem parte de uma experiência.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><a href="#creditos" class="text-link">Créditos e acessibilidade →<!-- Aqui termina a área aberta pela tag a.
---></a><!-- Aqui termina a área aberta pela tag article.
---></article><!-- Esse comando reúne um conteúdo que pode ser entendido como uma unidade. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><article class="paper"><!-- Essa tag define um título de seção.
---><h2>Deixe uma ideia<!-- Aqui termina a área aberta pela tag h2.
---></h2><!-- Esse comando abre um parágrafo de texto.
---><p>Este formulário é uma demonstração escolar. A mensagem é validada no navegador e não é enviada.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte reúne os campos e o envio de um formulário. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo novalidate deixa a validação desse formulário para o código JavaScript do site.
---><form id="contact-form" novalidate><!-- Esse comando dá um nome visível ao campo ou controle. O atributo for liga esse nome ou resultado ao controle que tem o id correspondente.
---><label for="nome">Seu nome<!-- Aqui termina a área aberta pela tag label.
---></label><!-- Aqui essa parte cria um campo de entrada ou um controle de seleção. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo autocomplete define se o navegador pode sugerir valores que já foram usados no campo. O atributo maxlength limita o número de caracteres que a pessoa pode escrever. O atributo required informa que esse campo precisa ser preenchido.
---><input id="nome" autocomplete="name" maxlength="80" required><!-- Esse comando dá um nome visível ao campo ou controle. O atributo for liga esse nome ou resultado ao controle que tem o id correspondente.
---><label for="email">E-mail<!-- Aqui termina a área aberta pela tag label.
---></label><!-- Aqui essa parte cria um campo de entrada ou um controle de seleção. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo type identifica o valor como um endereço de email. O atributo autocomplete define se o navegador pode sugerir valores que já foram usados no campo. O atributo maxlength limita o número de caracteres que a pessoa pode escrever. O atributo required informa que esse campo precisa ser preenchido.
---><input id="email" type="email" autocomplete="email" maxlength="160" required><!-- Esse comando dá um nome visível ao campo ou controle. O atributo for liga esse nome ou resultado ao controle que tem o id correspondente.
---><label for="mensagem">Uma sugestão para o projeto<!-- Aqui termina a área aberta pela tag label.
---></label><!-- Aqui essa parte cria um campo para escrever um texto com várias linhas. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo rows define a quantidade inicial de linhas visíveis nesse campo de texto. O atributo minlength define o menor número de caracteres aceito no preenchimento. O atributo maxlength limita o número de caracteres que a pessoa pode escrever. O atributo required informa que esse campo precisa ser preenchido.
---><textarea id="mensagem" rows="3" minlength="10" maxlength="1000" required></textarea><!-- Aqui termina a área aberta pela tag textarea.
---><!-- Essa tag abre um parágrafo de texto. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo role identifica a função acessível dessa área, como um aviso ou um estado atualizado.
---><p id="form-status" role="status"><!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando cria um botão para executar uma ação. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button class="button primary">Conferir mensagem ↗<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag form.
---></form><!-- Aqui termina a área aberta pela tag article.
---></article><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui termina a área aberta pela tag section.
---></section>
+<!-- Entrada do Jardim, as quatro etapas verificam pistas, vínculos, palavra e mosaico antes de mostrar o acesso ao jogo. --><section class="page" id="jardim" hidden><div class="garden-invitation"><img id="garden-image" alt="Entrada de um jardim em pixel art"><div><p class="eyebrow">NEM TODO CAMINHO ESTÁ NO MAPA</p><h1>Jardim<br>dos Ecos<span>.</span></h1><p>Algumas portas se abrem quando você passa a olhar de outro jeito.</p><p id="discovery-text" class="small"></p><div id="discoveries" class="discoveries"></div><button id="garden-entry" class="button primary">Observar o portal ✦</button></div></div><section id="portal-puzzle" class="portal-puzzle" aria-labelledby="puzzle-title">
+  <div class="puzzle-heading"><div><p class="eyebrow">UMA PORTA, SEIS LANTERNAS</p><h2 id="puzzle-title" tabindex="-1">O caminho se abre<br>quando as pistas se encontram.</h2><p>Reúna os seis fragmentos no Atlas, organize as lanternas e interprete os vínculos da Convergência. Não há cronômetro: o desafio é perceber as relações.</p></div><span id="puzzle-attempts" class="small"></span></div>
+  <ol id="puzzle-steps" class="puzzle-steps" aria-label="Etapas do enigma"></ol>
+  <details class="puzzle-notebook"><summary id="puzzle-notebook-title">Meu caderno de pistas</summary><p class="small">As marcas são ficcionais. Os sentimentos têm lugar no enigma, sem uma ordem de valor entre eles.</p><ul id="clue-notebook" class="clue-notebook"></ul><h3>Versos dos vínculos</h3><p class="small">Procure na Convergência conexões entre os seis sentimentos das lanternas. Três delas guardam os versos dos selos.</p><ul id="seal-notebook" class="seal-notebook"></ul><a href="#convergencia" class="text-link">Explorar conexões →</a></details>
+  <form id="lantern-form" class="puzzle-form"><p class="eyebrow">ETAPA 1 / POSIÇÕES</p><h3>Acenda as seis lanternas.</h3><p>Cada sentimento ocupa uma posição. A disposição precisa respeitar todas as relações do caderno.</p><div id="lantern-slots" class="lantern-slots"></div><button id="lantern-submit" class="button primary">Conferir disposição ✦</button></form>
+  <section id="seal-step" class="puzzle-form" hidden aria-labelledby="seal-title"><p class="eyebrow">ETAPA 2 / VÍNCULOS</p><h3 id="seal-title" tabindex="-1">Três selos, três encontros.</h3><p>Associe dois sentimentos a cada verso. Use cada uma das seis lanternas uma única vez e confira essas conexões na Convergência.</p><form id="seal-form"><div id="seal-slots" class="seal-slots"></div><button class="button primary">Conferir os vínculos ✦</button></form><p id="seal-solved" class="puzzle-complete" hidden>✓ Os três vínculos estão alinhados.</p></section>
+  <section id="word-step" class="puzzle-form" hidden aria-labelledby="word-title"><p class="eyebrow">ETAPA 3 / MARCAS</p><h3 id="word-title">Os vínculos mudam a leitura.</h3><p>Siga os selos de 1 a 3. Em cada par, leia primeiro a marca da lanterna em posição ímpar e depois a da posição par. Junte os três pares de letras para formar a palavra. Os números são os das lanternas; a ordem dos campos do selo não interfere.</p><form id="word-form"><label for="portal-word">Palavra de seis letras</label><div class="input-row"><input id="portal-word" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" required><button class="button primary">Abrir o caminho ↗</button></div></form></section>
+  <section id="trail-step" class="puzzle-form" hidden aria-labelledby="trail-title"><p class="eyebrow">ETAPA 4 / O MOSAICO</p><h3 id="trail-title" tabindex="-1">Nem todo atalho leva à saída.</h3><p>Trace um caminho da <strong>Semente A1</strong> ao <strong>Portal D4</strong>. Avance uma casa para a direita ou para baixo, passe pela <strong>Folha B2</strong> e pela <strong>Lua C3</strong> e termine com <strong>sete pedras somando exatamente 16</strong>, incluindo o início e o fim.</p><p id="trail-help" class="small">Só os próximos passos possíveis podem ser escolhidos. Os números no canto registram a ordem do caminho. No teclado, use Tab ou as setas para alternar entre elas e Enter ou Espaço para escolher.</p><div id="trail-grid" class="trail-grid" role="group" aria-label="Mosaico de quatro linhas e quatro colunas" aria-describedby="trail-help trail-status"></div><p id="trail-status" class="small" role="status"></p><div class="actions"><button id="trail-undo" type="button" class="button secondary">Desfazer passo</button><button id="trail-clear" type="button" class="text-link">Limpar caminho</button><button id="trail-check" type="button" class="button primary">Conferir passagem ↗</button></div></section>
+  <div id="portal-solved" class="portal-solved" hidden><span class="pixel-symbol" aria-hidden="true">✦</span><h3>Você encontrou o caminho.</h3><p>As lanternas não apagaram umas às outras. Suas diferenças fizeram a passagem aparecer.</p></div>
+  <p id="puzzle-feedback" class="puzzle-feedback" role="status" aria-live="polite"></p><div class="puzzle-actions"><button id="puzzle-hint" class="text-link">Pedir uma pista de raciocínio</button><button id="puzzle-reset" class="text-link">Recomeçar apenas o enigma</button></div><p id="puzzle-hint-text" class="small"></p><button id="portal-solved-entry" class="button primary" hidden>Escolher controles e entrar no Jardim ↗</button>
+</section><p class="footnote">O enigma é ficcional. Todo o conteúdo educativo do SENTIA continua disponível sem precisar resolvê-lo.</p></section>
+    <!-- Parte 2, labels e limites apoiam a validação. preventDefault evita a navegação do formulário e o JavaScript envia os dados fictícios para a API PHP. -->
+    <!-- Sobre o projeto e contato de demonstração, os dados devem ser fictícios e só há confirmação depois de salvar no MySQL. --><section class="page" id="sobre" hidden><div class="page-heading"><p class="eyebrow">SOBRE O PROJETO</p><h1>Sentir também<br>é descobrir<span>.</span></h1><p>SENTIA é um projeto escolar de PW I sobre linguagem visual, interatividade e sentimentos.</p></div><div class="about-grid"><article class="paper"><h2>Feito de encontros</h2><p>O Atlas apresenta sentimentos. A Convergência explora combinações. O registro convida a pequenas ações. O Jardim guarda uma narrativa ficcional própria.</p><p>A identidade em pixel art conecta essas partes: cada detalhe tem seu espaço, como os sentimentos que fazem parte de uma experiência.</p><a href="#creditos" class="text-link">Créditos e acessibilidade →</a></article><article class="paper"><h2>Deixe uma ideia</h2><p>Demonstração escolar. Use somente nome inventado, e-mail de exemplo e uma sugestão fictícia. O envio grava no MySQL desta instalação, sem enviar e-mail e sem publicar os contatos.</p><!-- O formulário usa labels e mensagens de erro acessíveis. O envio para contatos.php não publica uma lista de contatos nem envia e-mail. --><form id="contact-form" novalidate><label for="nome">Seu nome</label><input id="nome" name="name" autocomplete="off" placeholder="Ex.: Pessoa Exemplo" maxlength="80" required><label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="off" placeholder="pessoa@example.com" maxlength="160" required><label for="mensagem">Uma sugestão para o projeto</label><textarea id="mensagem" name="message" rows="3" minlength="10" maxlength="1000" required></textarea><label class="contact-demo" for="contact-demo"><input id="contact-demo" type="checkbox" required> Estou usando apenas dados fictícios para testar o projeto.</label>
+<p id="form-status" role="status"></p><button type="submit" class="button primary">Enviar ideia ↗</button></form></article></div></section>
     <!-- Créditos, preferência de movimento e localização dos dados ficam disponíveis ao visitante. -->
-    <!-- Esse comando separa uma área do conteúdo com um assunto próprio para os créditos do projeto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O id identifica os créditos do projeto para o CSS e o JavaScript encontrarem o lugar certo. O atributo hidden deixa esse elemento escondido até o JavaScript precisar mostrar.
---><section class="page" id="creditos" hidden><!-- Essa tag agrupa elementos para organizar a estrutura e os estilos. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><div class="page-heading"><!-- Aqui essa parte abre um parágrafo de texto. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><p class="eyebrow">CRÉDITOS E ACESSIBILIDADE<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Essa tag define o título principal dessa área.
---><h1>Um espaço<!-- Aqui essa parte quebra a linha do texto sem abrir outro parágrafo.
---><br>que cabe na sua tela<!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização.
---><span>.<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag h1.
---></h1><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Essa tag reúne um conteúdo que pode ser entendido como uma unidade. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><article class="paper"><!-- Aqui essa parte define um título de seção.
---><h2>Como navegar<!-- Aqui termina a área aberta pela tag h2.
---></h2><!-- Essa tag abre um parágrafo de texto.
---><p>Use Tab para percorrer controles, Enter para ativar e Esc para fechar janelas. No celular, todas as ações têm botões de toque. O Jardim permite escolher PC ou celular antes de começar.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando dá um nome visível ao campo ou controle. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><label class="check"><!-- Essa tag cria um campo de entrada ou um controle de seleção. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo type permite marcar ou desmarcar essa escolha.
---><input id="reduce-motion" type="checkbox"> Reduzir movimentos e transições<!-- Aqui termina a área aberta pela tag label.
---></label><!-- Esse comando define um título de seção.
---><h2>Sobre os materiais<!-- Aqui termina a área aberta pela tag h2.
---></h2><!-- Aqui essa parte abre um parágrafo de texto.
---><p>Concepção e direção criativa: projeto SENTIA. Artes aprovadas e desenvolvimento com assistência de IA. O código e seus comentários devem ser estudados e revisados pelo aluno antes da entrega.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Essa tag abre um parágrafo de texto.
---><p>O Jardim usa quatro músicas de Kevin MacLeod, sob licença CC BY 4.0. <!-- Aqui essa parte cria um link que leva a outro destino. O atributo href guarda o endereço para onde esse link leva.
---><a href="entrega-escolar/CREDITOS-AUDIO.txt">Consultar créditos e fontes da trilha<!-- Aqui termina a área aberta pela tag a.
---></a>.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui essa parte abre um parágrafo de texto.
---><p>O plano pessoal, as preferências e a coleção ficam neste navegador. Em Meu registro, a opção compartilhada guarda as ações no MySQL da instalação local com XAMPP. Você pode apagar as ações do modo selecionado. A partida do Jardim tem salvamento independente no navegador.<!-- Aqui termina a área aberta pela tag p.
---></p><!-- Aqui termina a área aberta pela tag article.
---></article><!-- Aqui termina a área aberta pela tag section.
---></section>
-  <!-- Aqui termina a área aberta pela tag main.
---></main>
-  <!-- Essa tag organiza as informações de encerramento da página.
---><footer><!-- Aqui essa parte cria um link que leva a outro destino. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo href leva para a seção indicada dentro do próprio site.
---><a class="brand" href="#home">✦ SENTIA.<!-- Aqui termina a área aberta pela tag a.
---></a><!-- Essa tag abre um parágrafo de texto.
---><p>Um lugar para sentir.<!-- Aqui essa parte quebra a linha do texto sem abrir outro parágrafo.
---><br><!-- Esse comando separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="small">Projeto escolar · PW I · 2026<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag p.
---></p><!-- Esse comando agrupa elementos para organizar a estrutura e os estilos.
---><div><!-- Essa tag cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site.
---><a href="#praticas">Meu registro<!-- Aqui termina a área aberta pela tag a.
---></a><!-- Esse comando cria um link que leva a outro destino. O atributo href leva para a seção indicada dentro do próprio site.
---><a href="#creditos">Créditos e acessibilidade<!-- Aqui termina a área aberta pela tag a.
---></a><!-- Aqui essa parte cria um botão para executar uma ação. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. O atributo type impede que esse botão envie o formulário sem querer. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><button id="reset-site" type="button" class="text-link">Reiniciar SENTIA<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui essa parte separa um trecho da mesma linha para receber um estilo ou uma atualização. As classes ligam esse elemento às regras de aparência e aos estados usados na interface.
---><span class="footer-mark">CULTIVE<!-- Esse comando quebra a linha do texto sem abrir outro parágrafo.
---><br>O QUE SENTE ↗<!-- Aqui termina a área aberta pela tag span.
---></span><!-- Aqui termina a área aberta pela tag footer.
---></footer>
+    <!-- Créditos e privacidade, informam as fontes, a assistência de IA, as preferências e os locais onde os dados são guardados. --><section class="page" id="creditos" hidden><div class="page-heading"><p class="eyebrow">CRÉDITOS E ACESSIBILIDADE</p><h1>Um espaço<br>que cabe na sua tela<span>.</span></h1></div><article class="paper"><h2>Como navegar</h2><p>Use Tab para percorrer controles, Enter para ativar e Esc para fechar janelas. No celular, todas as ações têm botões de toque. O Jardim permite escolher PC ou celular antes de começar.</p><label class="check"><input id="reduce-motion" type="checkbox"> Reduzir movimentos e transições</label><h2>Sobre os materiais</h2><p>Concepção e direção criativa: projeto SENTIA. Artes aprovadas e desenvolvimento com assistência de IA. O código e seus comentários devem ser estudados e revisados pelo aluno antes da entrega.</p><p>O Jardim usa quatro músicas de Kevin MacLeod, sob licença CC BY 4.0. <a href="assets/audio/CREDITOS-AUDIO.txt">Consultar créditos e fontes da trilha</a>.</p><p>O plano pessoal, as preferências e a coleção ficam neste navegador. O modo MySQL guarda ações vinculadas à sua sessão, sem acesso por outros visitantes. Limpar os cookies ou encerrar essa sessão pode interromper o acesso a essas ações. O contato grava apenas as sugestões fictícias desta demonstração e não tem listagem pública. A partida do Jardim tem salvamento independente no navegador.</p></article></section>
+  </main>
+  <footer><a class="brand" href="#home">✦ SENTIA.</a><p>Um lugar para sentir.<br><span class="small">Projeto escolar · PW I · 2026</span></p><div><a href="#praticas">Meu registro</a><a href="#creditos">Créditos e acessibilidade</a><button id="reset-site" type="button" class="text-link">Reiniciar SENTIA</button></div><span class="footer-mark">CULTIVE<br>O QUE SENTE ↗</span></footer>
   <!-- Parte 3, o JavaScript cria e remove cada aviso dentro desta região de anúncio. -->
-  <!-- Esse comando agrupa elementos para organizar a estrutura e os estilos. O id identifica esse elemento para o CSS e o JavaScript encontrarem o lugar certo. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo aria live pede que as mudanças desse texto sejam anunciadas sem interromper a leitura atual.
---><div id="alerts" class="alerts" aria-live="polite"><!-- Aqui termina a área aberta pela tag div.
---></div>
+  <div id="alerts" class="alerts" aria-live="polite"></div>
   <!-- Parte 2, dialog oferece janela modal nativa, o conteúdo e o foco são preparados pelo JavaScript. -->
-  <!-- Aqui essa parte cria uma janela que pode abrir sobre a página para a janela do site. O id identifica a janela do site para o CSS e o JavaScript encontrarem o lugar certo.
---><dialog id="modal"><!-- Esse comando cria um botão para executar uma ação. As classes ligam esse elemento às regras de aparência e aos estados usados na interface. O atributo aria label dá um nome acessível a esse elemento para os leitores de tela.
---><button class="close" aria-label="Fechar janela">×<!-- Aqui termina a área aberta pela tag button.
---></button><!-- Aqui essa parte agrupa elementos para organizar a estrutura e os estilos para o conteúdo da janela do site. O id identifica o conteúdo da janela do site para o CSS e o JavaScript encontrarem o lugar certo.
---><div id="modal-body"><!-- Aqui termina a área aberta pela tag div.
---></div><!-- Aqui termina a área aberta pela tag dialog.
---></dialog>
-<!-- Aqui termina a área aberta pela tag body.
---></body>
-<!-- Aqui termina a área aberta pela tag html.
---></html>
+  <dialog id="modal"><button class="close" aria-label="Fechar janela">×</button><div id="modal-body"></div></dialog>
+</body>
+</html>

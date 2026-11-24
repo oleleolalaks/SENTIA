@@ -1,0 +1,13 @@
+api/config.local.php
+.teste-xampp/
+.verificacao*/
+*.zip
+
+.apostilas-professor/
+.historico-versionamento/
+sentia-config.php
+**/config.local.php
+.teste-hospedagem/
+.teste-ia/
+.teste-audio/
+tmp/

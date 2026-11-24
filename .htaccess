@@ -1,0 +1,10 @@
+# O site entra pelo HTML. Arquivos de apoio e pacotes não são downloads da hospedagem.
+DirectoryIndex index.html
+Options -Indexes
+<FilesMatch "(?i)(^\.|\.(sql|zip|7z|log|bak|excalidraw|pptx)$)">
+    Require all denied
+</FilesMatch>
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

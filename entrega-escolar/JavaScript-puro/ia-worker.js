@@ -12,6 +12,7 @@ let stopping = null;
 let loading = false;
 let generating = false;
 let backend = '';
+let fallback = false;
 
 /* Essa função devolve eventos para a interface, sempre junto do pedido original. */
 function send(id, type, values = {}) {
@@ -23,7 +24,7 @@ async function load(id, requested) {
   if (loading || generating) throw new Error('BUSY');
   /* Um modelo já pronto é reaproveitado entre todos os sentimentos. */
   if (generator) {
-    send(id, 'ready', { backend, model: MODEL });
+    send(id, 'ready', { backend, model: MODEL, fallback });
     return;
   }
   loading = true;
@@ -38,9 +39,19 @@ async function load(id, requested) {
     library.env.backends.onnx.wasm.proxy = false;
     /* O modo automático usa a opção compatível. A aceleração é uma escolha separada. */
     backend = requested === 'webgpu' ? 'webgpu' : 'wasm';
+    fallback = false;
     if (backend === 'webgpu') {
-      const adapter = await self.navigator.gpu?.requestAdapter();
-      if (!adapter || !adapter.features.has('shader-f16')) throw new Error('GPU_UNAVAILABLE');
+      let adapter = null;
+      try {
+        adapter = await self.navigator.gpu?.requestAdapter();
+      } catch {
+        /* Alguns aparelhos anunciam WebGPU, mas recusam o adaptador. A CPU continua sendo uma opção. */
+      }
+      if (!adapter || !adapter.features.has('shader-f16')) {
+        backend = 'wasm';
+        fallback = true;
+        send(id, 'status', { text: 'A aceleração não está disponível. Preparando no modo compatível, na CPU.' });
+      }
     }
     send(id, 'status', { text: 'Preparando os arquivos do modelo. O primeiro uso demora mais.' });
     /* Os dois modos pedem o mesmo arquivo quantizado, que pode ser reaproveitado no cache. */
@@ -64,7 +75,7 @@ async function load(id, requested) {
         return forward(inputs);
       };
     }
-    send(id, 'ready', { backend, model: MODEL });
+    send(id, 'ready', { backend, model: MODEL, fallback });
   } finally {
     /* Esse finally libera o estado mesmo quando a rede ou o aparelho falha. */
     loading = false;

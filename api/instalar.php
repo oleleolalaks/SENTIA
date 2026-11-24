@@ -1,60 +1,39 @@
 <?php
- /* Ativa a conferência estrita dos tipos declarados nas funções deste arquivo.
-*/ declare(strict_types=1);
- /* Carrega o arquivo PHP necessário para continuar essa execução.
-*/ require __DIR__ . '/_bootstrap.php';
- /* Esse comando prepara ou atualiza method com os dados usados nesta operação.
-*/ $method =  /* Confere se esse endereço aceita o método e a origem do pedido.
-*/ sentia_method(['GET', 'POST']);
- /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if ($method === 'GET') {
-     /* Monta a resposta JSON com o status indicado e encerra esse pedido.
-*/ sentia_json([ /* Indica se a operação terminou com sucesso.
-*/ 'ok' => true,  /* Informa que a preparação do banco precisa de um pedido POST explícito.
-*/ 'requiresPost' => true,  /* Guarda a mensagem apresentada para essa situação.
-*/ 'message' =>  /* Esse texto é a instrução SQL enviada para executar a operação indicada no banco.
-*/ 'Use o botão Preparar banco no site, que envia POST. Você também pode importar banco/schema.sql pelo phpMyAdmin. Esta consulta não altera o banco.']);
+declare(strict_types=1);
+require __DIR__ . '/_bootstrap.php';
+
+$method = sentia_method(['GET', 'POST']);
+if ($method === 'GET') {
+    sentia_json(['ok' => true, 'requiresPost' => true, 'setupAllowed' => sentia_setup_allowed(), 'message' => 'A instalação automática só funciona no próprio computador. Na hospedagem, importe banco/schema.sql pelo phpMyAdmin no banco criado pelo painel.']);
+}
+if (!sentia_setup_allowed()) {
+    sentia_error('local_setup_only', 'Na hospedagem, importe banco/schema.sql pelo phpMyAdmin. Este instalador só funciona no próprio computador.', 403);
 }
 
-                                                                                                     
- /* Confere essa condição e só executa esse caminho quando ela é verdadeira.
-*/ if (! /* Confere se esse valor está entre as opções aceitas.
-*/ in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1', '::ffff:127.0.0.1'], true)) {
-     /* Monta a resposta de erro com o código e a mensagem que o site consegue tratar.
-*/ sentia_error('local_setup_only', 'Prepare o banco pelo navegador do computador do XAMPP, em localhost.', 403);
+// Criar o banco é permitido só no preparo local. O SQL de hospedagem não contém esse comando.
+$pdo = sentia_pdo(false);
+$database = sentia_config()['database'];
+$pdo->exec('CREATE DATABASE IF NOT EXISTS `' . $database . '` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+$pdo->exec('USE `' . $database . '`');
+
+// As instruções são fixas e não recebem entradas do visitante. A migração preserva as linhas existentes.
+$schemaFile = dirname(__DIR__) . '/banco/schema.sql';
+if (!is_file($schemaFile)) {
+    $schemaFile = dirname(__DIR__, 2) . '/banco/schema.sql';
 }
- /* Esse comando prepara ou atualiza pdo com os dados usados nesta operação.
-*/ $pdo =  /* Abre a conexão PDO com o banco depois de conferir as configurações e o driver.
-*/ sentia_pdo(false);
- /* Esse comando prepara ou atualiza database com os dados usados nesta operação.
-*/ $database =  /* Carrega e valida os valores usados na conexão com o MySQL.
-*/ sentia_config()['database'];
- /* Esse comando prepara ou atualiza pdo com os dados usados nesta operação.
-*/ $pdo-> /* Executa essa instrução SQL diretamente nessa conexão.
-*/ exec( /* Esse texto é a instrução SQL enviada para executar a operação indicada no banco.
-*/ 'CREATE DATABASE IF NOT EXISTS `' . $database . '` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
- /* Esse comando prepara ou atualiza pdo com os dados usados nesta operação.
-*/ $pdo-> /* Executa essa instrução SQL diretamente nessa conexão.
-*/ exec( /* Esse texto é a instrução SQL enviada para executar a operação indicada no banco.
-*/ 'USE `' . $database . '`');
- /* Esse comando prepara ou atualiza pdo com os dados usados nesta operação.
-*/ $pdo-> /* Executa essa instrução SQL diretamente nessa conexão.
-*/ exec( /* Esse texto é a instrução SQL enviada para executar a operação indicada no banco.
-*/ 'CREATE TABLE IF NOT EXISTS registros (
-    id VARCHAR(64) COLLATE utf8mb4_bin NOT NULL,
-    text VARCHAR(160) NOT NULL,
-    done TINYINT(1) NOT NULL DEFAULT 0,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
- /* Esse comando prepara ou atualiza pdo com os dados usados nesta operação.
-*/ $pdo-> /* Executa a consulta de leitura nessa conexão com o MySQL.
-*/ query( /* Esse texto é a instrução SQL enviada para executar a operação indicada no banco.
-*/ 'SELECT id, text, done, created_at, updated_at FROM registros LIMIT 0');
- /* Monta a resposta JSON com o status indicado e encerra esse pedido.
-*/ sentia_json([ /* Indica se a operação terminou com sucesso.
-*/ 'ok' => true,  /* Informa se o banco e a tabela estão prontos para uso.
-*/ 'ready' => true,  /* Indica o banco usado pelo SENTIA.
-*/ 'database' => $database,  /* Guarda a mensagem apresentada para essa situação.
-*/ 'message' => 'Banco preparado. Os registros existentes foram preservados.']);
+$schema = is_file($schemaFile) ? file_get_contents($schemaFile) : false;
+if ($schema === false) {
+    sentia_error('schema_unavailable', 'O arquivo de estrutura do banco não foi encontrado.', 500);
+}
+$schema = preg_replace('/^--.*$/m', '', $schema);
+foreach (explode(';', $schema) as $instruction) {
+    if (trim($instruction) !== '') {
+        $result = $pdo->query($instruction);
+        if ($result !== false) {
+            $result->closeCursor();
+        }
+    }
+}
+$pdo->query('SELECT id, text, done, owner_hash FROM registros LIMIT 0');
+$pdo->query('SELECT id, owner_hash, nome, email, mensagem FROM contatos LIMIT 0');
+sentia_json(['ok' => true, 'ready' => true, 'setupAllowed' => true, 'message' => 'As tabelas de tarefas e contato estão prontas. Os registros antigos foram preservados e não são expostos a visitantes.']);

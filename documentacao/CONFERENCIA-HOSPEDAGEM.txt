@@ -1,0 +1,31 @@
+SENTIA, CONFERÊNCIA DO CHECKLIST DO PROFESSOR
+23 de novembro de 2026.
+
+CORRIGIDO E TESTADO LOCALMENTE
+- Dois formulários cobertos pelo SQL, tarefas e contato.
+- Contato gravado no MySQL com recibo, sem lista pública de mensagens.
+- CRUD de tarefas isolado por sessão, com consultas parametrizadas, CSRF e validação de origem/campos.
+- Migração SQL repetida duas vezes, preservando a linha antiga fictícia.
+- SQL importável em banco criado no painel, sem CREATE/DROP DATABASE e sem USE fixo.
+- Configuração da hospedagem explícita e privada, sem credenciais no pacote.
+- IA real no Web Worker do navegador, fallback CPU, cancelamento, timeouts e erros recuperáveis.
+- Motor, tokenizer e modelo externos verificados por HTTPS e CORS. Inferência CPU executada com pesos já existentes, sem upload de mensagens.
+- Tema, modal/CTA, alertas, filtro, tarefas e reflexão assíncrona no SENTIA normal.
+- Oito páginas conferidas em320/390/844/1440, sem erro JavaScript ou rolagem horizontal.
+- Site local e menu do Jardim sem banco continuam abrindo por arquivo. O jogo não importa a API.
+- Música de fundo reduzida de13.124.519 para6.562.496bytes para respeitar10MB.
+- Pasta pública separada de SQL, portfólio, códigos isolados e guias.
+- Portfólio atualizado com capturas do site e códigos isolados sincronizados.
+
+LIMITES E PENDÊNCIAS HONESTAS
+- A publicação InfinityFree não foi realizada nesta conferência. Faltam o domínio e a configuração privada do painel.
+- Depois do envio, é necessário repetir os testes em janela anônima no domínio HTTPS, incluindo formulários e Worker/modelo externos.
+- O download remoto completo do modelo não foi repetido, para não transferir cerca de500MB desnecessariamente. O teste de inferência usou pesos já presentes na máquina de QA.
+- O modelo pequeno respondeu genericamente em um teste de lembrança contextual. A IA é real, mas sua qualidade tem limites.
+- PHP de teste usa o mesmo tipo de execução PHP/PDO/MySQL do XAMPP. O domínio real pode aplicar regras diferentes de sessão, MIME, HTTPS e arquivos.
+- O plano pessoal e o Jardim funcionam em hospedagem estática, mas o MySQL e o contato precisam de PHP. GitHub Pages não executa esses endpoints.
+- Há assistência de IA declarada. O aluno precisa revisar, compreender e explicar o material.
+
+Como publicar e configurar o banco, HOSPEDAGEM-INFINITYFREE.txt.
+Como conferir a estrutura e as contagens, banco/consultas-demonstracao.sql.
+GitHub, https://github.com/oleleolalaks/SENTIA .

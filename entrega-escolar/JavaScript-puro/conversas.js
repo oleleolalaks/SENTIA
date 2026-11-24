@@ -31,6 +31,8 @@
   let serial = 0;
   let selectionSerial = 0;
   let stopTimer = null;
+  let activityTimer = null;
+  let operationTimer = null;
   let download = new Map();
   let lastProgress = 0;
 
@@ -225,6 +227,10 @@
   function friendly(error) {
     const text = String(error?.message || error);
     if (text.includes('GPU_UNAVAILABLE')) return 'A aceleração não está disponível neste navegador. Escolha o modo compatível e prepare novamente.';
+    if (text.includes('INSECURE_CONTEXT')) return 'A IA precisa de um endereço HTTPS. Para testar neste computador, use localhost com o XAMPP ou Live Server.';
+    if (text.includes('LOAD_TIMEOUT')) return 'A preparação parou de responder. Confira a conexão e tente novamente. Os arquivos completos já guardados podem ser reaproveitados.';
+    if (text.includes('GENERATION_TIMEOUT')) return 'O aparelho não conseguiu terminar a resposta a tempo. O trecho recebido foi mantido. Prepare a conversa novamente para tentar uma mensagem menor.';
+    if (text.includes('OFFLINE')) return 'O navegador está sem conexão. No primeiro preparo, conecte à internet para baixar os arquivos públicos do modelo.';
     if (/memory|allocation|out of bounds|allocate|buffer size/i.test(text)) return 'Faltou memória para o modelo. Feche outras abas ou tente em um computador com mais memória.';
     if (/NOT_READY/.test(text)) return 'Prepare a conversa antes de enviar uma mensagem.';
     return 'Não foi possível concluir a IA neste aparelho. Confira a conexão e tente novamente no modo compatível. Nenhuma resposta pronta foi usada no lugar dela.';
@@ -234,12 +240,28 @@
   function terminate(reason = 'Operação interrompida') {
     if (stopTimer) clearTimeout(stopTimer);
     stopTimer = null;
+    clearWatchdogs();
     const pending = request;
     request = null;
     worker?.terminate();
     worker = null;
     ready = false;
     if (pending) pending.reject(reason instanceof Error ? reason : new DOMException(reason, 'AbortError'));
+  }
+
+  /* Um download ativo pode demorar, mas um motor parado não deixa os controles presos para sempre. */
+  function clearWatchdogs() {
+    clearTimeout(activityTimer);
+    clearTimeout(operationTimer);
+    activityTimer = null;
+    operationTimer = null;
+  }
+
+  function watchActivity(pending) {
+    clearTimeout(activityTimer);
+    activityTimer = setTimeout(() => {
+      if (request === pending) terminate(new Error(pending.type === 'load' ? 'LOAD_TIMEOUT' : 'GENERATION_TIMEOUT'));
+    }, pending.type === 'load' ? 180000 : 120000);
   }
 
   /* O worker recebe só o necessário para o personagem e a conversa atual. */
@@ -249,12 +271,14 @@
     worker.addEventListener('message', event => {
       const data = event.data || {};
       if (!request || data.id !== request.id) return;
+      watchActivity(request);
       if (data.type === 'progress') progress(data);
       else if (data.type === 'status') status(data.text, 'loading');
       else if (data.type === 'chunk') request.onChunk?.(data.text);
       else if (['ready', 'complete', 'released', 'error'].includes(data.type)) {
         const pending = request;
         request = null;
+        clearWatchdogs();
         if (stopTimer) clearTimeout(stopTimer);
         stopTimer = null;
         if (data.type === 'error') pending.reject(new Error(data.code));
@@ -267,6 +291,12 @@
       status('O navegador encerrou o modelo. Prepare a conversa novamente.', 'error');
       controls();
     });
+    /* Se o navegador não conseguir transportar uma resposta, o próximo preparo começa com um worker novo. */
+    worker.addEventListener('messageerror', () => {
+      terminate(new Error('WORKER_MESSAGE_ERROR'));
+      status('O navegador não conseguiu ler a resposta do modelo. Prepare a conversa novamente.', 'error');
+      controls();
+    });
   }
 
   /* Essa Promise aguarda uma resposta real do worker, sem simular tempo de IA. */
@@ -275,7 +305,17 @@
     if (request) return Promise.reject(new Error('BUSY'));
     return new Promise((resolve, reject) => {
       request = { id: ++serial, type, resolve, reject, onChunk };
-      worker.postMessage({ id: request.id, type, ...values });
+      const pending = request;
+      watchActivity(pending);
+      operationTimer = setTimeout(() => {
+        if (request === pending) terminate(new Error(type === 'load' ? 'LOAD_TIMEOUT' : 'GENERATION_TIMEOUT'));
+      }, type === 'load' ? 900000 : 300000);
+      try {
+        worker.postMessage({ id: pending.id, type, ...values });
+      } catch (error) {
+        /* Uma falha ao enviar também precisa limpar o pedido, senão a próxima mensagem ficaria ocupada. */
+        terminate(error);
+      }
     });
   }
 
@@ -290,6 +330,10 @@
       status('Este navegador não oferece os recursos necessários. Tente uma versão recente do Chrome, Edge ou Firefox.', 'error');
       return;
     }
+    if (!window.isSecureContext) {
+      status(friendly(new Error('INSECURE_CONTEXT')), 'error');
+      return;
+    }
     loading = true;
     download = new Map();
     lastProgress = 0;
@@ -301,8 +345,11 @@
     try {
       const result = await invoke('load', { device: el.device.value });
       ready = true;
+      if (result.fallback) el.device.value = 'wasm';
       status('Pronta para conversar neste aparelho.', 'ready');
-      el.note.textContent = result.backend === 'webgpu' ? 'Aceleração gráfica ativa.' : 'Modo compatível ativo. Respostas podem demorar em aparelhos mais simples.';
+      el.note.textContent = result.backend === 'webgpu' ? 'Aceleração gráfica ativa.' : result.fallback
+        ? 'A aceleração não estava disponível. A conversa foi preparada no modo compatível, na CPU.'
+        : 'Modo compatível ativo. Respostas podem demorar em aparelhos mais simples.';
       el.input.disabled = false;
       el.input.focus();
     } catch (error) {
@@ -376,7 +423,8 @@
       answer.interrupted = true;
       if (!answer.content) history.splice(history.indexOf(answer), 1);
       status(error.name === 'AbortError' ? 'Resposta interrompida.' : friendly(error), error.name === 'AbortError' ? '' : 'error');
-      el.note.textContent = error.name === 'AbortError' ? 'O texto já recebido foi mantido.' : 'Você pode tentar enviar outra mensagem.';
+      el.note.textContent = error.name === 'AbortError' ? 'O texto já recebido foi mantido.' : ready
+        ? 'Você pode tentar enviar outra mensagem.' : 'Prepare a conversa novamente para continuar.';
     } finally {
       /* A lista é limitada, e os botões voltam mesmo depois de erro ou parada. */
       if (history.length > 40) history.splice(0, history.length - 40);

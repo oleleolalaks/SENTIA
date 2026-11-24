@@ -1,0 +1,4 @@
+# Os endpoints continuam acessíveis. Estes arquivos de apoio não são páginas públicas.
+<FilesMatch "^(config(?:\.local(?:\.example)?)?|_bootstrap)\.php$">
+    Require all denied
+</FilesMatch>

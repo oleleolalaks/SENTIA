@@ -1,0 +1,60 @@
+SENTIA, PREPARAÇÃO PARA HOSPEDAGEM
+Revisão de 23 de novembro de 2026.
+
+1. ARQUIVOS
+Extraia o pacote inteiro. Ele separa a pasta htdocs do SQL, portfólio, códigos isolados e guias.
+Envie somente o CONTEÚDO extraído de htdocs para o htdocs do domínio pelo gerenciador ou FTP. Preserve os nomes e maiúsculas/minúsculas. index.html fica diretamente no htdocs, junto de jardim.html, css, js, assets e api.
+Mantenha os arquivos .htaccess da raiz pública e da API. Habilite a exibição de arquivos ocultos para encontrá-los.
+Não publique o ZIP, SQL, portfólio, apostilas, testes, logs, modelos de IA ou cópias escolares. O ZIP é para baixar, extrair e entregar, não para servir como download da hospedagem.
+
+2. MYSQL DO PAINEL
+Crie o banco em MySQL Databases no painel. Anote seu nome completo, usuário e host. Use o host EXATO do painel, nunca localhost na hospedagem.
+Abra o phpMyAdmin desse banco, selecione-o e importe banco/schema.sql do pacote. Ele cria registros e contatos, sem CREATE DATABASE, DROP DATABASE ou USE com nome fixo.
+A importação pode ser repetida e migra a tabela antiga sem apagar as linhas. Registros antigos ficam com owner_hash vazio e não são entregues a visitantes novos. Não os atribua a uma sessão qualquer.
+banco/consultas-demonstracao.sql mostra estruturas, contagens e recibos sem reproduzir mensagens ou e-mails.
+
+3. CONFIGURAÇÃO PRIVADA
+Copie api/config.local.example.php e preencha host, port, database, username e password com os valores do painel.
+Preferência, salve como sentia-config.php no diretório imediatamente ACIMA de htdocs, fora da pasta pública.
+Alternativa, salve como api/config.local.php. A API aceita esse caminho e bloqueia sua abertura direta. Mantenha api/.htaccess.
+Não envie o arquivo preenchido para GitHub, professor, mensagens ou ZIP público. O pacote inclui somente um modelo para preencher. Não use root nem os padrões do XAMPP na hospedagem.
+O instalador automático só funciona no próprio computador. Na hospedagem, a instalação é feita importando o SQL pelo painel.
+
+4. TESTE APÓS PUBLICAR
+Ative o certificado HTTPS no painel e abra o endereço HTTPS em janela anônima.
+Em Meu registro, o Plano pessoal fica no navegador. Selecione Registro MySQL, crie uma ação fictícia, edite, conclua, recarregue e apague. Outro visitante não deve ver essa lista.
+Em Sobre, use Pessoa Exemplo, pessoa@example.com e uma sugestão inventada. Marque a confirmação de dados fictícios e envie. Sucesso só aparece depois da gravação no banco. Não há envio de e-mail.
+Confira a gravação no phpMyAdmin usando as consultas de demonstração. Não crie uma listagem pública de contatos.
+Com o banco indisponível, deve aparecer erro e os campos devem permanecer preenchidos. Uma animação de envio não comprova gravação.
+O token CSRF e o cookie de sessão são preparados automaticamente pelo navegador. Eles não são a senha do MySQL.
+As tarefas MySQL pertencem à sessão deste navegador, não a uma conta com login. Limpar os cookies ou perder a sessão pode interromper seu acesso a essas ações.
+
+5. IA NO NAVEGADOR
+Abra Conversas em HTTPS e clique em Preparar conversa. Dez personalidades compartilham um modelo real Qwen2.5-0.5B-Instruct, com Transformers.js em Web Worker.
+O primeiro preparo pode baixar cerca de 500 MB no aparelho do visitante, dos servidores públicos do Hugging Face. Os pesos ficam no cache do navegador, quando permitido. Não envie modelos ONNX ou executáveis para a hospedagem.
+Não há serviço Python/Node ou servidor de IA em outra janela. As mensagens não passam pelo PHP/MySQL. O histórico só fica salvo neste navegador quando a pessoa ativa essa opção.
+Comece em CPU. A opção WebGPU volta à CPU se o aparelho não for compatível. Celulares com pouca memória podem não conseguir carregar o modelo.
+Envie uma mensagem, observe os tokens, cancele e prepare novamente. Falhas e tempo limite devem recuperar os controles, sem respostas pré-escritas fingindo ser IA.
+O modelo pequeno pode responder genericamente e errar. O teste de memória contextual não foi aprovado. Ele não oferece garantia de aconselhamento ou lembrança confiável.
+Os testes locais comprovaram inferência com pesos já disponíveis e verificaram o motor/modelo externos por HTTPS e CORS. O download remoto completo no domínio publicado e seu funcionamento no aparelho real ainda precisam ser conferidos depois da publicação.
+
+6. JARDIM E ESCOLA
+O Jardim permanece conectado ao portal do SENTIA, com escolha PC/celular e clarão. Seu save não usa banco. Não coloque os requisitos escolares dentro do jogo.
+O enigma do site tem quatro etapas, lanternas, vínculos, palavra e mosaico.
+O site normal contém tema, modal/CTA, alertas, filtro, tarefas e reflexão assíncrona. Conversas acrescenta inferência real. A matriz de conceitos está em CONFERENCIA-PWI.md.
+Portfólio e códigos isolados ficam fora da pasta pública. O HTML contém em comentário o link https://github.com/oleleolalaks/SENTIA .
+Depois de publicar, entregue o link HTTPS, o GitHub atualizado, portfólio e evidências, sem senhas.
+
+7. LIMITES CONFERIDOS EM23/11/2026
+A documentação informa 1 MB por HTML/PHP/JS, 10 kB por .htaccess e 10 MB por outros arquivos.
+Dreams Become Real foi recomprimida de 13.124.519 para 6.562.496 bytes em MP3 de128kbit/s. Duração e conteúdo musical foram mantidos, com a alteração indicada nos créditos.
+Não são necessários runtimes Python, Node ou Java de servidor. A hospedagem executa PHP/MySQL e serve os arquivos do site e do jogo.
+
+FONTES OFICIAIS
+Limites, https://forum.infinityfree.com/t/file-size-and-upload-limits/49308
+Conexão MySQL, https://forum.infinityfree.com/t/how-to-connect-with-mysql/49340
+Importação, https://forum.infinityfree.com/t/how-to-import-a-mysql-database-backup/49341
+Recursos, https://forum.infinityfree.com/t/what-can-i-do-with-my-hosting-account/49316
+IA, https://forum.infinityfree.com/t/clarification-on-ai-chatbots-and-tos-for-infinityfree-hosting/103147
+Worker, https://huggingface.co/docs/transformers.js/en/tutorials/next
+WebGPU, https://huggingface.co/docs/transformers.js/en/guides/webgpu
